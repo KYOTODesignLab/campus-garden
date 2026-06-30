@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus Garden — Temporal Field Record</title>
+
+<!-- ===================================================================
+  CAMPUS GARDEN — Before / After temporal field record
+  Single-file site. Replace the SAMPLE data marked "SWAP" with your own.
+  Sections: Before/After (drag slider) · Photo · About · 3D Viewer
+  3D viewer uses Three.js (r128) + a small hand-written orbit control.
+==================================================================== -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  /* palette — field notebook + instrument viewport */
+  --paper:#e9e8e1;          /* cool surveyor paper            */
+  --paper-2:#e2e1d8;        /* recessed paper                 */
+  --ink:#191a16;            /* warm near-black ink            */
+  --ink-soft:#5c5e54;       /* secondary ink                  */
+  --line:#c7c6bb;           /* hairline rules                 */
+  --viewport:#0d0f0c;       /* dark "screen" for media + 3D   */
+  --viewport-edge:#23261f;
+  --moss:#41552f;           /* botanical accent               */
+  --moss-bright:#6f8a4e;
+  /* M3C2 signed-distance ramp (the signature thread) */
+  --d-loss:#1f6fb2;         /* recession / loss               */
+  --d-zero:#f2f0e6;         /* no change                      */
+  --d-gain:#cf4733;         /* gain / growth                  */
+
+  --maxw:1240px;
+  --gut:clamp(18px,4vw,52px);
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);
+  font-family:"Space Grotesk",system-ui,sans-serif;
+  font-size:16px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  /* faint survey grid on the paper */
+  background-image:
+    linear-gradient(var(--line) 1px,transparent 1px),
+    linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:34px 34px;
+  background-position:-1px -1px;
+  background-blend-mode:multiply;
+}
+body::before{ /* soften the grid */
+  content:"";position:fixed;inset:0;background:var(--paper);
+  opacity:.86;z-index:-1;pointer-events:none;
+}
+.mono{font-family:"IBM Plex Mono",monospace}
+a{color:inherit}
+
+/* ----------------------------- header / nav ---------------------- */
+.top{
+  position:sticky;top:0;z-index:50;
+  background:rgba(233,232,225,.82);
+  backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.top-in{
+  max-width:var(--maxw);margin:0 auto;padding:0 var(--gut);
+  display:flex;align-items:center;justify-content:space-between;
+  min-height:64px;gap:16px;
+}
+.brand{display:flex;align-items:baseline;gap:12px;min-width:0}
+.brand .logo{
+  width:13px;height:13px;border-radius:50%;flex:0 0 auto;align-self:center;
+  background:linear-gradient(90deg,var(--d-loss),var(--d-zero),var(--d-gain));
+  box-shadow:0 0 0 1px var(--ink);
+}
+.brand h1{
+  font-size:15px;font-weight:600;letter-spacing:.01em;margin:0;white-space:nowrap;
+}
+.brand .sub{
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-soft);
+  letter-spacing:.14em;text-transform:uppercase;white-space:nowrap;
+}
+@media(max-width:600px){.brand .sub{display:none}}
+
+nav{display:flex;gap:2px}
+nav button{
+  appearance:none;border:0;background:none;cursor:pointer;color:var(--ink-soft);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;padding:9px 12px;border-radius:2px;
+  position:relative;transition:color .18s;
+}
+nav button:hover{color:var(--ink)}
+nav button[aria-current="true"]{color:var(--ink)}
+nav button[aria-current="true"]::after{
+  content:"";position:absolute;left:12px;right:12px;bottom:3px;height:2px;
+  background:linear-gradient(90deg,var(--d-loss),var(--d-zero),var(--d-gain));
+}
+nav button:focus-visible{outline:2px solid var(--moss);outline-offset:2px}
+@media(max-width:600px){
+  nav button{padding:9px 8px;font-size:10px;letter-spacing:.06em}
+}
+
+/* ----------------------------- shell ----------------------------- */
+main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
+.view{display:none;padding:clamp(24px,5vw,56px) 0 96px}
+.view.active{display:block;animation:fade .45s ease both}
+@keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+.eyebrow{
+  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.22em;
+  text-transform:uppercase;color:var(--ink-soft);
+  display:flex;align-items:center;gap:10px;margin:0 0 14px;
+}
+.eyebrow::before{content:"";width:22px;height:1px;background:var(--ink-soft)}
+.view-title{
+  font-size:clamp(28px,5vw,46px);font-weight:500;line-height:1.04;margin:0 0 6px;
+  letter-spacing:-.01em;
+}
+.view-lede{max-width:60ch;color:var(--ink-soft);margin:10px 0 30px;font-size:15px}
+
+/* ===================== BEFORE / AFTER SLIDER ===================== */
+.compare{
+  position:relative;width:100%;aspect-ratio:16/9;
+  background:var(--viewport);border:1px solid var(--ink);
+  overflow:hidden;touch-action:none;user-select:none;
+  box-shadow:0 1px 0 rgba(255,255,255,.4),0 18px 40px -28px rgba(0,0,0,.6);
+}
+.compare canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.layer-after{ /* clipped from the right by --pos */
+  clip-path:inset(0 calc(100% - var(--pos,50%)) 0 0);
+}
+.tag{
+  position:absolute;top:14px;font-family:"IBM Plex Mono",monospace;font-size:10.5px;
+  letter-spacing:.16em;text-transform:uppercase;color:#fff;
+  background:rgba(13,15,12,.62);padding:5px 9px;border:1px solid rgba(255,255,255,.18);
+  pointer-events:none;
+}
+.tag.l{left:14px}
+.tag.r{right:14px}
+.handle{
+  position:absolute;top:0;bottom:0;left:var(--pos,50%);width:2px;
+  background:linear-gradient(var(--d-loss),var(--d-zero),var(--d-gain));
+  transform:translateX(-1px);cursor:ew-resize;
+}
+.knob{
+  position:absolute;top:50%;left:50%;width:42px;height:42px;
+  transform:translate(-50%,-50%);border-radius:50%;
+  background:var(--paper);border:1px solid var(--ink);
+  display:grid;place-items:center;cursor:ew-resize;
+  box-shadow:0 6px 18px -8px rgba(0,0,0,.7);
+}
+.knob::before,.knob::after{
+  content:"";position:absolute;width:0;height:0;border:5px solid transparent
+}
+.knob::before{left:8px;border-right-color:var(--ink)}
+.knob::after{right:8px;border-left-color:var(--ink)}
+.knob:focus-visible{outline:2px solid var(--moss);outline-offset:3px}
+.compare-cap{
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-top:12px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-soft);
+}
+
+/* video swap note */
+.note{
+  margin-top:26px;border-left:2px solid var(--moss);padding:10px 0 10px 16px;
+  font-size:13.5px;color:var(--ink-soft);max-width:64ch;
+}
+.note code{background:var(--paper-2);padding:1px 5px;border-radius:2px;
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink)}
+
+/* ========================= PHOTO GALLERY ======================== */
+.plates{
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:clamp(14px,2.4vw,26px);
+}
+.plate{
+  background:var(--paper);border:1px solid var(--line);padding:10px 10px 0;
+  box-shadow:0 1px 0 rgba(255,255,255,.5);
+}
+.plate .frame{
+  position:relative;aspect-ratio:4/5;background:var(--viewport);overflow:hidden;
+  border:1px solid var(--ink);
+}
+.plate canvas{position:absolute;inset:0;width:100%;height:100%}
+.plate .meta{
+  display:flex;justify-content:space-between;gap:8px;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-soft);
+  letter-spacing:.08em;padding:9px 2px 11px;border-top:1px solid var(--line);margin-top:10px;
+  text-transform:uppercase;
+}
+.plate .cap{font-family:"Newsreader",serif;font-style:italic;font-size:14px;
+  color:var(--ink);padding:8px 2px 0;letter-spacing:0;text-transform:none}
+
+/* ============================== ABOUT =========================== */
+.about{display:grid;grid-template-columns:1fr;gap:clamp(28px,5vw,64px);max-width:var(--maxw)}
+@media(min-width:860px){.about{grid-template-columns:1.55fr .9fr}}
+.prose{font-family:"Newsreader",serif;font-size:18.5px;line-height:1.62;color:#26271f}
+.prose p{margin:0 0 1.1em;max-width:62ch}
+.prose .drop::first-letter{
+  font-size:3.3em;line-height:.78;float:left;padding:6px 10px 0 0;font-weight:500;color:var(--moss);
+}
+.prose h3{font-family:"Space Grotesk",sans-serif;font-size:13px;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--ink-soft);margin:2em 0 .5em;font-weight:600}
+.specs{align-self:start;border-top:1px solid var(--ink)}
+.specs dl{margin:0;display:grid;grid-template-columns:auto 1fr}
+.specs dt,.specs dd{
+  font-family:"IBM Plex Mono",monospace;font-size:12px;padding:9px 0;border-bottom:1px solid var(--line);
+}
+.specs dt{color:var(--ink-soft);letter-spacing:.08em;text-transform:uppercase;padding-right:18px;white-space:nowrap}
+.specs dd{margin:0;text-align:right;color:var(--ink)}
+
+/* ============================ 3D VIEWER ========================= */
+.stage{
+  position:relative;width:100%;height:clamp(420px,64vh,640px);
+  background:radial-gradient(120% 120% at 50% 10%,#171a14,var(--viewport));
+  border:1px solid var(--ink);overflow:hidden;touch-action:none;
+  box-shadow:0 1px 0 rgba(255,255,255,.4),0 18px 40px -28px rgba(0,0,0,.6);
+}
+.stage canvas{display:block;width:100%;height:100%}
+.stage.dragging{cursor:grabbing}
+.hud{
+  position:absolute;left:14px;top:14px;display:flex;flex-direction:column;gap:8px;
+}
+.layers{display:flex;background:rgba(13,15,12,.6);border:1px solid var(--viewport-edge);
+  border-radius:3px;overflow:hidden}
+.layers button{
+  appearance:none;border:0;border-right:1px solid var(--viewport-edge);background:none;
+  color:#b9bdb0;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.08em;
+  text-transform:uppercase;padding:8px 12px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px;
+}
+.layers button:last-child{border-right:0}
+.layers button .dot{width:8px;height:8px;border-radius:50%;background:#5a5d52;transition:.15s}
+.layers button[aria-pressed="true"]{color:#fff;background:rgba(255,255,255,.06)}
+.layers button[aria-pressed="true"] .dot{box-shadow:0 0 8px currentColor}
+.layers button.before[aria-pressed="true"] .dot{background:#9fb27e;color:#9fb27e}
+.layers button.after[aria-pressed="true"] .dot{background:#d8d4c4;color:#d8d4c4}
+.layers button.diff[aria-pressed="true"] .dot{background:var(--d-gain);color:var(--d-gain)}
+.layers button:focus-visible{outline:2px solid var(--moss-bright);outline-offset:-2px}
+
+.readout{
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:#8c9080;letter-spacing:.08em;
+  background:rgba(13,15,12,.55);border:1px solid var(--viewport-edge);padding:7px 9px;line-height:1.7;
+}
+.legend{
+  position:absolute;right:14px;bottom:14px;background:rgba(13,15,12,.6);
+  border:1px solid var(--viewport-edge);padding:9px 11px;color:#c5c8bc;
+  font-family:"IBM Plex Mono",monospace;font-size:9.5px;letter-spacing:.06em;width:168px;
+  transition:opacity .2s;
+}
+.legend .bar{height:8px;border-radius:2px;margin:6px 0 4px;
+  background:linear-gradient(90deg,var(--d-loss),var(--d-zero),var(--d-gain))}
+.legend .ends{display:flex;justify-content:space-between;text-transform:uppercase}
+.legend .ttl{color:#fff;text-transform:uppercase;letter-spacing:.12em;margin-bottom:3px}
+.viewhint{
+  position:absolute;left:50%;bottom:14px;transform:translateX(-50%);
+  font-family:"IBM Plex Mono",monospace;font-size:10px;color:#7c8073;letter-spacing:.1em;
+  text-transform:uppercase;pointer-events:none;background:rgba(13,15,12,.4);padding:5px 10px;
+  border:1px solid var(--viewport-edge);white-space:nowrap;transition:opacity .4s;
+}
+.recenter{
+  position:absolute;right:14px;top:14px;appearance:none;cursor:pointer;
+  background:rgba(13,15,12,.6);border:1px solid var(--viewport-edge);color:#c5c8bc;
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.1em;text-transform:uppercase;
+  padding:8px 11px;border-radius:3px;transition:.15s;
+}
+.recenter:hover{color:#fff;border-color:#3a3e33}
+@media(max-width:560px){.legend{width:138px}.viewhint{font-size:9px}}
+
+/* ----------------------------- footer ---------------------------- */
+footer{border-top:1px solid var(--line);margin-top:40px}
+.foot-in{
+  max-width:var(--maxw);margin:0 auto;padding:22px var(--gut);
+  display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-soft);
+  letter-spacing:.1em;text-transform:uppercase;
+}
+
+@media(prefers-reduced-motion:reduce){
+  .view.active{animation:none}
+  *{scroll-behavior:auto !important}
+}
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="top-in">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <h1>Campus Garden</h1>
+      <span class="sub">Temporal&nbsp;Field&nbsp;Record</span>
+    </div>
+    <nav aria-label="Sections">
+      <button data-view="compare" aria-current="true">Before/After</button>
+      <button data-view="photo">Photo</button>
+      <button data-view="about">About</button>
+      <button data-view="viewer">3D&nbsp;Viewer</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ============== BEFORE / AFTER ============== -->
+  <section class="view active" id="view-compare" role="tabpanel">
+    <p class="eyebrow">Comparison · 01</p>
+    <h2 class="view-title">A garden, two moments.</h2>
+    <p class="view-lede">Drag the divider to read the same frame across time. The seam is coloured by the M3C2 signed-distance ramp used throughout this record.</p>
+
+    <div class="compare" id="compare">
+      <!-- SWAP: replace these two canvases with <img> or <video>.
+           e.g. <img class="layer-before" src="after.jpg">  (full)
+                <img class="layer-after"  src="before.jpg"> (clipped layer on top) -->
+      <canvas class="layer-before" id="cv-before"></canvas>
+      <canvas class="layer-after"  id="cv-after"></canvas>
+      <span class="tag l">After · 2025-09</span>
+      <span class="tag r">Before · 2024-03</span>
+      <div class="handle" id="handle">
+        <div class="knob" id="knob" role="slider" tabindex="0"
+             aria-label="Before/after divider" aria-valuemin="0" aria-valuemax="100" aria-valuenow="50"></div>
+      </div>
+    </div>
+    <div class="compare-cap">
+      <span>SITE&nbsp;/ KIT central courtyard</span>
+      <span id="compare-pct">50% · 50%</span>
+    </div>
+
+    <p class="note">
+      <strong>Using your footage —</strong> you have a single <code>combined.mp4</code>.
+      A drag slider needs two states. Either (a) drop two stills as
+      <code>before.jpg</code>/<code>after.jpg</code> here, or (b) split the mp4 into
+      <code>before.mp4</code>/<code>after.mp4</code> and swap the two canvases for
+      <code>&lt;video muted loop&gt;</code> elements — the clip-path slider works the same on video.
+    </p>
+  </section>
+
+  <!-- ============== PHOTO ============== -->
+  <section class="view" id="view-photo" role="tabpanel">
+    <p class="eyebrow">Plates · 02</p>
+    <h2 class="view-title">Field plates, side by side.</h2>
+    <p class="view-lede">Specimen-style frames laid out in parallel. Replace each canvas with a photograph; the captions read as a herbarium index.</p>
+    <div class="plates" id="plates"><!-- generated --></div>
+  </section>
+
+  <!-- ============== ABOUT ============== -->
+  <section class="view" id="view-about" role="tabpanel">
+    <p class="eyebrow">About · 03</p>
+    <h2 class="view-title">On recording change.</h2>
+    <div class="about">
+      <div class="prose">
+        <p class="drop">This project treats a single campus garden as a specimen observed across time. Between two survey campaigns — early spring 2024 and late summer 2025 — the same ground was captured photographically and as a terrestrial laser scan, then registered into one coordinate frame.</p>
+        <p>Where conventional architectural drawing fixes a building at the instant of completion, a garden refuses that stillness. Foliage advances, a sapling thickens, a path is re-laid, a bench is removed. The aim here is not to arrest those changes but to make them legible — to let natural and human processes of growth and recession become part of the design language rather than noise to be cleaned away.</p>
+        <h3>Method</h3>
+        <p>Point clouds from the two epochs were aligned by ICP registration and differenced with the M3C2 algorithm, which measures signed distance along local surface normals. Positive distance (growth toward the sensor) reads warm; recession reads cool; stable surfaces fall out near zero. The same ramp colours every quantitative element on this page, so the eye learns one scale and reuses it.</p>
+        <h3>Reading the record</h3>
+        <p>The comparison view holds the two epochs against each other; the plates collect fixed vantage points; the 3D viewer lets you move freely through the differenced cloud. Together they describe a garden less as an object than as a relationship between two times.</p>
+      </div>
+      <div class="specs" aria-label="Project metadata">
+        <dl>
+          <dt>Site</dt><dd>KIT courtyard</dd>
+          <dt>Epoch A</dt><dd>2024-03-18</dd>
+          <dt>Epoch B</dt><dd>2025-09-02</dd>
+          <dt>Instrument</dt><dd>FARO Focus</dd>
+          <dt>Registration</dt><dd>ICP</dd>
+          <dt>Differencing</dt><dd>M3C2</dd>
+          <dt>Points</dt><dd id="pts-count">—</dd>
+          <dt>Δ range</dt><dd>−0.40…+0.55 m</dd>
+        </dl>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============== 3D VIEWER ============== -->
+  <section class="view" id="view-viewer" role="tabpanel">
+    <p class="eyebrow">Point cloud · 04</p>
+    <h2 class="view-title">Move through the difference.</h2>
+    <p class="view-lede">Three registered layers — the before cloud, the after cloud, and the M3C2 difference. Toggle layers, then drag to orbit, scroll to zoom, right-drag (or two-finger) to pan.</p>
+
+    <div class="stage" id="stage">
+      <div class="hud">
+        <div class="layers" role="group" aria-label="Point cloud layers">
+          <button class="before" data-layer="before" aria-pressed="false"><span class="dot"></span>Before</button>
+          <button class="after"  data-layer="after"  aria-pressed="false"><span class="dot"></span>After</button>
+          <button class="diff"   data-layer="diff"   aria-pressed="true"><span class="dot"></span>Diff</button>
+        </div>
+        <div class="readout" id="readout">cam —</div>
+      </div>
+      <button class="recenter" id="recenter">Recenter</button>
+      <div class="legend" id="legend">
+        <div class="ttl">M3C2 distance</div>
+        <div class="bar"></div>
+        <div class="ends"><span>−0.40 m</span><span>0</span><span>+0.55 m</span></div>
+      </div>
+      <div class="viewhint" id="viewhint">drag · scroll · right-drag to pan</div>
+    </div>
+    <p class="note">
+      <strong>Loading real data —</strong> the cloud here is generated in-browser as a stand-in.
+      Export your CloudCompare layers to <code>.ply</code> (binary, with the M3C2 distance as a
+      scalar/colour field), host them next to this file, and load with Three.js
+      <code>PLYLoader</code> — the camera, layer toggles and legend already expect three meshes.
+    </p>
+  </section>
+
+</main>
+
+<footer>
+  <div class="foot-in">
+    <span>上村 和輝 — Kazuki Uemura</span>
+    <span>Campus Garden Archive · 2025</span>
+  </div>
+</footer>
+
+<!-- Three.js r128 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+/* =====================================================================
+   0. tiny value-noise field — shared by scenes + point cloud so the
+      "garden" reads consistently across every view
+===================================================================== */
+function makeNoise(seed){
+  let s=seed>>>0;
+  const rnd=()=>{s=(s*1664525+1013904223)>>>0;return s/4294967296;};
+  const G=64, g=new Float32Array(G*G);
+  for(let i=0;i<g.length;i++) g[i]=rnd();
+  const lerp=(a,b,t)=>a+(b-a)*t, fade=t=>t*t*(3-2*t);
+  return function(x,y){
+    x=(x%1+1)%1*(G-1); y=(y%1+1)%1*(G-1);
+    const x0=Math.floor(x),y0=Math.floor(y),xf=fade(x-x0),yf=fade(y-y0);
+    const x1=(x0+1)%G,y1=(y0+1)%G;
+    const a=lerp(g[y0*G+x0],g[y0*G+x1],xf), b=lerp(g[y1*G+x0],g[y1*G+x1],xf);
+    return lerp(a,b,yf);
+  };
+}
+
+/* =====================================================================
+   1. M3C2 colour ramp  (blue -> paper -> red), t in [-1,1]
+===================================================================== */
+function rampRGB(t){
+  // stops: -1 #1f6fb2 | 0 #f2f0e6 | +1 #cf4733
+  const c=[[31,111,178],[242,240,230],[207,71,51]];
+  let a,b,f;
+  if(t<0){a=c[0];b=c[1];f=t+1;} else {a=c[1];b=c[2];f=t;}
+  return [Math.round(a[0]+(b[0]-a[0])*f),
+          Math.round(a[1]+(b[1]-a[1])*f),
+          Math.round(a[2]+(b[2]-a[2])*f)];
+}
+
+/* =====================================================================
+   2. BEFORE / AFTER  — procedural perspective garden on canvas
+      growth 0 = early spring (sparse) · 1 = late summer (lush)
+===================================================================== */
+function paintGarden(cv, growth){
+  const dpr=Math.min(2,window.devicePixelRatio||1);
+  const w=cv.clientWidth||cv.offsetWidth||960, h=cv.clientHeight||cv.offsetHeight||540;
+  cv.width=w*dpr; cv.height=h*dpr;
+  const x=cv.getContext('2d'); x.scale(dpr,dpr);
+  const n=makeNoise(7);
+
+  // sky -> dusk gradient shifts a little between epochs
+  const sky=x.createLinearGradient(0,0,0,h*0.62);
+  if(growth<.5){sky.addColorStop(0,'#b9c2c4');sky.addColorStop(1,'#dad8c9');}
+  else{sky.addColorStop(0,'#a7c0bd');sky.addColorStop(1,'#e6e0c4');}
+  x.fillStyle=sky; x.fillRect(0,0,w,h*0.64);
+
+  // ground
+  const hor=h*0.6;
+  const gnd=x.createLinearGradient(0,hor,0,h);
+  if(growth<.5){gnd.addColorStop(0,'#8c8f6e');gnd.addColorStop(1,'#5f6346');}
+  else{gnd.addColorStop(0,'#74874c');gnd.addColorStop(1,'#3f4d28');}
+  x.fillStyle=gnd; x.fillRect(0,hor,w,h-hor);
+
+  // a path receding to a vanishing point
+  x.fillStyle='#c3bca0';
+  x.beginPath();
+  x.moveTo(w*0.46,hor); x.lineTo(w*0.54,hor);
+  x.lineTo(w*0.78,h); x.lineTo(w*0.22,h); x.closePath(); x.fill();
+  x.strokeStyle='rgba(0,0,0,.12)'; x.lineWidth=1; x.stroke();
+
+  // bench (present in BEFORE, removed in AFTER)
+  if(growth<.5){
+    x.fillStyle='#6b5840';
+    x.fillRect(w*0.16,hor+18,w*0.12,8);
+    x.fillRect(w*0.165,hor+26,4,14); x.fillRect(w*0.265,hor+26,4,14);
+  }
+
+  // trees — a fixed set of trunks; canopy size driven by growth
+  const trees=[[.30,.0,1],[.70,.06,1],[.84,.12,.8],[.12,.1,.7],[.50,-.04,1.15]];
+  trees.forEach(([tx,ty,sc],i)=>{
+    const px=w*tx, py=hor+ty*h*0.5+20, scale=(0.5+(1-ty))*sc;
+    // trunk
+    x.fillStyle='#4a3b2a';
+    x.fillRect(px-3*scale,py-46*scale,6*scale,46*scale);
+    // canopy clusters
+    const leaves=Math.round((10+growth*26)*scale);
+    const rad=(20+growth*22)*scale;
+    for(let k=0;k<leaves;k++){
+      const a=n(i*0.3+k*0.07, k*0.11)*Math.PI*2;
+      const r=rad*(0.3+n(k*0.2,i)*0.7);
+      const lx=px+Math.cos(a)*r, ly=py-46*scale+Math.sin(a)*r*0.8;
+      const hue=growth<.5?[150,160,110]:[90,130,55];
+      const j=n(k,i*2);
+      x.fillStyle=`rgb(${hue[0]-j*30|0},${hue[1]-j*20|0},${hue[2]+j*20|0})`;
+      x.beginPath(); x.arc(lx,ly,(3+growth*4)*scale,0,7); x.fill();
+    }
+  });
+
+  // a NEW planting bed appears only in AFTER (lower right)
+  if(growth>=.5){
+    for(let k=0;k<90;k++){
+      const lx=w*(0.6+n(k,3)*0.32), ly=hor+30+n(k*2,5)*(h-hor-40);
+      x.fillStyle=`rgba(${120-n(k,1)*40|0},${150-n(k,2)*30|0},60,.9)`;
+      x.beginPath(); x.arc(lx,ly,2.4,0,7); x.fill();
+    }
+  }
+
+  // film grain / vignette to bind to the dark viewport
+  const vg=x.createRadialGradient(w/2,h/2,h*0.3,w/2,h/2,h*0.8);
+  vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,.45)');
+  x.fillStyle=vg; x.fillRect(0,0,w,h);
+}
+
+/* ----- slider interaction ----- */
+(function(){
+  const box=document.getElementById('compare');
+  const handle=document.getElementById('handle');
+  const knob=document.getElementById('knob');
+  const pct=document.getElementById('compare-pct');
+  const before=document.getElementById('cv-before');
+  const after=document.getElementById('cv-after');
+  let pos=50, drag=false;
+
+  function repaint(){ paintGarden(before,0.95); paintGarden(after,0.18); }
+  function set(p){
+    pos=Math.max(0,Math.min(100,p));
+    box.style.setProperty('--pos',pos+'%');
+    knob.setAttribute('aria-valuenow',Math.round(pos));
+    pct.textContent=`${Math.round(pos)}% · ${100-Math.round(pos)}%`;
+  }
+  function fromEvent(e){
+    const r=box.getBoundingClientRect();
+    const cx=(e.touches?e.touches[0].clientX:e.clientX);
+    set(((cx-r.left)/r.width)*100);
+  }
+  const start=e=>{drag=true;fromEvent(e);e.preventDefault();};
+  const move =e=>{if(drag)fromEvent(e);};
+  const end  =()=>drag=false;
+  box.addEventListener('pointerdown',start);
+  window.addEventListener('pointermove',move);
+  window.addEventListener('pointerup',end);
+  knob.addEventListener('keydown',e=>{
+    if(e.key==='ArrowLeft'){set(pos-2);e.preventDefault();}
+    if(e.key==='ArrowRight'){set(pos+2);e.preventDefault();}
+  });
+  box.style.setProperty('--pos','50%');
+  // paint once layout is known
+  requestAnimationFrame(()=>{requestAnimationFrame(()=>{repaint();set(50);})});
+  let rt; window.addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(repaint,150);});
+  window.__repaintCompare=repaint;
+})();
+
+/* =====================================================================
+   3. PHOTO PLATES
+===================================================================== */
+(function(){
+  const wrap=document.getElementById('plates');
+  const items=[
+    ['Pl. 01','Quercus — east walk','growth'],
+    ['Pl. 02','Re-laid path, north','path'],
+    ['Pl. 03','Understory bed','beds'],
+    ['Pl. 04','Canopy, full season','growth'],
+    ['Pl. 05','Removed bench, site','path'],
+    ['Pl. 06','Margin planting','beds'],
+  ];
+  items.forEach((it,i)=>{
+    const card=document.createElement('div'); card.className='plate';
+    card.innerHTML=`<div class="frame"><canvas></canvas></div>
+      <div class="cap">${it[1]}</div>
+      <div class="meta"><span>${it[0]}</span><span>2025·09</span></div>`;
+    wrap.appendChild(card);
+    const cv=card.querySelector('canvas');
+    requestAnimationFrame(()=>requestAnimationFrame(()=>paintGarden(cv,0.55+ (i%3)*0.15)));
+  });
+})();
+
+/* =====================================================================
+   4. 3D POINT CLOUD VIEWER  (Three.js + hand-written orbit control)
+      Generated stand-in clouds:
+        before : terrain + smaller canopy clusters
+        after  : same terrain + taller/denser canopy + new bed
+        diff   : after points coloured by signed height delta (M3C2-like)
+===================================================================== */
+(function(){
+  if(typeof THREE==='undefined'){return;}
+  const stage=document.getElementById('stage');
+  const readout=document.getElementById('readout');
+  const legend=document.getElementById('legend');
+  const viewhint=document.getElementById('viewhint');
+
+  const scene=new THREE.Scene();
+  scene.fog=new THREE.FogExp2(0x0d0f0c,0.012);
+  const camera=new THREE.PerspectiveCamera(48,1,0.1,2000);
+  const renderer=new THREE.WebGLRenderer({antialias:true,alpha:true});
+  renderer.setPixelRatio(Math.min(2,window.devicePixelRatio||1));
+  stage.appendChild(renderer.domElement);
+
+  const noise=makeNoise(11);
+  const SIZE=70;             // metres across
+  const terrainH=(x,z)=> (noise(x/SIZE+0.5,z/SIZE+0.5)-0.5)*4
+                        + (noise(x/18,z/18)-0.5)*1.2;
+
+  // tree positions (shared) — after grows taller, plus one extra cluster
+  const trees=[];
+  for(let i=0;i<11;i++){
+    trees.push({x:(noise(i,1)-0.5)*SIZE*0.82, z:(noise(i,2)-0.5)*SIZE*0.82,
+                r:2.2+noise(i,3)*2.5, h0:3+noise(i,4)*3});
+  }
+
+  function buildCloud(epoch){   // epoch 0 before, 1 after
+    const pos=[], col=[], delta=[];
+    const ground=[200,205,180], groundA=[150,178,120];
+    // ground
+    for(let i=0;i<14000;i++){
+      const x=(noise(i,5)-0.5)*SIZE, z=(noise(i,6)-0.5)*SIZE;
+      let y=terrainH(x,z);
+      // a re-laid path: a strip slightly raised in 'after'
+      const onPath=Math.abs(x- z*0.15)<3.2;
+      if(epoch===1 && onPath) y+=0.18;
+      pos.push(x,y,z);
+      const g=onPath? (epoch?[196,190,168]:[150,150,120]) : (epoch?groundA:ground);
+      const sh=0.7+noise(i*0.1,7)*0.3;
+      col.push(g[0]/255*sh,g[1]/255*sh,g[2]/255*sh);
+      delta.push(epoch && onPath?0.18:0.0);
+    }
+    // canopies
+    trees.forEach((t,ti)=>{
+      const grow=epoch? (1.0):(0.55);
+      const h=t.h0*(epoch?1.18:1.0);
+      const cnt=Math.round((epoch?420:230)*(t.r/3));
+      for(let k=0;k<cnt;k++){
+        const a=noise(ti+k*0.013,8)*Math.PI*2;
+        const rr=t.r*grow*Math.cbrt(noise(k,ti+9));
+        const yy=noise(k*0.7,ti)*1.0;
+        const x=t.x+Math.cos(a)*rr, z=t.z+Math.sin(a)*rr*0.9;
+        const base=terrainH(t.x,t.z);
+        const y=base+h+Math.sin(yy*3)*rr*0.6;
+        pos.push(x,y,z);
+        const lf=epoch?[110,150,60]:[150,165,110];
+        const j=noise(k,ti*2);
+        col.push((lf[0]-j*30)/255,(lf[1]-j*20)/255,(lf[2]+j*20)/255);
+        delta.push(epoch?(h - t.h0):0); // growth height delta
+      }
+    });
+    // NEW planting bed only in after
+    if(epoch===1){
+      for(let k=0;k<2600;k++){
+        const x=SIZE*0.18+(noise(k,10)-0.5)*16, z=-SIZE*0.2+(noise(k,11)-0.5)*16;
+        const y=terrainH(x,z)+0.3+noise(k,12)*0.6;
+        pos.push(x,y,z);
+        col.push(0.42,0.58,0.22); delta.push(0.5);
+      }
+    }
+    return {pos:new Float32Array(pos),col:new Float32Array(col),delta:new Float32Array(delta)};
+  }
+
+  const beforeData=buildCloud(0), afterData=buildCloud(1);
+  document.getElementById('pts-count').textContent=
+    ((beforeData.pos.length+afterData.pos.length)/3/1000).toFixed(1)+'k';
+
+  function makePoints(data,useDiff){
+    const g=new THREE.BufferGeometry();
+    g.setAttribute('position',new THREE.BufferAttribute(data.pos,3));
+    let colors=data.col;
+    if(useDiff){
+      colors=new Float32Array(data.pos.length);
+      for(let i=0;i<data.delta.length;i++){
+        const t=Math.max(-1,Math.min(1,data.delta[i]/0.55));
+        const rgb=rampRGB(t);
+        colors[i*3]=rgb[0]/255;colors[i*3+1]=rgb[1]/255;colors[i*3+2]=rgb[2]/255;
+      }
+    }
+    g.setAttribute('color',new THREE.BufferAttribute(colors,3));
+    const m=new THREE.PointsMaterial({size:0.22,vertexColors:true,
+      sizeAttenuation:true,transparent:true,opacity:0.95});
+    return new THREE.Points(g,m);
+  }
+
+  const layers={
+    before:makePoints(beforeData,false),
+    after :makePoints(afterData,false),
+    diff  :makePoints(afterData,true)
+  };
+  Object.values(layers).forEach(p=>scene.add(p));
+  const state={before:false,after:false,diff:true};
+  function applyState(){for(const k in layers)layers[k].visible=state[k];
+    legend.style.opacity=state.diff?'1':'0.25';}
+  applyState();
+
+  // ground reference ring
+  const ringGeo=new THREE.RingGeometry(SIZE*0.62,SIZE*0.63,64);
+  const ring=new THREE.Mesh(ringGeo,new THREE.MeshBasicMaterial({color:0x2a2e24,side:THREE.DoubleSide,transparent:true,opacity:0.6}));
+  ring.rotation.x=-Math.PI/2; ring.position.y=-3; scene.add(ring);
+
+  /* ---- hand-written orbit controls (no addon needed) ---- */
+  const target=new THREE.Vector3(0,2,0);
+  let theta=0.7, phi=1.05, dist=70;
+  let drag=null,lastX,lastY;
+  function updateCam(){
+    phi=Math.max(0.18,Math.min(1.5,phi));
+    dist=Math.max(18,Math.min(180,dist));
+    camera.position.set(
+      target.x+dist*Math.sin(phi)*Math.cos(theta),
+      target.y+dist*Math.cos(phi),
+      target.z+dist*Math.sin(phi)*Math.sin(theta));
+    camera.lookAt(target);
+    readout.textContent=`cam  az ${(theta*57.3%360).toFixed(0)}°  el ${(90-phi*57.3).toFixed(0)}°  d ${dist.toFixed(0)}m`;
+  }
+  function down(e){
+    drag=(e.button===2||e.shiftKey)?'pan':'orbit';
+    const p=e.touches?e.touches[0]:e; lastX=p.clientX;lastY=p.clientY;
+    stage.classList.add('dragging');
+    if(viewhint){viewhint.style.opacity='0';}
+    e.preventDefault();
+  }
+  function moveH(e){
+    if(!drag)return;
+    const p=e.touches?e.touches[0]:e;
+    const dx=p.clientX-lastX, dy=p.clientY-lastY; lastX=p.clientX;lastY=p.clientY;
+    if(drag==='orbit'){theta-=dx*0.005;phi-=dy*0.005;}
+    else{ // pan along camera right/up
+      const right=new THREE.Vector3().crossVectors(camera.up,camera.getWorldDirection(new THREE.Vector3())).normalize();
+      const up=new THREE.Vector3(0,1,0);
+      const k=dist*0.0016;
+      target.addScaledVector(right,dx*k); target.addScaledVector(up,dy*k);
+    }
+    updateCam();
+  }
+  function up(){drag=null;stage.classList.remove('dragging');}
+  stage.addEventListener('mousedown',down);
+  window.addEventListener('mousemove',moveH);
+  window.addEventListener('mouseup',up);
+  stage.addEventListener('contextmenu',e=>e.preventDefault());
+  stage.addEventListener('wheel',e=>{dist*=(1+Math.sign(e.deltaY)*0.08);updateCam();e.preventDefault();},{passive:false});
+  // touch
+  let pinch=0;
+  stage.addEventListener('touchstart',e=>{
+    if(e.touches.length===2){drag='pan';pinch=Math.hypot(
+      e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);}
+    else down(e);
+  },{passive:false});
+  stage.addEventListener('touchmove',e=>{
+    if(e.touches.length===2){
+      const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);
+      dist*=pinch/d;pinch=d;updateCam();e.preventDefault();
+    } else moveH(e);
+  },{passive:false});
+  stage.addEventListener('touchend',up);
+
+  // layer toggles
+  stage.querySelectorAll('.layers button').forEach(b=>{
+    b.addEventListener('click',()=>{
+      const k=b.dataset.layer; state[k]=!state[k];
+      b.setAttribute('aria-pressed',state[k]); applyState();
+    });
+  });
+  document.getElementById('recenter').addEventListener('click',()=>{
+    target.set(0,2,0);theta=0.7;phi=1.05;dist=70;updateCam();
+  });
+
+  // resize + render loop (renders only while viewer is visible)
+  function resize(){
+    const w=stage.clientWidth,h=stage.clientHeight;
+    renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();
+  }
+  let running=false;
+  function loop(){if(!running)return;renderer.render(scene,camera);requestAnimationFrame(loop);}
+  window.__viewerResize=()=>{resize();updateCam();};
+  window.__viewerRun=v=>{running=v;if(v){resize();updateCam();loop();}};
+  setTimeout(()=>{if(viewhint)viewhint.style.opacity='0';},5000);
+})();
+
+/* =====================================================================
+   5. VIEW ROUTER
+===================================================================== */
+(function(){
+  const buttons=[...document.querySelectorAll('nav button')];
+  const views={
+    compare:document.getElementById('view-compare'),
+    photo:document.getElementById('view-photo'),
+    about:document.getElementById('view-about'),
+    viewer:document.getElementById('view-viewer'),
+  };
+  function show(name){
+    for(const k in views)views[k].classList.toggle('active',k===name);
+    buttons.forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'true':'false'));
+    if(window.__viewerRun)window.__viewerRun(name==='viewer');
+    if(name==='viewer'&&window.__viewerResize)setTimeout(window.__viewerResize,30);
+    if(name==='compare'&&window.__repaintCompare)setTimeout(window.__repaintCompare,30);
+    window.scrollTo({top:0,behavior:'instant' in window?'instant':'auto'});
+  }
+  buttons.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+})();
+</script>
+</body>
+</html>
