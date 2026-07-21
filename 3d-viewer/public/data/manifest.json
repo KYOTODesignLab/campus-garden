@@ -1,0 +1,7 @@
+{
+  "datasets": [
+    { "id": "before", "label": "Before", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/before.copc.laz" },
+    { "id": "after", "label": "After", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/after.copc.laz" }
+  ],
+  "ground": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/ground.copc.laz"
+}
