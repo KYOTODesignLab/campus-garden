@@ -1,0 +1,161 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Web viewer for large COPC (.laz) point clouds with split-view and superimposed comparison, solid-color/RGB/M3C2 coloring, clipping, and filtering." />
+    <title>COPC Point Cloud Viewer</title>
+  </head>
+  <body>
+    <div id="stage">
+      <div id="compareViews" class="viewer-mode active">
+        <div id="viewBefore" class="view-layer before-layer"></div>
+        <div id="viewAfter" class="view-layer after-layer"></div>
+      </div>
+      <div id="viewOverlay" class="viewer-mode overlay-layer"></div>
+    </div>
+
+    <div id="hud" class="hud">
+      <div id="modeButtons" class="layers" role="group" aria-label="Viewer mode">
+        <button data-mode="split" aria-pressed="true"><span class="d before"></span>Split View</button>
+        <button data-mode="superimpose" aria-pressed="false"><span class="d overlay"></span>Superimpose</button>
+      </div>
+      <div id="readout" class="readout">cam —</div>
+      <div id="loadStatus" class="load-status" hidden></div>
+      <div id="attributeQuick" class="attribute-quick" role="group" aria-label="Color attribute">
+        <button data-attr="rgb" aria-pressed="true"><span class="d rgb"></span>RGB</button>
+        <button data-attr="solid" aria-pressed="false"><span class="d solid"></span>Solid Color</button>
+        <button data-attr="m3c2" aria-pressed="false"><span class="d m3c2"></span>M3C2 Distance</button>
+      </div>
+      <button id="clipToggle" class="clip-toggle" aria-expanded="false">Clipping</button>
+    </div>
+
+    <div id="toolbarRight" class="toolbar-right">
+      <button id="shareView" class="toolbar-button" title="Copy a link to this exact view">Share</button>
+      <button id="fullscreenToggle" class="toolbar-button" title="Toggle fullscreen">Fullscreen</button>
+      <button id="optionsToggle" class="toolbar-button" title="Show viewer options">Options</button>
+    </div>
+    <button id="resetCamera" class="reset-camera" title="Reset camera, color, filters and clipping to defaults">Reset View</button>
+
+    <div class="legend" id="legend" hidden>
+      <div class="ttl" id="legendTitle">Scalar</div>
+      <div class="bar" id="legendBar"></div>
+      <div class="ends"><span id="legendMin">—</span><span id="legendMid">—</span><span id="legendMax">—</span></div>
+    </div>
+
+    <div id="splitDivider" class="split-divider active" title="Drag to compare"><div class="split-knob"></div></div>
+    <div id="splitLabels" class="split-labels active">
+      <select id="leftSelect" aria-label="Left dataset"></select>
+      <select id="rightSelect" aria-label="Right dataset"></select>
+    </div>
+    <div id="compareHint" class="compare-hint" hidden>Select datasets above to compare them.</div>
+    <div id="viewhint" class="viewhint">left-drag rotate · right-drag pan · scroll zoom · click set rotation center · hold WASD/arrows + move mouse to fly</div>
+
+    <aside id="panel" hidden>
+      <div class="panel-head">
+        <h1>COPC Viewer</h1>
+        <button id="closePanel" class="icon-button" title="Hide options">×</button>
+      </div>
+      <div id="status">Ready.</div>
+
+      <details>
+        <summary>Data</summary>
+        <button id="reload">Reload data</button>
+        <p class="hint">Datasets come from <code>public/data/manifest.json</code> (a list of named datasets). Pick which two to view using the dropdowns above the viewer, then switch between <b>Split View</b> and <b>Superimpose</b>.</p>
+      </details>
+
+      <details>
+        <summary>Display options</summary>
+        <label for="attribute">Color by attribute</label>
+        <select id="attribute"></select>
+        <label for="colorScheme">Color ramp</label>
+        <select id="colorScheme">
+          <option value="bcyr">Blue → Cyan → Yellow → Red</option>
+          <option value="grayscale">Grayscale</option>
+        </select>
+        <label id="colorClampLabel">Color clamp</label>
+        <div class="filter-range">
+          <label for="colorMin">Min<input id="colorMin" type="number" placeholder="auto" step="any" /></label>
+          <label for="colorMax">Max<input id="colorMax" type="number" placeholder="auto" step="any" /></label>
+        </div>
+        <p class="hint">Leave empty to use the data range of the visible cloud(s).</p>
+        <div class="filter-range" id="solidColorRow" hidden>
+          <label for="solidColorLeft">Left<input id="solidColorLeft" type="color" value="#e5484d" /></label>
+          <label for="solidColorRight">Right<input id="solidColorRight" type="color" value="#3b82f6" /></label>
+        </div>
+        <div class="row small"><label><input type="checkbox" id="edl" /> EDL shading</label></div>
+        <label id="pointSizeLabel" for="pointSize">Point size: auto</label>
+        <input type="range" id="pointSize" min="0" max="20" step="0.5" value="0" />
+        <label id="budgetLabel" for="threshold">LOD threshold: 2</label>
+        <input type="range" id="threshold" min="0" max="30" step="0.5" value="2" />
+        <label id="pointBudgetLabel" for="pointBudget">Point budget: unlimited</label>
+        <input type="range" id="pointBudget" min="0" max="20000000" step="250000" value="0" />
+      </details>
+
+      <details>
+        <summary>Filters</summary>
+        <label><input type="checkbox" id="filtersEnabled" /> Enable filters</label>
+        <label for="filterAttribute">Filter attribute</label>
+        <select id="filterAttribute"></select>
+        <div class="filter-range">
+          <label for="filterMin">Min<input id="filterMin" type="number" step="1" /></label>
+          <label for="filterMax">Max<input id="filterMax" type="number" step="1" /></label>
+        </div>
+        <p class="hint">Keeps points whose selected attribute is between min and max.</p>
+      </details>
+
+      <details>
+        <summary>Stats</summary>
+        <div class="row small"><span>Total: <b id="total">—</b></span><span>Displayed: <b id="displayed">—</b></span></div>
+      </details>
+    </aside>
+
+    <aside id="clipPanel" class="clip-side-panel" hidden>
+      <div class="panel-head">
+        <h1>Clipping</h1>
+        <button id="closeClipPanel" class="icon-button" title="Hide clipping">×</button>
+      </div>
+      <div class="clip-group">
+        <div class="clip-group-title">Horizontal (height)</div>
+        <label><input type="checkbox" id="clipHorizontalEnabled" /> Enabled</label>
+        <input type="range" id="clipHorizontal" min="0" max="1" step="0.001" value="0.5" disabled />
+        <div class="row small"><input type="number" id="clipHorizontalNum" step="0.01" disabled /><span>m</span></div>
+        <label><input type="checkbox" id="clipHorizontalFlip" checked /> Flip side</label>
+        <p class="hint" id="clipHorizontalValue">—</p>
+      </div>
+      <div class="clip-group">
+        <div class="clip-group-title">Vertical</div>
+        <label><input type="checkbox" id="clipVerticalEnabled" /> Enabled</label>
+        <label for="clipVerticalAngle">Rotation</label>
+        <input type="range" id="clipVerticalAngle" min="0" max="360" step="1" value="0" disabled />
+        <div class="row small"><input type="number" id="clipVerticalAngleNum" step="1" min="0" max="360" disabled /><span>°</span></div>
+        <label for="clipVertical">Position</label>
+        <input type="range" id="clipVertical" min="-1" max="1" step="0.001" value="0" disabled />
+        <div class="row small"><input type="number" id="clipVerticalNum" step="0.01" disabled /><span>m</span></div>
+        <label><input type="checkbox" id="clipVerticalFlip" /> Flip side</label>
+        <p class="hint" id="clipVerticalValue">—</p>
+      </div>
+      <p class="hint">Cuts away part of the point cloud(s) to see inside. Applies to all currently loaded clouds at once.</p>
+    </aside>
+    <div id="introOverlay" class="intro-overlay" hidden>
+      <div class="intro-card">
+        <div class="panel-head">
+          <h1>Welcome to the COPC viewer</h1>
+          <button id="closeIntro" class="icon-button" title="Close">×</button>
+        </div>
+        <p class="hint">A quick look at the controls before you dive in.</p>
+        <dl class="intro-list">
+          <dt>Modes</dt><dd>Split View shows two datasets side by side, Superimpose overlays them in one scene</dd>
+          <dt>Mouse</dt><dd>left drag rotate, right drag pan, scroll zoom, click a point to center</dd>
+          <dt>Touch</dt><dd>one finger rotate, two fingers pan and pinch to zoom</dd>
+          <dt>Fly mode</dt><dd>hold WASD or arrow keys, move the mouse to steer, Shift for speed</dd>
+          <dt>Share</dt><dd>copies a link to this exact view, including camera position</dd>
+        </dl>
+        <div class="intro-footer">
+          <label><input type="checkbox" id="introDontShow" checked /> Don't show this again</label>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
