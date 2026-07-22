@@ -844,7 +844,7 @@ document.querySelectorAll('.rangeBtn').forEach(btn=>{
 /* ---- play / pause through the timeline (smooth, no jumping) ---- */
 const playBtn = document.getElementById('playBtn');
 const MS_PER_POINT = 750;
-let playing = false, playAnimId = null, playStartTime = 0, playStartPos = 0;
+let playing = true, playAnimId = null, playStartTime = 0, playStartPos = 0;
 
 function startPlay(){
   if(activeMetrics.size===0) return;
