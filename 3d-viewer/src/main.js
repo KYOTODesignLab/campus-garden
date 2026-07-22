@@ -122,7 +122,7 @@ const state = {
     horizontal: null,
     horizontalFlip: true,
     verticalEnabled: false,
-    verticalAngleDeg: 0,
+    verticalAngleDeg: 90,
     vertical: null,
     verticalCenter: null,
     verticalFlip: false,
@@ -1014,7 +1014,7 @@ function applySavedUiValuesBeforeLoad(saved) {
     state.clip.horizontal = Number.isFinite(saved.clip.horizontal) ? saved.clip.horizontal : null;
     state.clip.horizontalFlip = saved.clip.horizontalFlip !== undefined ? Boolean(saved.clip.horizontalFlip) : true;
     state.clip.verticalEnabled = Boolean(saved.clip.verticalEnabled);
-    state.clip.verticalAngleDeg = Number.isFinite(saved.clip.verticalAngleDeg) ? saved.clip.verticalAngleDeg : 0;
+    state.clip.verticalAngleDeg = Number.isFinite(saved.clip.verticalAngleDeg) ? saved.clip.verticalAngleDeg : 90;
     state.clip.vertical = Number.isFinite(saved.clip.vertical) ? saved.clip.vertical : null;
     state.clip.verticalFlip = Boolean(saved.clip.verticalFlip);
     ui.clipHorizontalEnabled.checked = state.clip.horizontalEnabled;
