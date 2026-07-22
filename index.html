@@ -181,39 +181,6 @@ footer{border-top:1px solid var(--line);margin-top:30px}
 .foot-in .dot{width:9px;height:9px;border-radius:50%;
   background:conic-gradient(from 0deg,var(--spec-cy),var(--spec-bl),var(--spec-mg),var(--spec-cy))}
 
-/* ---------------- DATA / SENSORS ---------------- */
-.panel{border:1px solid var(--line-strong);background:var(--panel)}
-.panel-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
-  padding:13px 16px;border-bottom:1px solid var(--line)}
-.panel-top .ttl{display:flex;align-items:center;gap:9px;font-weight:600;font-size:14px}
-.metric-tabs{display:flex;gap:2px;background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:5px;padding:2px;order:3;flex-wrap:wrap}
-@media(min-width:760px){.metric-tabs{order:0}}
-.metric-tabs button{appearance:none;border:0;background:none;color:var(--ink-soft);cursor:pointer;
-  font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
-  padding:7px 11px;border-radius:4px;display:flex;align-items:center;gap:7px;transition:.15s}
-.metric-tabs button .gl{width:8px;height:8px;border-radius:50%;opacity:.5;transition:.15s}
-.metric-tabs button:hover{color:var(--ink)}
-.metric-tabs button[aria-selected=true]{background:rgba(255,255,255,.08);color:#fff}
-.metric-tabs button[aria-selected=true] .gl{opacity:1;box-shadow:0 0 8px currentColor}
-.metric-tabs button:focus-visible{outline:1px solid var(--spec-cy);outline-offset:1px}
-.srange{color:var(--ink);font-size:clamp(15px,2.3vw,21px);letter-spacing:.02em;white-space:nowrap}
-.chartwrap{position:relative;padding:16px 14px 4px}
-#chart{width:100%;height:clamp(300px,46vh,440px);display:block}
-.ctip{position:absolute;top:0;left:0;pointer-events:none;opacity:0;transition:opacity .12s;
-  transform:translate(-50%,-8px);background:rgba(10,11,9,.92);border:1px solid var(--line-strong);
-  padding:8px 10px;border-radius:5px;z-index:6;backdrop-filter:blur(4px);
-  font-family:"IBM Plex Mono",monospace;font-size:10.5px;line-height:1.65;white-space:nowrap;box-shadow:0 8px 24px -10px #000}
-.ctip b{color:#fff;font-weight:500;display:block;margin-bottom:3px;letter-spacing:.04em}
-.ctip .row{display:flex;justify-content:space-between;gap:14px;color:var(--ink-soft)}
-.ctip .row i{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:6px}
-.ctip .row .v{color:var(--ink)}
-.slegend{display:flex;flex-wrap:wrap;gap:8px 18px;padding:11px 16px 16px;border-top:1px solid var(--line)}
-.slegend button{appearance:none;border:0;background:none;cursor:pointer;display:flex;align-items:center;gap:8px;
-  color:var(--ink-soft);font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.04em;transition:.15s}
-.slegend button .sw{width:16px;height:3px;border-radius:2px;flex:0 0 auto}
-.slegend button[aria-pressed=false]{opacity:.34}
-.slegend button[aria-pressed=false] .sw{filter:grayscale(1)}
-.slegend button:hover{color:var(--ink)}
 
 @media(prefers-reduced-motion:reduce){
   .view.active{animation:none}
@@ -234,7 +201,7 @@ footer{border-top:1px solid var(--line);margin-top:30px}
     <nav aria-label="Sections">
       <button data-view="compare" aria-current="true">Index</button>
       <button data-view="photo">Photo</button>
-      <button data-view="data">Data</button>
+      <button data-view="map">Map</button>
       <button data-view="about">About</button>
       <button data-view="viewer">3D</button>
     </nav>
@@ -303,32 +270,15 @@ footer{border-top:1px solid var(--line);margin-top:30px}
     </div>
   </section>
 
-  <!-- ===== DATA (sensors) ===== -->
-  <section class="view" id="view-data" role="tabpanel">
+  <!-- ===== MAP (site map + live sensors) ===== -->
+  <section class="view" id="view-map" role="tabpanel">
     <div class="section">
-      <p class="eyebrow">Sensors · 03</p>
-      <h2 class="view-title">What the garden registered.</h2>
-      <p class="view-lede">Environmental readings logged across five points on the site over a winter week. Switch metric, hover to read values, tap the legend to isolate a sensor.</p>
-
-      <div class="panel" id="sensor">
-        <div class="panel-top">
-          <span class="ttl"><span class="dot" aria-hidden="true"></span>Sensor data comparison</span>
-          <div class="metric-tabs" id="metricTabs" role="tablist">
-            <button role="tab" data-metric="temp" aria-selected="true"><span class="gl" style="background:#ff6b5a"></span>Temperature</button>
-            <button role="tab" data-metric="humid" aria-selected="false"><span class="gl" style="background:#46a8ff"></span>Humidity</button>
-            <button role="tab" data-metric="lux" aria-selected="false"><span class="gl" style="background:#f0a93c"></span>Illuminance</button>
-            <button role="tab" data-metric="spec" aria-selected="false"><span class="gl" style="background:#b794ff"></span>Spectrum</button>
-          </div>
-          <span class="srange mono" id="srange">—</span>
-        </div>
-        <div class="chartwrap">
-          <canvas id="chart"></canvas>
-          <div class="ctip" id="ctip"></div>
-        </div>
-        <div class="slegend" id="slegend"></div>
+      <p class="eyebrow">Site map · 03</p>
+      <h2 class="view-title">Where the garden lives.</h2>
+      <p class="view-lede">The full site plan — tap any plant, stone, or path element for details, or open the environmental panel below for live sensor readings across the site.</p>
+      <div class="stage">
+        <iframe src="./map-viewer/" title="Campus Garden interactive site map" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
       </div>
-
-      <p class="note"><strong>Loading real data —</strong> the series here are generated stand-ins. Replace the <code>genSeries()</code> output with your logged values (one array of <code>{t, &lt;sensor&gt;:value}</code> rows per metric, or parse a CSV) — the axes, tabs, legend and tooltip adapt to whatever ranges you pass in.</p>
     </div>
   </section>
 
@@ -453,154 +403,11 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
   requestAnimationFrame(()=>requestAnimationFrame(drawAR));set(50);
 })();
 
-/* ===== sensor data chart ===== */
-(function(){
-  const cv=document.getElementById('chart'); if(!cv) return;
-  const ctx=cv.getContext('2d'), tip=document.getElementById('ctip'),
-        tabs=document.getElementById('metricTabs'), leg=document.getElementById('slegend'),
-        srange=document.getElementById('srange');
-  const LOCS=[
-    {k:'gate',  n:'Gate',      c:'#b794ff', solar:2,  cool:.2, lux:.45, shade:.2},
-    {k:'hedge', n:'Hedge',     c:'#ff6b5a', solar:3,  cool:.6, lux:.30, shade:.4},
-    {k:'canopy',n:'Canopy',    c:'#79c46a', solar:1.5,cool:.4, lux:.15, shade:.7},
-    {k:'north', n:'North bed', c:'#f0a93c', solar:4,  cool:1.4,lux:.55, shade:.1},
-    {k:'south', n:'South bed', c:'#46a8ff', solar:11, cool:2.6,lux:1.0, shade:0},
-  ];
-  const N=264, stepMin=30, base=new Date(2026,0,27,12,0);
-  const nz=noiseFn(91);
-  // shared environment per timestep
-  const ENV=[];
-  for(let i=0;i<N;i++){
-    const date=new Date(base.getTime()+i*stepMin*60000);
-    const h=12+i*stepMin/60, hod=((h%24)+24)%24, day=Math.floor(h/24);
-    const sn=Math.max(0,Math.sin((hod-6)/12*Math.PI));      // 0 night .. 1 midday
-    const cs=0.35+0.65*nz(day*0.6+0.2);                      // daily clear-sky
-    const drift=2+4*nz(i*0.018+0.5);                         // slow ambient drift
-    ENV.push({date,h,hod,day,sn,cs,drift});
-  }
-  function fmtD(d){const p=n=>String(n).padStart(2,'0');return `${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;}
-  srange.textContent=`${fmtD(ENV[0].date)} — ${fmtD(ENV[N-1].date)}`;
-
-  function jit(i,seed){return (nz(i*0.5+seed)-0.5);}
-  const temp={}, humid={}, lux={}, spec={};
-  LOCS.forEach((L,li)=>{
-    const sd=li*7.3;
-    temp[L.k]=ENV.map((e,i)=> e.drift + L.solar*e.sn*e.cs - L.cool*(1-e.sn)
-        + jit(i,sd)*1.3 + (L.k==='south'?Math.max(0,jit(i,sd+3))*3*e.sn:0) );
-    humid[L.k]=ENV.map((e,i)=> Math.max(24,Math.min(96,
-        84 - 2.0*(L.solar*e.sn*e.cs) - 16*e.sn*e.cs*(1-L.shade) + jit(i,sd+11)*7 )));
-    lux[L.k]=ENV.map((e,i)=> Math.max(0,
-        e.sn*e.cs*65000*L.lux*(1-0.25*Math.abs(jit(i,sd+5))) + 40 + Math.max(0,jit(i,sd+9))*120 ));
-    spec[L.k]=ENV.map((e,i)=> Math.max(475,Math.min(645,
-        600 - 78*e.sn*e.cs + 42*L.shade + jit(i,sd+13)*9 )));
-  });
-  const METRICS={
-    temp: {unit:'°C',  vals:temp,  fmt:v=>v.toFixed(1)},
-    humid:{unit:'%',   vals:humid, fmt:v=>Math.round(v)},
-    lux:  {unit:'lux', vals:lux,   fmt:v=> v>=1000?(v/1000).toFixed(1)+'k':Math.round(v)},
-    spec: {unit:'nm',  vals:spec,  fmt:v=>Math.round(v)},
-  };
-
-  let metric='temp', hover=-1;
-  const vis={}; LOCS.forEach(L=>vis[L.k]=true);
-
-  function niceRange(lo,hi){
-    const span=hi-lo||1, step=Math.pow(10,Math.floor(Math.log10(span/4)));
-    const s=[1,2,5,10].map(m=>m*step).find(m=>span/m<=6)||step*10;
-    return {lo:Math.floor(lo/s)*s, hi:Math.ceil(hi/s)*s, step:s};
-  }
-  let geom=null;
-  function draw(){
-    const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return;
-    const dpr=Math.min(2,devicePixelRatio||1);
-    cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
-    ctx.clearRect(0,0,W,H);
-    const M=METRICS[metric];
-    const PL=54,PR=14,PT=14,PB=30, pw=W-PL-PR, ph=H-PT-PB;
-    let lo=Infinity,hi=-Infinity;
-    LOCS.forEach(L=>M.vals[L.k].forEach(v=>{if(v<lo)lo=v;if(v>hi)hi=v;}));
-    const R=niceRange(lo,hi);
-    const X=i=>PL+pw*i/(N-1), Y=v=>PT+ph*(1-(v-R.lo)/(R.hi-R.lo));
-    geom={X,Y,PL,PR,PT,PB,pw,ph,R};
-    // grid + y labels
-    ctx.font='10px "IBM Plex Mono",monospace'; ctx.textBaseline='middle';
-    for(let g=R.lo; g<=R.hi+1e-6; g+=R.step){
-      const y=Y(g);
-      ctx.strokeStyle = Math.abs(g)<1e-6 ? 'rgba(233,232,223,.22)':'rgba(233,232,223,.08)';
-      ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(PL,y); ctx.lineTo(W-PR,y); ctx.stroke();
-      ctx.fillStyle='#65675c'; ctx.textAlign='right';
-      ctx.fillText(M.fmt(g), PL-8, y);
-    }
-    // y unit
-    ctx.save(); ctx.translate(13,PT+ph/2); ctx.rotate(-Math.PI/2);
-    ctx.fillStyle='#9a9c8f'; ctx.textAlign='center'; ctx.fillText(M.unit,0,0); ctx.restore();
-    // x labels
-    ctx.textAlign='center'; ctx.textBaseline='top'; ctx.fillStyle='#65675c';
-    const xt=6;
-    for(let t=0;t<=xt;t++){
-      const i=Math.round((N-1)*t/xt), d=ENV[i].date, p=n=>String(n).padStart(2,'0');
-      ctx.fillText(`${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`, X(i), H-PB+8);
-    }
-    // series
-    LOCS.forEach(L=>{
-      if(!vis[L.k]) return;
-      const a=M.vals[L.k];
-      ctx.strokeStyle=L.c; ctx.lineWidth=1.5; ctx.lineJoin='round'; ctx.beginPath();
-      for(let i=0;i<N;i++){const x=X(i),y=Y(a[i]); i?ctx.lineTo(x,y):ctx.moveTo(x,y);}
-      ctx.stroke();
-    });
-    // hover crosshair + points
-    if(hover>=0){
-      const hx=X(hover);
-      ctx.strokeStyle='rgba(233,232,223,.3)'; ctx.lineWidth=1; ctx.setLineDash([3,3]);
-      ctx.beginPath(); ctx.moveTo(hx,PT); ctx.lineTo(hx,PT+ph); ctx.stroke(); ctx.setLineDash([]);
-      LOCS.forEach(L=>{ if(!vis[L.k])return; const y=Y(M.vals[L.k][hover]);
-        ctx.fillStyle=L.c; ctx.beginPath(); ctx.arc(hx,y,3,0,7); ctx.fill();
-        ctx.strokeStyle='rgba(10,11,9,.9)'; ctx.lineWidth=1; ctx.stroke(); });
-    }
-  }
-  // tooltip
-  function showTip(){
-    if(hover<0){tip.style.opacity='0';return;}
-    const M=METRICS[metric], d=ENV[hover].date, p=n=>String(n).padStart(2,'0');
-    let html=`<b>${p(d.getMonth()+1)}/${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}</b>`;
-    LOCS.forEach(L=>{ if(!vis[L.k])return;
-      html+=`<div class="row"><span><i style="background:${L.c}"></i>${L.n}</span><span class="v">${M.fmt(M.vals[L.k][hover])} ${M.unit}</span></div>`;});
-    tip.innerHTML=html;
-    const hx=geom.X(hover), W=cv.clientWidth;
-    tip.style.opacity='1';
-    const tw=tip.offsetWidth;
-    let left=hx; left=Math.max(tw/2+6,Math.min(W-tw/2-6,left));
-    tip.style.left=left+'px'; tip.style.top='18px';
-  }
-  cv.addEventListener('pointermove',e=>{
-    if(!geom)return; const r=cv.getBoundingClientRect();
-    const i=Math.round((e.clientX-r.left-geom.PL)/geom.pw*(N-1));
-    hover=Math.max(0,Math.min(N-1,i)); draw(); showTip();
-  });
-  cv.addEventListener('pointerleave',()=>{hover=-1;draw();tip.style.opacity='0';});
-
-  // metric tabs
-  tabs.querySelectorAll('button').forEach(b=>b.addEventListener('click',()=>{
-    metric=b.dataset.metric;
-    tabs.querySelectorAll('button').forEach(x=>x.setAttribute('aria-selected',x===b));
-    hover=-1; tip.style.opacity='0'; draw();
-  }));
-  // legend
-  LOCS.forEach(L=>{
-    const b=document.createElement('button'); b.setAttribute('aria-pressed','true');
-    b.innerHTML=`<span class="sw" style="background:${L.c}"></span>${L.n}`;
-    b.addEventListener('click',()=>{vis[L.k]=!vis[L.k]; b.setAttribute('aria-pressed',vis[L.k]); draw(); showTip();});
-    leg.appendChild(b);
-  });
-  let rt; addEventListener('resize',()=>{clearTimeout(rt);rt=setTimeout(draw,150);});
-  window.__drawChart=()=>requestAnimationFrame(draw);
-})();
 
 /* ===== router ===== */
 (function(){
   const btns=[...document.querySelectorAll('nav button')];
-  const views={compare:'view-compare',photo:'view-photo',data:'view-data',about:'view-about',viewer:'view-viewer'};
+  const views={compare:'view-compare',photo:'view-photo',map:'view-map',about:'view-about',viewer:'view-viewer'};
   function show(name){
     for(const k in views)document.getElementById(views[k]).classList.toggle('active',k===name);
     btns.forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'true':'false'));
