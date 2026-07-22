@@ -592,9 +592,9 @@ buildNodes();
 
 /* ================= ENVIRONMENTAL SENSORS ================= */
 const METRICS = {
-  wind:     {label:'WIND SPEED',      unit:'m/s',  color:'#5fd1c9', min:0,   max:12},
+  wind:     {label:'WIND SPEED',      unit:'m/s',  color:'#5fd1c9', min:0,   max:6},
   soil:     {label:'SOIL MOISTURE',   unit:'%',    color:'#d9a441', min:10,  max:60},
-  temp:     {label:'AIR TEMPERATURE', unit:'°C',   color:'#ff7a5c', min:-2,  max:34},
+  temp:     {label:'AIR TEMPERATURE', unit:'°C',   color:'#ff7a5c', min:-2,  max:40},
   humidity: {label:'HUMIDITY',        unit:'%',    color:'#5b8fd1', min:20,  max:95},
   light:    {label:'LIGHT',           unit:'klux', color:'#c9d94f', min:0,   max:80}
 };
@@ -616,15 +616,108 @@ function seededRandom(seed){
   };
 }
 
+/* Kyoto climate normals, 1991–2020 averages (source: Japan Meteorological
+   Agency data as compiled by climatestotravel.com). Used as the seasonal
+   baseline for the sensor readings below, instead of pure noise.
+   tMin/tMax °C, hum %, windKph avg, sun = avg sunshine hours/day,
+   dayLen = avg daylight hours (dawn–dusk), precip = avg rainfall mm/month
+   (used as a rough proxy for how wet the soil runs that time of year). */
+const KYOTO_MONTHLY = [
+  {tMin:1.5,  tMax:9.1,  hum:70, windKph:11, sun:4.0, dayLen:10.08, precip:55},  // Jan
+  {tMin:1.6,  tMax:10.0, hum:65, windKph:11, sun:4.5, dayLen:10.92, precip:65},  // Feb
+  {tMin:4.3,  tMax:14.1, hum:60, windKph:10, sun:5.0, dayLen:12.00, precip:105}, // Mar
+  {tMin:9.2,  tMax:20.1, hum:60, windKph:9,  sun:6.0, dayLen:13.08, precip:115}, // Apr
+  {tMin:14.5, tMax:25.1, hum:65, windKph:8,  sun:6.0, dayLen:14.00, precip:150}, // May
+  {tMin:19.2, tMax:28.1, hum:70, windKph:8,  sun:4.5, dayLen:14.50, precip:200}, // Jun
+  {tMin:23.6, tMax:32.0, hum:70, windKph:8,  sun:4.5, dayLen:14.17, precip:225}, // Jul
+  {tMin:24.7, tMax:33.7, hum:70, windKph:8,  sun:6.0, dayLen:13.42, precip:155}, // Aug
+  {tMin:20.7, tMax:29.2, hum:70, windKph:8,  sun:5.0, dayLen:12.42, precip:180}, // Sep
+  {tMin:14.4, tMax:23.4, hum:70, windKph:9,  sun:5.0, dayLen:11.33, precip:145}, // Oct
+  {tMin:8.4,  tMax:17.3, hum:70, windKph:10, sun:4.5, dayLen:10.33, precip:75},  // Nov
+  {tMin:3.5,  tMax:11.6, hum:70, windKph:10, sun:4.5, dayLen:9.83,  precip:55},  // Dec
+];
+
+/* Small, fixed per-sensor microclimate biases based on roughly where each
+   one sits in the garden — a pond edge runs cooler/damper/more sheltered,
+   a greenhouse traps heat and blocks wind, an open entry bed catches more
+   wind and dries out faster. Purely illustrative until real placements
+   and real logged offsets replace these. */
+const SENSOR_BIAS = {
+  s1: {temp:0,    hum:-3, wind:1.15, soil:-3, light:1.0},  // Entry Bed — open, unsheltered
+  s2: {temp:-0.5, hum:0,  wind:0.9,  soil:0,  light:0.9},  // Stone Path — partial shade
+  s3: {temp:-1.2, hum:8,  wind:0.65, soil:12, light:0.85}, // Pond Edge — cooler, damp, sheltered
+  s4: {temp:3.5,  hum:6,  wind:0.15, soil:-2, light:0.8},  // Greenhouse — traps heat, blocks wind
+};
+
+function clamp(v,lo,hi){ return Math.max(lo, Math.min(hi, v)); }
+function lerp2(a,b,t){ return a + (b-a)*t; }
+
+/* Blends the two nearest months so the seasonal baseline shifts smoothly
+   day by day instead of jumping on the 1st of each month. */
+function kyotoClimateFor(date){
+  const m = date.getMonth();
+  const daysInMonth = new Date(date.getFullYear(), m+1, 0).getDate();
+  const pos = (date.getDate()-0.5)/daysInMonth; // 0..1 through the month
+  let a, b, t;
+  if(pos < 0.5){ a=(m+11)%12; b=m; t=pos+0.5; }
+  else{ a=m; b=(m+1)%12; t=pos-0.5; }
+  const A=KYOTO_MONTHLY[a], B=KYOTO_MONTHLY[b];
+  const out = {};
+  for(const k of Object.keys(A)) out[k] = lerp2(A[k], B[k], t);
+  return out;
+}
+
+/* 0 around 4am (coolest point of the night), 1 around 4pm (warmest point
+   of the afternoon, accounting for typical thermal lag past solar noon). */
+function diurnalShape(hour){ return (1-Math.cos(2*Math.PI*(hour-4)/24))/2; }
+
+/* Core model: seasonal baseline (from the monthly table) shaped by time
+   of day, plus a fixed per-sensor offset for its spot in the garden. */
+function kyotoReading(metricKey, date, sensorId){
+  const c = kyotoClimateFor(date);
+  const hour = date.getHours() + date.getMinutes()/60;
+  const shape = diurnalShape(hour);
+  const bias = SENSOR_BIAS[sensorId] || {temp:0,hum:0,wind:1,soil:0,light:1};
+
+  if(metricKey === 'temp'){
+    /* the greenhouse's heat-trapping bias is strongest while the sun is up */
+    return c.tMin + (c.tMax-c.tMin)*shape + bias.temp*(0.4+0.6*shape);
+  }
+  if(metricKey === 'humidity'){
+    return clamp(c.hum + 13*(0.5-shape) + bias.hum, 18, 98);
+  }
+  if(metricKey === 'wind'){
+    const kph = c.windKph*(0.8+0.35*shape)*bias.wind;
+    return Math.max(0, kph/3.6); // kph → m/s
+  }
+  if(metricKey === 'light'){
+    const sunrise = 12-c.dayLen/2, sunset = 12+c.dayLen/2;
+    if(hour<=sunrise || hour>=sunset) return 0;
+    const dome = Math.sin(Math.PI*(hour-sunrise)/c.dayLen);
+    const peak = 100*clamp(0.55+0.5*(c.sun/c.dayLen), 0.55, 1.0);
+    return peak*Math.pow(Math.max(dome,0),1.15)*bias.light;
+  }
+  if(metricKey === 'soil'){
+    return clamp(15 + (c.precip-55)/(225-55)*35 + bias.soil, 6, 58);
+  }
+  return 0;
+}
+
+/* Small deterministic hour-to-hour/day-to-day texture so readings don't
+   look like a perfectly smooth model — same seeded-PRNG approach as
+   before, just layered on top of the climate model instead of replacing it. */
+function sensorNoise(sensorId, metricKey, timeKey, spread){
+  const seed = sensorId.charCodeAt(1)*311 + metricKey.length*97 + timeKey*13;
+  const rnd = seededRandom(seed);
+  return (rnd()-0.5)*spread;
+}
+
 function currentValue(sensor, metricKey){
   const m = METRICS[metricKey];
-  const range = activeRange || 'week';
-  const n = seriesForRange(range);
-  const series = getSensorSeries(sensor.id, metricKey, range);
-  const anchor = series[n-1];
+  const base = kyotoReading(metricKey, new Date(), sensor.id);
   const rnd = seededRandom(sensor.id.charCodeAt(1)*97 + metricKey.length*13 + Math.floor(Date.now()/6000));
-  const jitter = (rnd()-0.5) * (m.max-m.min) * 0.08;
-  return Math.max(m.min, Math.min(m.max, anchor + jitter));
+  const jitter = (rnd()-0.5) * (m.max-m.min) * 0.03;
+  return clamp(base+jitter, m.min, m.max);
 }
 
 function fmtVal(v, metricKey){
@@ -668,20 +761,43 @@ function timelineLabelUpper(){
   return lab + ' READING';
 }
 
+/* Maps a timeline point index to the real calendar date/hour it represents,
+   counting back from now. Day range samples hourly (full diurnal detail);
+   week/month sample each past day at a representative early-afternoon hour;
+   year samples the middle of each past month. */
+function dateForSeriesIndex(range, index, n){
+  const d = new Date();
+  if(range === 'day'){
+    d.setMinutes(0,0,0);
+    d.setHours(d.getHours() - (n-1-index));
+    return d;
+  }
+  if(range === 'week' || range === 'month'){
+    d.setHours(14,0,0,0);
+    d.setDate(d.getDate() - (n-1-index));
+    return d;
+  }
+  if(range === 'year'){
+    d.setDate(15); d.setHours(14,0,0,0);
+    d.setMonth(d.getMonth() - (n-1-index));
+    return d;
+  }
+  return d;
+}
+
 /* per-sensor synthetic history, so the scrub track can drive per-location interpolation */
 function getSensorSeries(sensorId, metricKey, range){
   const cacheKey = 'sensor_'+sensorId+'_'+metricKey+'_'+range;
   if(dataCache[cacheKey]) return dataCache[cacheKey];
   const m = METRICS[metricKey];
   const n = seriesForRange(range);
-  const seed = sensorId.charCodeAt(1)*311 + metricKey.length*97 + n*13 + range.length*7;
-  const rnd = seededRandom(seed);
+  const spread = (m.max-m.min) * (range==='day' ? 0.05 : 0.07);
   const vals = [];
-  let v = m.min + (m.max-m.min)*(0.35+rnd()*0.3);
   for(let i=0;i<n;i++){
-    v += (rnd()-0.5)*(m.max-m.min)*0.16;
-    v = Math.max(m.min, Math.min(m.max, v));
-    vals.push(v);
+    const date = dateForSeriesIndex(range, i, n);
+    const base = kyotoReading(metricKey, date, sensorId);
+    const noise = sensorNoise(sensorId, metricKey, Math.floor(date.getTime()/3600000), spread);
+    vals.push(clamp(base+noise, m.min, m.max));
   }
   dataCache[cacheKey] = vals;
   return vals;
