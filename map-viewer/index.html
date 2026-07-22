@@ -19,6 +19,7 @@
   --accent-dim:rgba(255,59,47,0.35);
   --panel:#0a0a09;
   --tag-ink:#d6d4cd;
+  --pulse-base:#e2e0d7;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 html,body{
@@ -83,11 +84,26 @@ html,body{
 #mapSvg{display:block; overflow:visible;}
 .planImg{opacity:0.96;}
 
+@keyframes corePulse{
+  0%,100%{ fill:var(--pulse-base); transform:scale(1); opacity:0.75; }
+  50%{ fill:var(--status-color, var(--ink)); transform:scale(2.6); opacity:1; }
+}
+@keyframes ringBreathe{
+  0%,100%{ stroke:var(--pulse-base); opacity:0.75; }
+  50%{ stroke:var(--status-color, var(--ink)); opacity:0.95; }
+}
+@media (prefers-reduced-motion: reduce){
+  .node .core, .sensor .sqcore, .node .ring{ animation:none !important; }
+  .node .core{ fill:var(--status-color, var(--ink)) !important; }
+  .node .ring{ stroke:var(--status-color, var(--ink)) !important; }
+  .sensor .sqcore{ fill:var(--ink) !important; }
+}
+
 .node{cursor:pointer;}
-.node .ring{fill:none; stroke:var(--ink); stroke-width:2; opacity:0.9; transition:stroke 0.2s;}
-.node .core{fill:var(--ink); transition:fill 0.2s;}
-.node:hover .core{fill:var(--accent);}
-.node:hover .ring{stroke:var(--accent);}
+.node .ring{fill:none; stroke:var(--pulse-base); stroke-width:2; opacity:0.9; animation:ringBreathe 3.4s ease-in-out infinite;}
+.node .core{fill:var(--pulse-base); transform-box:fill-box; transform-origin:center; animation:corePulse 3.4s ease-in-out infinite;}
+.node:hover .core{fill:var(--accent); animation:none; transform:scale(1);}
+.node:hover .ring{stroke:var(--accent); animation:none; opacity:0.9;}
 .node .tag{
   font-family:'JetBrains Mono',monospace; font-size:14px; fill:var(--tag-ink);
   letter-spacing:0.04em; transition:fill 0.2s;
@@ -114,9 +130,9 @@ html,body{
 /* ---------- sensor nodes ---------- */
 .sensor{cursor:pointer;}
 .sensor .sq{fill:none; stroke:var(--ink); stroke-width:1.6; opacity:0.85; transition:stroke 0.2s;}
-.sensor .sqcore{fill:var(--ink); transition:fill 0.2s;}
+.sensor .sqcore{fill:var(--pulse-base); transform-box:fill-box; transform-origin:center; animation:corePulse 3.4s ease-in-out infinite;}
 .sensor:hover .sq{stroke:#5fd1c9;}
-.sensor:hover .sqcore{fill:#5fd1c9;}
+.sensor:hover .sqcore{fill:#5fd1c9; animation:none; transform:scale(1);}
 .sensor .slabel{
   font-family:'JetBrains Mono',monospace; font-size:12px; fill:var(--tag-ink); letter-spacing:0.04em;
 }
@@ -547,6 +563,12 @@ function buildNodes(){
     const core = document.createElementNS(svgNS,'circle');
     core.setAttribute('class','core');
     core.setAttribute('cx', p.x); core.setAttribute('cy', p.y); core.setAttribute('r', 2.6);
+    /* stagger the breathing animation per node so the whole map doesn't pulse in lockstep */
+    const pulseSeed = seededRandom(p.x*13 + p.y*7 + p.id.length*29)();
+    core.style.animationDelay = (pulseSeed*3.4).toFixed(2)+'s';
+    core.style.animationDuration = (2.8 + pulseSeed*1.4).toFixed(2)+'s';
+    ring.style.animationDelay = core.style.animationDelay;
+    ring.style.animationDuration = core.style.animationDuration;
 
     const hit = document.createElementNS(svgNS,'circle');
     hit.setAttribute('class','hitArea');
@@ -709,6 +731,10 @@ function buildSensors(){
     const core = document.createElementNS(svgNS,'circle');
     core.setAttribute('class','sqcore');
     core.setAttribute('cx', s.x); core.setAttribute('cy', s.y); core.setAttribute('r', 2.4);
+    /* stagger so sensors don't all pulse together */
+    const pulseSeed = seededRandom(s.x*11 + s.y*17 + s.id.length*31)();
+    core.style.animationDelay = (pulseSeed*3.4).toFixed(2)+'s';
+    core.style.animationDuration = (2.8 + pulseSeed*1.4).toFixed(2)+'s';
 
     const label = document.createElementNS(svgNS,'text');
     label.setAttribute('class','slabel');
@@ -870,6 +896,7 @@ function refreshAll(){
   renderChart();
   updateScrubReadout();
   updateDetailCurrentValues();
+  refreshNodeStatusColors();
   if(openSensorId){
     const s = SENSORS.find(x=>x.id===openSensorId);
     if(s) openSensorPopover(s);
@@ -1178,6 +1205,39 @@ function nearestSensor(node){
     if(d<bestD){ bestD=d; best=s; }
   });
   return best;
+}
+
+/* worst-of temp/humidity deviation for a plant, as a single live status color —
+   green when both readings sit inside the species' optimal range, shifting
+   through amber toward red the further either one drifts outside it */
+function nodeStatusColor(p){
+  if(p.type !== 'plant') return null;
+  const checks = [];
+  if(p.tempRange) checks.push({cur: interpolatedValueAt(p.x, p.y, 'temp'), range: p.tempRange});
+  if(p.humidityRange) checks.push({cur: interpolatedValueAt(p.x, p.y, 'humidity'), range: p.humidityRange});
+  if(checks.length === 0) return null;
+  let worstT = 0;
+  checks.forEach(({cur, range})=>{
+    const {min, max} = range;
+    if(cur >= min && cur <= max) return;
+    const dist = cur < min ? min-cur : cur-max;
+    const span = Math.max(1, max-min);
+    worstT = Math.max(worstT, Math.min(1, dist/(span*0.6)));
+  });
+  return worstT === 0 ? '#8fd1a0' : lerpColor('#e0b24a', '#ff3b2f', worstT);
+}
+
+/* pushes each plant's live status color onto its map marker (via a CSS
+   variable, so hover/accent states in the stylesheet still take precedence) */
+function refreshNodeStatusColors(){
+  const layer = document.getElementById('nodesLayer');
+  if(!layer) return;
+  PLANTS.forEach(p=>{
+    const color = nodeStatusColor(p);
+    if(!color) return;
+    const g = layer.querySelector(`.node[data-id="${p.id}"]`);
+    if(g) g.style.setProperty('--status-color', color);
+  });
 }
 
 function updateDetailCurrentValues(){
@@ -1774,6 +1834,7 @@ setTimeout(resizeRenderer, 50);
 /* initial render of environmental overlays (Soil Moisture on by default) */
 refreshBadges();
 refreshButtonValues();
+refreshNodeStatusColors();
 renderChart();
 window.addEventListener('load', drawHeatmap);
 setTimeout(drawHeatmap, 120);
