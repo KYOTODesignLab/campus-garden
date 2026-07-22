@@ -60,6 +60,18 @@ html,body{
 #topbar .status.hidden{opacity:0; pointer-events:none;}
 #topbar .status .dot{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:6px;}
 
+#fullscreenBtn{
+  position:absolute; top:12px; right:16px; z-index:40;
+  width:30px; height:30px;
+  display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--line);
+  color:var(--dim); cursor:pointer; pointer-events:auto;
+  transition:all 0.2s;
+}
+#fullscreenBtn:hover{color:var(--ink); border-color:var(--line-strong);}
+#fullscreenBtn.active{color:var(--accent); border-color:var(--accent-dim);}
+#fullscreenBtn svg{width:15px; height:15px; display:block;}
+
 #mapView{
   position:absolute; top:58px; left:0; right:0; bottom:var(--envH, 234px);
   display:flex; align-items:center; justify-content:center;
@@ -218,6 +230,7 @@ html,body{
   #metricBar{width:100%;}
   #scrubReadout{margin-left:0; width:100%; order:99;}
   #chartWrap{height:125px;}
+  #fullscreenBtn{top:9px; right:12px; width:28px; height:28px;}
 }
 
 #detailView{
@@ -314,11 +327,10 @@ html,body{
 
   <div id="topbar">
     <div class="brand">CAMPUS GARDEN<span>Matsugasaki, Kyoto</span></div>
-    <div class="status" id="topbarStatus">
-      <div><span class="dot"></span>LIVE MAP</div>
-      <div id="clock">--:--:--</div>
-    </div>
+    <div class="status" id="topbarStatus"></div>
   </div>
+
+  <button id="fullscreenBtn" title="Fullscreen" aria-label="Fullscreen umschalten"></button>
 
   <div id="mapView">
     <svg id="mapSvg" viewBox="0 0 3566 1530">
@@ -489,12 +501,6 @@ const PLANTS = [
 ];
 
 const stonePathPoints = [[350,1010],[430,935],[510,880],[600,835],[680,795],[760,750],[820,715],[880,660],[940,610],[1050,590],[1180,600],[1320,610],[1460,630],[1600,655],[1725,669]];
-
-function tickClock(){
-  const d = new Date();
-  document.getElementById('clock').textContent = d.toTimeString().slice(0,8);
-}
-tickClock(); setInterval(tickClock, 1000);
 
 const svgNS = 'http://www.w3.org/2000/svg';
 
@@ -873,6 +879,43 @@ function refreshAll(){
 const envPanel = document.getElementById('envPanel');
 const mapCaptionEl = document.getElementById('mapCaption');
 
+/* ---- fullscreen toggle ---- */
+(function initFullscreen(){
+  const btn = document.getElementById('fullscreenBtn');
+  const stageEl = document.getElementById('stage');
+  const ICON_EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  const ICON_COMPRESS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M15 21v-3a2 2 0 0 1 2-2h3M4 15h3a2 2 0 0 1 2 2v3"/></svg>';
+
+  function fsElement(){
+    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
+  }
+  function requestFs(el){
+    const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
+    if(fn) fn.call(el);
+  }
+  function exitFs(){
+    const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
+    if(fn) fn.call(document);
+  }
+  function syncIcon(){
+    const active = !!fsElement();
+    btn.innerHTML = active ? ICON_COMPRESS : ICON_EXPAND;
+    btn.classList.toggle('active', active);
+    btn.title = active ? 'Vollbild beenden' : 'Vollbild';
+    /* map's viewport size changes when entering/exiting fullscreen */
+    setTimeout(()=>{ if(typeof sizeMapCover === 'function') sizeMapCover(); }, 60);
+    /* chart's container size (and therefore aspect ratio) also changes */
+    setTimeout(()=>{ if(typeof renderChart === 'function') renderChart(); }, 60);
+  }
+  btn.addEventListener('click', ()=>{
+    if(fsElement()) exitFs(); else requestFs(stageEl);
+  });
+  ['fullscreenchange','webkitfullscreenchange','msfullscreenchange'].forEach(evt=>{
+    document.addEventListener(evt, syncIcon);
+  });
+  syncIcon();
+})();
+
 /* ---- map zoom / pan (SVG viewBox) ---- */
 const FULL_W = 3566, FULL_H = 1530;
 const viewState = {x:0, y:0, w:FULL_W, h:FULL_H};
@@ -936,13 +979,58 @@ document.addEventListener('gesturestart', e=> e.preventDefault());
 document.addEventListener('gesturechange', e=> e.preventDefault());
 
 let panning = false, panLastX=0, panLastY=0, panMoved=false;
+
+/* two-finger pinch-to-zoom, for mobile/touch — native pinch is disabled above
+   (touchAction:'none') to avoid conflicting with the custom viewBox zoom, so
+   this recreates it manually by tracking active touch pointers */
+const activePointers = new Map();
+let pinching = false, pinchStartDist = 1, pinchStartW = FULL_W;
+let pinchAnchorUX = 0, pinchAnchorUY = 0, pinchAnchorRelX = 0.5, pinchAnchorRelY = 0.5;
+
+function pinchMidpoint(){
+  const pts = [...activePointers.values()];
+  return {x:(pts[0].x+pts[1].x)/2, y:(pts[0].y+pts[1].y)/2};
+}
+
 mapViewEl.addEventListener('pointerdown', (ev)=>{
+  activePointers.set(ev.pointerId, {x:ev.clientX, y:ev.clientY});
+  if(activePointers.size >= 2){
+    panning = false;
+    mapViewEl.classList.remove('panning');
+    pinching = true;
+    const pts = [...activePointers.values()];
+    pinchStartDist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y) || 1;
+    pinchStartW = viewState.w;
+    const mid = pinchMidpoint();
+    const {ux, uy, rect} = clientToUser(mid.x, mid.y);
+    pinchAnchorUX = ux; pinchAnchorUY = uy;
+    pinchAnchorRelX = (mid.x-rect.left)/rect.width;
+    pinchAnchorRelY = (mid.y-rect.top)/rect.height;
+    return;
+  }
   if(ev.target.closest && (ev.target.closest('.sensor') || ev.target.closest('.node'))) return;
   panning = true; panMoved = false;
   panLastX = ev.clientX; panLastY = ev.clientY;
   mapViewEl.classList.add('panning');
 });
 window.addEventListener('pointermove', (ev)=>{
+  if(activePointers.has(ev.pointerId)) activePointers.set(ev.pointerId, {x:ev.clientX, y:ev.clientY});
+
+  if(pinching && activePointers.size >= 2){
+    const pts = [...activePointers.values()];
+    const dist = Math.hypot(pts[0].x-pts[1].x, pts[0].y-pts[1].y) || 1;
+    const scale = pinchStartDist/dist;
+    let newW = Math.max(MIN_W, Math.min(FULL_W, pinchStartW*scale));
+    let newH = newW * (FULL_H/FULL_W);
+    let newX = pinchAnchorUX - pinchAnchorRelX*newW;
+    let newY = pinchAnchorUY - pinchAnchorRelY*newH;
+    newX = Math.max(0, Math.min(FULL_W-newW, newX));
+    newY = Math.max(0, Math.min(FULL_H-newH, newY));
+    viewState.x=newX; viewState.y=newY; viewState.w=newW; viewState.h=newH;
+    applyViewBox();
+    return;
+  }
+
   if(!panning) return;
   const dx = ev.clientX-panLastX, dy = ev.clientY-panLastY;
   if(Math.abs(dx)>2 || Math.abs(dy)>2) panMoved = true;
@@ -955,10 +1043,14 @@ window.addEventListener('pointermove', (ev)=>{
   viewState.x = newX; viewState.y = newY;
   applyViewBox();
 });
-window.addEventListener('pointerup', ()=>{
+function endPointer(ev){
+  activePointers.delete(ev.pointerId);
+  if(activePointers.size < 2) pinching = false;
   panning = false;
   mapViewEl.classList.remove('panning');
-});
+}
+window.addEventListener('pointerup', endPointer);
+window.addEventListener('pointercancel', endPointer);
 mapViewEl.addEventListener('dblclick', ()=>{
   viewState.x=0; viewState.y=0; viewState.w=FULL_W; viewState.h=FULL_H;
   applyViewBox();
@@ -1171,7 +1263,17 @@ function renderChart(){
   empty.style.display='none';
 
   const singleMetric = activeMetrics.size === 1;
-  const W = 1000, H = 150, padL = singleMetric ? 40 : 6, padR = 6, padT = 10, padB = 26;
+  /* Size the viewBox to the container's actual pixel dimensions (instead of a
+     fixed 1000x150) so 1 SVG unit == 1 px on both axes. With preserveAspectRatio
+     "none" and a fixed viewBox, the chart stretched non-uniformly whenever the
+     container's real aspect ratio drifted from 1000:150 — most noticeably in
+     fullscreen, where the panel becomes much wider relative to its fixed height,
+     smearing lines/dots/text horizontally. */
+  const wrapRect = chartWrap.getBoundingClientRect();
+  const W = Math.max(200, Math.round(wrapRect.width) || 1000);
+  const H = Math.max(60, Math.round(wrapRect.height) || 150);
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  const padL = singleMetric ? 40 : 6, padR = 6, padT = 10, padB = 26;
   const plotW = W - padL - padR, plotH = H - padT - padB;
 
   // gridlines
@@ -1454,6 +1556,7 @@ function resizeRenderer(){
   camera.updateProjectionMatrix();
 }
 window.addEventListener('resize', resizeRenderer);
+window.addEventListener('resize', ()=>{ if(typeof renderChart === 'function') renderChart(); });
 
 function clearCloud(){
   while(group.children.length){
