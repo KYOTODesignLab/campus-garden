@@ -20,22 +20,25 @@
         <button data-mode="split" aria-pressed="true"><span class="d before"></span>Split View</button>
         <button data-mode="superimpose" aria-pressed="false"><span class="d overlay"></span>Superimpose</button>
       </div>
-      <div id="readout" class="readout">cam —</div>
-      <div id="loadStatus" class="load-status" hidden></div>
       <div id="attributeQuick" class="attribute-quick" role="group" aria-label="Color attribute">
         <button data-attr="rgb" aria-pressed="true"><span class="d rgb"></span>RGB</button>
         <button data-attr="solid" aria-pressed="false"><span class="d solid"></span>Solid Color</button>
-        <button data-attr="m3c2" aria-pressed="false"><span class="d m3c2"></span>M3C2 Distance</button>
       </div>
       <button id="clipToggle" class="clip-toggle" aria-expanded="false">Clipping</button>
     </div>
 
     <div id="toolbarRight" class="toolbar-right">
-      <button id="shareView" class="toolbar-button" title="Copy a link to this exact view">Share</button>
-      <button id="fullscreenToggle" class="toolbar-button" title="Toggle fullscreen">Fullscreen</button>
       <button id="optionsToggle" class="toolbar-button" title="Show viewer options">Options</button>
+      <button id="fullscreenToggle" class="toolbar-button icon-only" title="Toggle fullscreen" aria-pressed="false">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <polyline points="8 3 3 3 3 8"></polyline>
+          <polyline points="16 3 21 3 21 8"></polyline>
+          <polyline points="3 16 3 21 8 21"></polyline>
+          <polyline points="21 16 21 21 16 21"></polyline>
+        </svg>
+      </button>
     </div>
-    <button id="resetCamera" class="reset-camera" title="Reset camera, color, filters and clipping to defaults">Reset View</button>
+    <button id="resetCamera" class="reset-camera" title="Reset camera, color, filters and clipping to defaults">Reset</button>
 
     <div class="legend" id="legend" hidden>
       <div class="ttl" id="legendTitle">Scalar</div>
@@ -56,6 +59,7 @@
         <h1>COPC Viewer</h1>
         <button id="closePanel" class="icon-button" title="Hide options">×</button>
       </div>
+      <button id="shareView" title="Copy a link to this exact view">Share view</button>
       <div id="status">Ready.</div>
 
       <details>

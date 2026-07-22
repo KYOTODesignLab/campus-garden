@@ -827,15 +827,20 @@ function updateStats() {
   ui.displayed.textContent = formatCount(displayed);
 }
 function updateReadout() {
-  const entry = activeEntries()[0] ?? null;
-  if (!entry) { ui.readout.textContent = 'cam —'; return; }
-  const camera = entry.instance.view.camera;
-  const target = entry.instance.view.controls?.target ?? combinedBox()?.getCenter(new Vector3()) ?? new Vector3();
-  const v = camera.position.clone().sub(target);
-  const d = v.length();
-  const az = MathUtils.radToDeg(Math.atan2(v.x, v.y));
-  const el = MathUtils.radToDeg(Math.asin(v.z / Math.max(d, 1e-6)));
-  ui.readout.textContent = `cam az ${az.toFixed(0)}° el ${el.toFixed(0)}° d ${d.toFixed(1)}m`;
+  if (ui.readout) {
+    const entry = activeEntries()[0] ?? null;
+    if (!entry) {
+      ui.readout.textContent = 'cam —';
+    } else {
+      const camera = entry.instance.view.camera;
+      const target = entry.instance.view.controls?.target ?? combinedBox()?.getCenter(new Vector3()) ?? new Vector3();
+      const v = camera.position.clone().sub(target);
+      const d = v.length();
+      const az = MathUtils.radToDeg(Math.atan2(v.x, v.y));
+      const el = MathUtils.radToDeg(Math.asin(v.z / Math.max(d, 1e-6)));
+      ui.readout.textContent = `cam az ${az.toFixed(0)}° el ${el.toFixed(0)}° d ${d.toFixed(1)}m`;
+    }
+  }
   scheduleCameraSave();
 }
 function updateSplitUI() {
@@ -1237,7 +1242,7 @@ ui.shareView.addEventListener('click', async () => {
 });
 document.addEventListener('fullscreenchange', () => {
   const fs = isFullscreen();
-  ui.fullscreenToggle.textContent = fs ? 'Exit Fullscreen' : 'Fullscreen';
+  ui.fullscreenToggle.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
   ui.fullscreenToggle.setAttribute('aria-pressed', String(fs));
   allLoadedEntries().forEach(e => e.instance.notifyChange());
 });
