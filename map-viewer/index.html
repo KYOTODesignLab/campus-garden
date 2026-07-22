@@ -156,15 +156,15 @@ html,body{
 }
 #envPanel.hiddenPanel{opacity:0; transform:translateY(12px); pointer-events:none;}
 
-#metricBar{display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:12px;}
+#metricBar{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:12px;}
 .metricBtn{
-  display:flex; align-items:center; gap:7px;
-  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.08em;
+  display:flex; align-items:center; gap:5px;
+  font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.06em;
   color:var(--dim); background:transparent; border:1px solid var(--line);
-  padding:7px 12px; cursor:pointer; transition:all 0.2s;
+  padding:6px 9px; cursor:pointer; transition:all 0.2s;
 }
-.metricBtn .dot{width:7px; height:7px; border-radius:50%; opacity:0.4; transition:opacity 0.2s;}
-.metricBtn .mval{color:var(--dimmer); margin-left:2px; transition:color 0.2s;}
+.metricBtn .dot{width:6px; height:6px; border-radius:50%; opacity:0.4; transition:opacity 0.2s;}
+.metricBtn .mval{color:var(--dimmer); margin-left:1px; transition:color 0.2s;}
 .metricBtn.active{color:var(--ink); border-color:var(--line-strong);}
 .metricBtn.active .dot{opacity:1;}
 .metricBtn.active .mval{color:var(--dim);}
@@ -340,7 +340,7 @@ html,body{
 
   <div id="envPanel">
     <div id="metricBar">
-      <div id="metricBtns" style="display:flex; flex-wrap:wrap; gap:8px;"></div>
+      <div id="metricBtns" style="display:flex; flex-wrap:wrap; gap:6px;"></div>
       <div id="rangeTabs">
         <button class="rangeBtn active" data-range="day">DAY</button>
         <button class="rangeBtn" data-range="week">WEEK</button>
