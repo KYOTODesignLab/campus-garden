@@ -993,6 +993,7 @@ function buildStateSnapshot() {
   };
 }
 function saveState() {
+  if (specimenParams) return; // embed sessions are ephemeral — never leak into the shared saved state
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(buildStateSnapshot()));
   } catch { /* localStorage unavailable (private browsing, quota, etc.) — not critical. */ }
