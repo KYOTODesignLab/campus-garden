@@ -989,12 +989,10 @@ function stopPlay(){
   if(playAnimId){ cancelAnimationFrame(playAnimId); playAnimId = null; }
   playBtn.textContent = '▶';
   playBtn.classList.remove('playing');
-  /* snap to the nearest actual value once movement stops */
-  if(scrubPos !== null){
-    const n = seriesForRange(activeRange);
-    scrubPos = Math.min(n-1, Math.round(scrubPos));
-    refreshAll();
-  }
+  /* return to the live reading once playback stops, rather than freezing
+     on whatever historical point it happened to land on */
+  scrubPos = null;
+  refreshAll();
 }
 playBtn.addEventListener('click', ()=> playing ? stopPlay() : startPlay());
 
@@ -1658,7 +1656,6 @@ function openDetail(p){
   document.getElementById('topbarStatus').classList.add('hidden');
   openSensorId = null;
   currentDetailNode = p;
-  if(playing) stopPlay();
   clearCloud();
 
   document.getElementById('dpCode').textContent = p.code;
