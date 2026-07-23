@@ -803,7 +803,8 @@ function getSensorSeries(sensorId, metricKey, range){
   return vals;
 }
 
-/* averaged series across all sensors — used for the chart line */
+/* averaged series across all sensors — used for the chart line when no
+   specific element is selected */
 function getSeries(metricKey, range){
   const n = seriesForRange(range);
   const out = [];
@@ -811,6 +812,26 @@ function getSeries(metricKey, range){
     let sum=0;
     SENSORS.forEach(s=> sum += getSensorSeries(s.id, metricKey, range)[i]);
     out.push(sum/SENSORS.length);
+  }
+  return out;
+}
+
+/* same circle-membership weighting as interpolatedValueAt, but across the
+   whole historical series — keeps the detail-view chart in agreement with
+   the spatially-interpolated "currently X" value shown for that element,
+   instead of the site-wide average used everywhere else */
+function getInterpolatedSeriesAt(wx, wy, metricKey, range){
+  const n = seriesForRange(range);
+  const out = [];
+  for(let i=0;i<n;i++){
+    let wsum=0, vsum=0;
+    SENSORS.forEach(s=>{
+      const dx=wx-s.x, dy=wy-s.y;
+      const d=Math.sqrt(dx*dx+dy*dy);
+      const w=membership(d);
+      wsum+=w; vsum+=w*getSensorSeries(s.id, metricKey, range)[i];
+    });
+    out.push(wsum<=0.0001 ? getSeries(metricKey,range)[i] : vsum/wsum);
   }
   return out;
 }
@@ -1516,12 +1537,17 @@ function renderChart(){
 
   metricsArr.forEach(k=>{
     const m = METRICS[k];
-    const series = getSeries(k, activeRange);
+    const atLocation = currentDetailNode && currentDetailNode.type === 'plant';
+    const series = atLocation
+      ? getInterpolatedSeriesAt(currentDetailNode.x, currentDetailNode.y, k, activeRange)
+      : getSeries(k, activeRange);
     /* keep the NOW point in sync with the same live reading shown on the
-       metric button / sensor popover, instead of a stale synthetic value */
-    let liveSum = 0;
-    SENSORS.forEach(s=> liveSum += currentValue(s,k));
-    series[series.length-1] = liveSum/SENSORS.length;
+       metric button / sensor popover / species panel, instead of a stale
+       synthetic value — location-interpolated when a specific element is
+       selected, site-wide average otherwise */
+    series[series.length-1] = atLocation
+      ? interpolatedValueAt(currentDetailNode.x, currentDetailNode.y, k)
+      : (()=>{ let s=0; SENSORS.forEach(sn=> s+=currentValue(sn,k)); return s/SENSORS.length; })();
     const pts = series.map((v,i)=>{
       const norm = (v - m.min)/(m.max - m.min);
       const x = padL + (plotW/(n-1))*i;
