@@ -101,7 +101,7 @@ button:disabled{opacity:.35;cursor:not-allowed;}
 .compare-hint[hidden]{display:none;}
 .layers button .d.before{background:#9fb27e}.layers button .d.overlay{background:var(--d-gain)}
 
-/* embed mode (?url=...&embed=1): a single specimen fills the frame with no
+/* embed mode (?dataset=...&embed=1): a single specimen fills the frame with no
    dataset picker, toolbar, hints, or legend — used when this viewer is
    embedded inside another page (e.g. a map viewer's detail panel) */
 body.embed-mode .hud,
@@ -111,3 +111,14 @@ body.embed-mode .split-labels,
 body.embed-mode .compare-hint,
 body.embed-mode .viewhint,
 body.embed-mode .legend{display:none !important;}
+
+#embedLoading{
+  display:none;
+  position:absolute; inset:0; z-index:8;
+  align-items:center; justify-content:center;
+  font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;
+  font-size:11px; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-soft);
+  background:var(--bg); pointer-events:none;
+}
+body.embed-mode #embedLoading{display:flex;}
+body.embed-mode.embed-loaded #embedLoading{display:none;}
