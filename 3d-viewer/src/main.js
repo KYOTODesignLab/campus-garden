@@ -97,6 +97,7 @@ const COLOR_SCHEMES = {
 //   dropdowns.
 const state = {
   datasets: [],   // [{ id, label, url }] from manifest.json, user-selectable
+  specimens: [],  // [{ id, label, url }] from manifest.json, loaded only via ?dataset=<id>&embed=1 — never listed for selection
   panes: {
     left: { role: 'left', target: null, datasetId: '', entry: null },
     right: { role: 'right', target: null, datasetId: '', entry: null },
@@ -284,8 +285,12 @@ function effectiveColorRange(attrName) {
 // --- Manifest -------------------------------------------------------------
 // public/data/manifest.json format:
 // {
-//   "datasets": [{ "id": "2024-06", "label": "June 2024", "url": "..." }, ...]
+//   "datasets": [{ "id": "2024-06", "label": "June 2024", "url": "..." }, ...],
+//   "specimens": [{ "id": "PL-A1", "label": "Fringed Iris", "url": "..." }, ...]
 // }
+// "specimens" are individually-cropped point clouds (e.g. one plant from a
+// map viewer's detail panel) — loaded only via ?dataset=<id>&embed=1, never
+// listed in the Split View / Superimpose dropdowns, which reflect "datasets" only.
 // For backward compatibility, legacy manifests are still accepted:
 // - { before, after } fields (no "datasets" array) become a two-entry list.
 // - a "ground" field (from the old fixed Difference-mode dataset) is folded
@@ -318,7 +323,13 @@ async function discoverManifest() {
     }
   }
 
-  return { datasets };
+  const specimens = Array.isArray(manifest.specimens)
+    ? manifest.specimens
+        .filter(d => d?.url)
+        .map((d, i) => ({ id: String(d.id ?? `specimen-${i}`), label: String(d.label ?? d.id ?? `Specimen ${i + 1}`), url: toUrl(d.url) }))
+    : [];
+
+  return { datasets, specimens };
 }
 
 // --- Entry / instance lifecycle --------------------------------------------
@@ -1041,6 +1052,19 @@ function applySavedChoicesAfterLoad(saved) {
   if (saved.colorMax != null) ui.colorMax.value = saved.colorMax;
 }
 
+// A specimen link (?dataset=<id>&embed=1) loads exactly one point cloud from
+// manifest.json's "specimens" array — used by embeds that show a single
+// cropped export (e.g. a map viewer's detail panel) without that specimen
+// ever appearing in the normal Split View / Superimpose dropdowns, which
+// only ever reflect "datasets".
+function readSpecimenParams() {
+  const params = new URLSearchParams(location.search);
+  const id = params.get('dataset');
+  if (!id) return null;
+  return { id, embed: params.get('embed') === '1' };
+}
+const specimenParams = readSpecimenParams();
+
 async function init() {
   try {
     setStatus('Reading manifest …');
@@ -1055,7 +1079,24 @@ async function init() {
     state.overlay.target.innerHTML = '';
     const manifest = await discoverManifest();
     state.datasets = manifest.datasets;
+    state.specimens = manifest.specimens;
     populateDatasetSelects();
+
+    if (specimenParams) {
+      document.body.classList.add('embed-mode');
+      const specimen = state.specimens.find(s => s.id === specimenParams.id);
+      if (!specimen) {
+        setStatus(`Specimen "${specimenParams.id}" not found in manifest.json.`, true);
+        return;
+      }
+      // Registered after populateDatasetSelects() so selectPane() can resolve
+      // it, but it never appears as an option in the dropdowns themselves.
+      state.datasets.push(specimen);
+      await selectPane('left', specimen.id);
+      await applyMode('superimpose');
+      setStatus(`Loaded ${specimen.label}.`);
+      return;
+    }
 
     const sharedState = readStateFromUrlHash();
     const saved = sharedState ?? loadSavedState();
@@ -1503,6 +1544,7 @@ window.addEventListener('pointermove', event => {
 
 const INTRO_SEEN_KEY = 'copc-viewer-intro-seen-v1';
 function maybeShowIntro() {
+  if (specimenParams) return;
   try {
     if (localStorage.getItem(INTRO_SEEN_KEY)) return;
   } catch { /* localStorage unavailable — just show it, no harm in repeating. */ }

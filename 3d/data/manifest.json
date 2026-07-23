@@ -1,8 +1,11 @@
 {
   "datasets": [
-   { "id": "before", "label": "Before - 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/before.copc.laz" },
-    { "id": "after", "label": "After - 2026-05", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/after.copc.laz" },
-    { "id": "before_FullRes", "label": "Before_FullRes - 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/Before_FullRes_Crop.copc.laz" },
-    { "id": "after_FullRes", "label": "After_FullRes - 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/After_FullRes_Crop.copc.laz" }
+    { "id": "before", "label": "Before – 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/before.copc.laz" },
+    { "id": "after", "label": "After – 2026-05", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/after.copc.laz" },
+    { "id": "before_FullRes", "label": "Before_FullRes – 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/Before_FullRes_Crop.copc.laz" },
+    { "id": "after_FullRes", "label": "After_FullRes – 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/After_FullRes_Crop.copc.laz" }
+  ],
+  "specimens": [
+    { "id": "PL-A1", "label": "Fringed Iris", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/specimens/PL-A1_FringedIris.copc.laz" }
   ]
 }

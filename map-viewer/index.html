@@ -100,7 +100,7 @@ html,body{
 }
 
 .node{cursor:pointer;}
-.node .ring{fill:none; stroke:var(--pulse-base); stroke-width:2; opacity:0.9; animation:ringBreathe 3.4s ease-in-out infinite;}
+.node .ring{fill:none; stroke:var(--pulse-base); stroke-width:3; opacity:0.9; animation:ringBreathe 3.4s ease-in-out infinite;}
 .node .core{fill:var(--pulse-base); transform-box:fill-box; transform-origin:center; animation:corePulse 3.4s ease-in-out infinite;}
 .node:hover .core{fill:var(--accent); animation:none; transform:scale(1);}
 .node:hover .ring{stroke:var(--accent); animation:none; opacity:0.9;}
@@ -129,7 +129,7 @@ html,body{
 
 /* ---------- sensor nodes ---------- */
 .sensor{cursor:pointer;}
-.sensor .sq{fill:none; stroke:var(--ink); stroke-width:1.6; opacity:0.85; transition:stroke 0.2s;}
+.sensor .sq{fill:none; stroke:var(--ink); stroke-width:2.6; opacity:0.85; transition:stroke 0.2s;}
 .sensor .sqcore{fill:var(--pulse-base); transform-box:fill-box; transform-origin:center; animation:corePulse 3.4s ease-in-out infinite;}
 .sensor:hover .sq{stroke:#5fd1c9;}
 .sensor:hover .sqcore{fill:#5fd1c9; animation:none; transform:scale(1);}
@@ -433,7 +433,7 @@ html,body{
 const PLANTS = [
   {
     id:'a1', code:'PL-A1', type:'plant', x:701, y:963, nameEn:'Fringed Iris', nameJa:'シャガ', color:0x8f6fd1,
-    scan: null, /* set to a dataset id (e.g. 'PL-A1') once a real COPC specimen export exists */
+    scan: 'PL-A1',
     tempRange:{min:10,max:22}, humidityRange:{min:60,max:75},
     species:{a:'Shade-tolerant rhizomatous perennial with fan-shaped leaves and fringed lavender-white blooms.', b:'10–22°C', c:'High, 60–75% ambient', d:'Woodland floor, shaded slopes near structures', e:'Occasional slugs; pollinated by small bees'},
     care:{a:'Hand fork, mulch, watering can', b:'Divide every 3–4 years, mulch in autumn', c:'Remove spent flower stalks after bloom', d:'Simulation available — preview spread over 2 years'}
@@ -558,11 +558,11 @@ function buildNodes(){
 
     const ring = document.createElementNS(svgNS,'circle');
     ring.setAttribute('class','ring');
-    ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y); ring.setAttribute('r', 10);
+    ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y); ring.setAttribute('r', 20);
 
     const core = document.createElementNS(svgNS,'circle');
     core.setAttribute('class','core');
-    core.setAttribute('cx', p.x); core.setAttribute('cy', p.y); core.setAttribute('r', 2.6);
+    core.setAttribute('cx', p.x); core.setAttribute('cy', p.y); core.setAttribute('r', 5.2);
     /* stagger the breathing animation per node so the whole map doesn't pulse in lockstep */
     const pulseSeed = seededRandom(p.x*13 + p.y*7 + p.id.length*29)();
     core.style.animationDelay = (pulseSeed*3.4).toFixed(2)+'s';
@@ -572,11 +572,11 @@ function buildNodes(){
 
     const hit = document.createElementNS(svgNS,'circle');
     hit.setAttribute('class','hitArea');
-    hit.setAttribute('cx', p.x); hit.setAttribute('cy', p.y); hit.setAttribute('r', 24);
+    hit.setAttribute('cx', p.x); hit.setAttribute('cy', p.y); hit.setAttribute('r', 32);
 
     const tag = document.createElementNS(svgNS,'text');
     tag.setAttribute('class','tag');
-    tag.setAttribute('x', p.x + 17); tag.setAttribute('y', p.y - 10);
+    tag.setAttribute('x', p.x + 27); tag.setAttribute('y', p.y - 15);
     tag.textContent = p.code;
 
     g.appendChild(ring); g.appendChild(core);
@@ -836,7 +836,7 @@ function buildSensors(){
     const g = document.createElementNS(svgNS,'g');
     g.setAttribute('class','sensor');
     g.setAttribute('data-id', s.id);
-    const half = 9;
+    const half = 16;
 
     const sq = document.createElementNS(svgNS,'rect');
     sq.setAttribute('class','sq');
@@ -846,7 +846,7 @@ function buildSensors(){
 
     const core = document.createElementNS(svgNS,'circle');
     core.setAttribute('class','sqcore');
-    core.setAttribute('cx', s.x); core.setAttribute('cy', s.y); core.setAttribute('r', 2.4);
+    core.setAttribute('cx', s.x); core.setAttribute('cy', s.y); core.setAttribute('r', 4.6);
     /* stagger so sensors don't all pulse together */
     const pulseSeed = seededRandom(s.x*11 + s.y*17 + s.id.length*31)();
     core.style.animationDelay = (pulseSeed*3.4).toFixed(2)+'s';
@@ -854,12 +854,12 @@ function buildSensors(){
 
     const label = document.createElementNS(svgNS,'text');
     label.setAttribute('class','slabel');
-    label.setAttribute('x', s.x+16); label.setAttribute('y', s.y-9);
+    label.setAttribute('x', s.x+25); label.setAttribute('y', s.y-14);
     label.textContent = s.code;
 
     const hit = document.createElementNS(svgNS,'circle');
     hit.setAttribute('class','hitArea');
-    hit.setAttribute('cx', s.x); hit.setAttribute('cy', s.y); hit.setAttribute('r', 22);
+    hit.setAttribute('cx', s.x); hit.setAttribute('cy', s.y); hit.setAttribute('r', 30);
 
     g.appendChild(sq); g.appendChild(core);
     g.appendChild(label); g.appendChild(hit);
@@ -1914,8 +1914,7 @@ function animate(){
 animate();
 
 /* Base path to the COPC point cloud viewer (sibling folder in the repo:
-   campus-garden/3d/, reached as ../3d/ from campus-garden/map-viewer/).
-   Update this if the viewer ever moves. */
+   campus-garden/3d/, reached as ../3d/ from campus-garden/map-viewer/). */
 const SCAN_VIEWER_BASE = '../3d/';
 
 function loadCloud(p){
@@ -1923,8 +1922,9 @@ function loadCloud(p){
   const hint = document.getElementById('dragHint');
 
   if(p.scan){
-    /* real specimen: hand off to the COPC viewer, embedded and clipped to
-       just this dataset — no procedural placeholder needed */
+    /* real specimen: hand off to the COPC viewer, which resolves this id
+       against manifest.json's "specimens" list (kept separate from
+       "datasets" so it never shows up in that viewer's own dropdowns) */
     canvas.style.display = 'none';
     frame.classList.add('active');
     frame.src = `${SCAN_VIEWER_BASE}?dataset=${encodeURIComponent(p.scan)}&embed=1`;
