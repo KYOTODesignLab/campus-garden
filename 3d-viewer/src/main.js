@@ -416,20 +416,26 @@ function combinedBox(list = allLoadedEntries()) {
   for (const entry of list) { try { box.union(entry.cloud.getBoundingBox()); } catch {} }
   return box.isEmpty() ? null : box;
 }
-function fitCamera(entry, box) {
+function fitCamera(entry, box, opts = {}) {
   const center = box.getCenter(new Vector3());
   const size = box.getSize(new Vector3());
   const camera = entry.instance.view.camera;
-  const radius = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y, size.z) * 0.5;
-  const distance = (radius / Math.tan(MathUtils.degToRad(camera.fov) / 2)) * 1.7;
-  // oblique 3/4 view (elevated ~35° above the horizon) rather than a
-  // near-top-down look, which reads poorly for anything with vertical form
-  const elevation = MathUtils.degToRad(22);
-  camera.position.set(
-    center.x,
-    center.y - distance * Math.cos(elevation),
-    center.z + distance * Math.sin(elevation) + size.z * 0.3,
-  );
+  if (opts.oblique) {
+    // used only for the specimen embed: a flatter, more distant 3/4 view
+    // rather than the near-top-down default below, which reads poorly for
+    // anything with vertical form when there's no orbiting comparison going on
+    const radius = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y, size.z) * 0.5;
+    const distance = (radius / Math.tan(MathUtils.degToRad(camera.fov) / 2)) * (opts.distanceMultiplier ?? 1.7);
+    const elevation = MathUtils.degToRad(opts.elevationDeg ?? 22);
+    camera.position.set(
+      center.x,
+      center.y - distance * Math.cos(elevation),
+      center.z + distance * Math.sin(elevation) + size.z * 0.3,
+    );
+  } else {
+    const altitude = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y) / Math.tan(MathUtils.degToRad(camera.fov) / 2) * 0.6;
+    camera.position.set(center.x, center.y - Math.max(size.y, 1) * 0.05, box.max.z + altitude);
+  }
   camera.lookAt(center);
   entry.instance.view.controls?.target?.copy(center);
   entry.instance.view.controls?.update?.();
@@ -1143,6 +1149,8 @@ async function init() {
       const rgb = resolveQuickAttribute('rgb');
       if (rgb) { ui.attribute.value = rgb; updateAttribute(); }
       setStatus(`Loaded ${specimen.label}.`);
+      const overlayEntry = state.overlay.leftEntry ?? state.overlay.rightEntry;
+      if (overlayEntry) fitCamera(overlayEntry, overlayEntry.cloud.getBoundingBox(), { oblique: true });
       startEmbedAutoRotate();
       return;
     }
