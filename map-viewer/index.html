@@ -971,9 +971,10 @@ document.querySelectorAll('.rangeBtn').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     document.querySelectorAll('.rangeBtn').forEach(b=>b.classList.remove('active'));
     btn.classList.add('active');
+    const wasPlaying = playing;
     activeRange = btn.dataset.range;
     scrubPos = null;
-    stopPlay();
+    if(wasPlaying){ stopPlay(); startPlay(); } else { stopPlay(); }
     refreshAll();
   });
 });
@@ -1541,13 +1542,10 @@ function renderChart(){
     const series = atLocation
       ? getInterpolatedSeriesAt(currentDetailNode.x, currentDetailNode.y, k, activeRange)
       : getSeries(k, activeRange);
-    /* keep the NOW point in sync with the same live reading shown on the
-       metric button / sensor popover / species panel, instead of a stale
-       synthetic value — location-interpolated when a specific element is
-       selected, site-wide average otherwise */
-    series[series.length-1] = atLocation
-      ? interpolatedValueAt(currentDetailNode.x, currentDetailNode.y, k)
-      : (()=>{ let s=0; SENSORS.forEach(sn=> s+=currentValue(sn,k)); return s/SENSORS.length; })();
+    /* the line itself (including its last/NOW point) always reflects the
+       stable, cached series data and never moves on its own — only the
+       scrub tracker sliding along it, and the "currently X" readouts
+       elsewhere, follow the live/scrub position */
     const pts = series.map((v,i)=>{
       const norm = (v - m.min)/(m.max - m.min);
       const x = padL + (plotW/(n-1))*i;
