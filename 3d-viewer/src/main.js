@@ -420,13 +420,53 @@ function fitCamera(entry, box) {
   const center = box.getCenter(new Vector3());
   const size = box.getSize(new Vector3());
   const camera = entry.instance.view.camera;
-  const altitude = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y) / Math.tan(MathUtils.degToRad(camera.fov) / 2) * 0.6;
-  camera.position.set(center.x, center.y - Math.max(size.y, 1) * 0.05, box.max.z + altitude);
+  const radius = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y, size.z) * 0.5;
+  const distance = (radius / Math.tan(MathUtils.degToRad(camera.fov) / 2)) * 1.15;
+  // oblique 3/4 view (elevated ~35° above the horizon) rather than a
+  // near-top-down look, which reads poorly for anything with vertical form
+  const elevation = MathUtils.degToRad(35);
+  camera.position.set(
+    center.x,
+    center.y - distance * Math.cos(elevation),
+    center.z + distance * Math.sin(elevation) + size.z * 0.3,
+  );
   camera.lookAt(center);
   entry.instance.view.controls?.target?.copy(center);
   entry.instance.view.controls?.update?.();
   updateReadout();
   entry.instance.notifyChange(camera);
+}
+
+// Gentle idle spin for embedded specimen views (a static point cloud in a
+// small panel reads much better turning slowly) — stops permanently the
+// instant the user drags, zooms, or pans, handing control back to them.
+let embedRotateRaf = null;
+function stopEmbedAutoRotate() {
+  if (embedRotateRaf) cancelAnimationFrame(embedRotateRaf);
+  embedRotateRaf = null;
+}
+function startEmbedAutoRotate() {
+  const entry = state.panes.left.entry ?? state.overlay.leftEntry;
+  const controls = entry?.instance?.view?.controls;
+  if (!entry || !controls) return;
+  stopEmbedAutoRotate();
+  controls.addEventListener('start', stopEmbedAutoRotate, { once: true });
+  const camera = entry.instance.view.camera;
+  const speed = MathUtils.degToRad(6); // radians/sec — one full turn ≈ 60s
+  let last = performance.now();
+  function tick(now) {
+    const dt = Math.min((now - last) / 1000, 0.1);
+    last = now;
+    const target = controls.target;
+    const offset = camera.position.clone().sub(target);
+    offset.applyAxisAngle(new Vector3(0, 0, 1), speed * dt); // Z-up, matches fitCamera's convention
+    camera.position.copy(target).add(offset);
+    camera.lookAt(target);
+    controls.update();
+    entry.instance.notifyChange(camera);
+    embedRotateRaf = requestAnimationFrame(tick);
+  }
+  embedRotateRaf = requestAnimationFrame(tick);
 }
 function captureCameraSnapshot(entry) {
   if (!entry) return null;
@@ -1064,6 +1104,7 @@ function readSpecimenParams() {
   return { id, embed: params.get('embed') === '1' };
 }
 const specimenParams = readSpecimenParams();
+if (specimenParams) document.body.classList.add('embed-mode');
 
 async function init() {
   try {
@@ -1083,7 +1124,6 @@ async function init() {
     populateDatasetSelects();
 
     if (specimenParams) {
-      document.body.classList.add('embed-mode');
       const specimen = state.specimens.find(s => s.id === specimenParams.id);
       if (!specimen) {
         setStatus(`Specimen "${specimenParams.id}" not found in manifest.json.`, true);
@@ -1094,7 +1134,14 @@ async function init() {
       state.datasets.push(specimen);
       await selectPane('left', specimen.id);
       await applyMode('superimpose');
+      // Superimpose mode defaults to a red/blue "Solid Color" split meant to
+      // tell two datasets apart — with only one specimen loaded, force true
+      // RGB coloring instead of showing it as a single flat red color.
+      state.attributeUserSet = true;
+      const rgb = resolveQuickAttribute('rgb');
+      if (rgb) { ui.attribute.value = rgb; updateAttribute(); }
       setStatus(`Loaded ${specimen.label}.`);
+      startEmbedAutoRotate();
       return;
     }
 
