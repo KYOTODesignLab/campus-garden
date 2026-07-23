@@ -100,3 +100,14 @@ button:disabled{opacity:.35;cursor:not-allowed;}
 .compare-hint{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:3;font-family:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-soft);background:rgba(10,11,9,.55);border:1px solid var(--line);padding:9px 14px;pointer-events:none;backdrop-filter:blur(4px);}
 .compare-hint[hidden]{display:none;}
 .layers button .d.before{background:#9fb27e}.layers button .d.overlay{background:var(--d-gain)}
+
+/* embed mode (?url=...&embed=1): a single specimen fills the frame with no
+   dataset picker, toolbar, hints, or legend — used when this viewer is
+   embedded inside another page (e.g. a map viewer's detail panel) */
+body.embed-mode .hud,
+body.embed-mode .toolbar-right,
+body.embed-mode .split-divider,
+body.embed-mode .split-labels,
+body.embed-mode .compare-hint,
+body.embed-mode .viewhint,
+body.embed-mode .legend{display:none !important;}
