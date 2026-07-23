@@ -421,10 +421,10 @@ function fitCamera(entry, box) {
   const size = box.getSize(new Vector3());
   const camera = entry.instance.view.camera;
   const radius = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y, size.z) * 0.5;
-  const distance = (radius / Math.tan(MathUtils.degToRad(camera.fov) / 2)) * 1.15;
+  const distance = (radius / Math.tan(MathUtils.degToRad(camera.fov) / 2)) * 1.7;
   // oblique 3/4 view (elevated ~35° above the horizon) rather than a
   // near-top-down look, which reads poorly for anything with vertical form
-  const elevation = MathUtils.degToRad(35);
+  const elevation = MathUtils.degToRad(22);
   camera.position.set(
     center.x,
     center.y - distance * Math.cos(elevation),
@@ -1126,6 +1126,7 @@ async function init() {
     if (specimenParams) {
       const specimen = state.specimens.find(s => s.id === specimenParams.id);
       if (!specimen) {
+        document.body.classList.add('embed-loaded');
         setStatus(`Specimen "${specimenParams.id}" not found in manifest.json.`, true);
         return;
       }
@@ -1133,6 +1134,7 @@ async function init() {
       // it, but it never appears as an option in the dropdowns themselves.
       state.datasets.push(specimen);
       await selectPane('left', specimen.id);
+      document.body.classList.add('embed-loaded');
       await applyMode('superimpose');
       // Superimpose mode defaults to a red/blue "Solid Color" split meant to
       // tell two datasets apart — with only one specimen loaded, force true
