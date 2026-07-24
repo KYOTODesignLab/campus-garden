@@ -62,10 +62,10 @@ html,body{
 #topbar .status .dot{display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:6px;}
 
 #fullscreenBtn{
-  position:absolute; top:12px; right:16px; z-index:40;
+  position:absolute; top:12px; right:16px; z-index:41;
   width:30px; height:30px;
   display:flex; align-items:center; justify-content:center;
-  background:transparent; border:1px solid var(--line);
+  background:rgba(10,11,9,0.72); backdrop-filter:blur(4px); border:1px solid var(--line);
   color:var(--dim); cursor:pointer; pointer-events:auto;
   transition:all 0.2s;
 }
@@ -249,6 +249,7 @@ html,body{
   #scrubReadout{margin-left:0; width:100%; order:99;}
   #chartWrap{height:125px;}
   #fullscreenBtn{top:9px; right:12px; width:28px; height:28px;}
+  #topbar .status{gap:12px; max-width:calc(100vw - 130px); overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
 }
 
 #detailView{
@@ -365,9 +366,9 @@ html,body{
 
 @media (max-width:820px){
   #mapView{top:48px;}
-  #mapView.split{right:0; opacity:0; filter:blur(6px); pointer-events:none;}
-  #detailView{left:0;}
-  #detailView.active{left:0;}
+  #mapView.split{right:0 !important; opacity:0; filter:blur(6px); pointer-events:none;}
+  #detailView{left:0 !important;}
+  #detailView.active{left:0 !important;}
   #splitHandle{display:none !important;}
 }
 </style>
@@ -1734,6 +1735,15 @@ const backBtn = document.getElementById('backBtn');
 const splitHandle = document.getElementById('splitHandle');
 let splitRatio = 0.58; // detailView's left edge, as a fraction of #stage width
 function applySplit(){
+  if(window.innerWidth <= 820){
+    /* mobile: no side-by-side split at all — clear any leftover inline
+       styles so the mobile CSS (full-width detail view) is the only
+       thing controlling layout, instead of fighting with it */
+    mapView.style.right = '';
+    detailView.style.left = '';
+    splitHandle.style.left = '';
+    return;
+  }
   const pct = (splitRatio*100).toFixed(2)+'%';
   mapView.style.right = (100-splitRatio*100).toFixed(2)+'%';
   detailView.style.left = pct;
