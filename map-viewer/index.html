@@ -269,7 +269,8 @@ html,body{
 #detailScroll::-webkit-scrollbar-thumb{background:var(--dimmer);}
 
 #detailHeader{
-  position:absolute; top:16px; left:16px; right:16px; z-index:19;
+  position:absolute; top:16px; left:16px; z-index:19;
+  width:fit-content; max-width:calc(100% - 32px);
   background:rgba(6,6,5,0.62); backdrop-filter:blur(4px);
   padding:9px 12px 9px 10px; border-radius:2px;
   pointer-events:none;
