@@ -14,6 +14,7 @@ const SOLID_COLOR_ATTR = '__SOLID__';
 
 const ui = {
   stage: document.getElementById('stage'),
+  embedToggle: document.getElementById('embedToggle'),
   compareViews: document.getElementById('compareViews'),
   viewBefore: document.getElementById('viewBefore'),
   viewAfter: document.getElementById('viewAfter'),
@@ -474,6 +475,47 @@ function startEmbedAutoRotate() {
   }
   embedRotateRaf = requestAnimationFrame(tick);
 }
+
+// The Specimen/Site toggle always swaps to this one fixed dataset — the
+// latest full-resolution site scan — regardless of which specimen is open.
+const ENV_DATASET_ID = 'after_FullRes';
+let embedViewMode = 'specimen'; // 'specimen' | 'site'
+
+function updateEmbedToggleUI() {
+  if (!ui.embedToggle) return;
+  ui.embedToggle.querySelectorAll('button').forEach(btn => {
+    btn.setAttribute('aria-pressed', String(btn.dataset.view === embedViewMode));
+  });
+}
+
+// Shared by both the initial specimen load and the Specimen/Site toggle —
+// loads one dataset into the embed's single pane, forces true RGB coloring
+// (superimpose mode otherwise defaults to a red/blue split meant for two
+// datasets), positions the camera, and restarts the idle auto-rotate.
+// keepCamera reuses the exact camera position/target from whatever was
+// showing before the switch (both datasets share the same real-world
+// coordinates, so this keeps the specimen framed the same way inside the
+// full scan as it was in isolation) instead of re-fitting to the new
+// dataset's own bounding box.
+async function loadEmbedPane(datasetId, { oblique = false, keepCamera = false } = {}) {
+  const prevEntry = state.overlay.leftEntry ?? state.overlay.rightEntry ?? state.panes.left.entry;
+  const snapshot = keepCamera ? captureCameraSnapshot(prevEntry) : null;
+  document.body.classList.remove('embed-loaded');
+  await selectPane('left', datasetId);
+  document.body.classList.add('embed-loaded');
+  await applyMode('superimpose');
+  state.attributeUserSet = true;
+  const rgb = resolveQuickAttribute('rgb');
+  if (rgb) { ui.attribute.value = rgb; updateAttribute(); }
+  const overlayEntry = state.overlay.leftEntry ?? state.overlay.rightEntry;
+  if (overlayEntry) {
+    if (snapshot) applyCameraSnapshot(overlayEntry, snapshot);
+    else fitCamera(overlayEntry, overlayEntry.cloud.getBoundingBox(), { oblique });
+  }
+  startEmbedAutoRotate();
+  updateEmbedToggleUI();
+}
+
 function captureCameraSnapshot(entry) {
   if (!entry) return null;
   const camera = entry.instance.view.camera;
@@ -1140,19 +1182,27 @@ async function init() {
       // Registered after populateDatasetSelects() so selectPane() can resolve
       // it, but it never appears as an option in the dropdowns themselves.
       state.datasets.push(specimen);
-      await selectPane('left', specimen.id);
-      document.body.classList.add('embed-loaded');
-      await applyMode('superimpose');
-      // Superimpose mode defaults to a red/blue "Solid Color" split meant to
-      // tell two datasets apart — with only one specimen loaded, force true
-      // RGB coloring instead of showing it as a single flat red color.
-      state.attributeUserSet = true;
-      const rgb = resolveQuickAttribute('rgb');
-      if (rgb) { ui.attribute.value = rgb; updateAttribute(); }
       setStatus(`Loaded ${specimen.label}.`);
-      const overlayEntry = state.overlay.leftEntry ?? state.overlay.rightEntry;
-      if (overlayEntry) fitCamera(overlayEntry, overlayEntry.cloud.getBoundingBox(), { oblique: true });
-      startEmbedAutoRotate();
+      await loadEmbedPane(specimen.id, { oblique: true });
+
+      // "Site" toggle: only offered when the fixed environment dataset (the
+      // latest full-resolution scan) is actually present in this manifest.
+      const hasEnv = state.datasets.some(d => d.id === ENV_DATASET_ID);
+      if (hasEnv && ui.embedToggle) {
+        ui.embedToggle.hidden = false;
+        ui.embedToggle.querySelectorAll('button').forEach(btn => {
+          btn.addEventListener('click', async () => {
+            if (btn.dataset.view === embedViewMode) return;
+            embedViewMode = btn.dataset.view;
+            updateEmbedToggleUI();
+            const target = embedViewMode === 'site' ? ENV_DATASET_ID : specimen.id;
+            // both datasets share the same real-world coordinates, so keep
+            // the exact camera position/target across the switch instead of
+            // re-fitting — the specimen should sit at the same spot in both
+            await loadEmbedPane(target, { keepCamera: true });
+          });
+        });
+      }
       return;
     }
 
