@@ -1392,33 +1392,16 @@ bindRangeAndNumber(ui.clipVertical, ui.clipVerticalNum, v => {
   saveState();
 });
 
-// Opens this page in a new tab, at the top level, so it fills the whole
-// browser window on its own — simpler and more reliable than trying to
-// expand nested iframes via CSS/postMessage, and works the same on mobile.
-// A new tab (rather than navigating the current one away) keeps whatever
-// is currently open here intact, and "returning" is just switching tabs.
-// Fills the browser viewport via CSS instead of the native Fullscreen API:
-// that API covers the whole physical screen (hiding browser chrome, not
-// wanted here) and has poor/no support for arbitrary elements on iOS
-// Safari. When embedded (e.g. inside a map viewer's detail panel or
-// campus-garden's 3D tab), relays a message up so the parent page can
-// expand this iframe to fill its own browser window instead — a real
-// toggle: click again, or press Escape, to shrink back down.
-let cssFullscreenActive = false;
-function isFullscreen() { return cssFullscreenActive; }
+// Opens this page at the top level (leaving any embedding iframe, e.g.
+// campus-garden's 3D tab), so it fills the whole browser window on its
+// own — simpler and more reliable than trying to expand nested iframes,
+// and works the same on mobile. The full current state (dataset, camera,
+// colors, clipping) carries over via the same URL-hash mechanism as Share.
 function toggleFullscreen() {
-  cssFullscreenActive = !cssFullscreenActive;
-  document.body.classList.toggle('css-fullscreen', cssFullscreenActive);
-  if (window.parent !== window) {
-    window.parent.postMessage({ appFullscreen: cssFullscreenActive }, '*');
-  }
-  const fs = cssFullscreenActive;
-  ui.fullscreenToggle.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
-  ui.fullscreenToggle.setAttribute('aria-pressed', String(fs));
-  allLoadedEntries().forEach(e => e.instance.notifyChange());
+  if (window.top === window) return; // already standalone — nothing to do
+  window.top.location.href = buildShareUrl();
 }
 ui.fullscreenToggle.addEventListener('click', () => { toggleFullscreen(); });
-window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && cssFullscreenActive) toggleFullscreen(); });
 ui.shareView.addEventListener('click', async () => {
   const url = buildShareUrl();
   const originalLabel = ui.shareView.textContent;
