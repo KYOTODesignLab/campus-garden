@@ -418,13 +418,23 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
   }
   btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
 
-  /* deep link support, e.g. from the embedded specimen viewer's
-     "Go to 3D Page" button: ?view=viewer&state=<encoded-camera> */
+  /* deep link support, e.g. from the embedded map/3D viewers' fullscreen
+     buttons: ?view=viewer&state=<encoded> or ?view=map&open=<id>&range=<range> */
   const params=new URLSearchParams(location.search);
   const stateParam=params.get('state');
   if(stateParam){
     const viewerFrame=document.querySelector('#view-viewer iframe');
     if(viewerFrame)viewerFrame.src=`./3d/#state=${stateParam}`;
+  }
+  const openParam=params.get('open'), rangeParam=params.get('range');
+  if(openParam||rangeParam){
+    const mapFrame=document.querySelector('#view-map iframe');
+    if(mapFrame){
+      const mapParams=new URLSearchParams();
+      if(openParam)mapParams.set('open',openParam);
+      if(rangeParam)mapParams.set('range',rangeParam);
+      mapFrame.src=`./map-viewer/?${mapParams.toString()}`;
+    }
   }
   const initialView=params.get('view');
   if(initialView&&views[initialView])show(initialView);
