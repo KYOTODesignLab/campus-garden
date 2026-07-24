@@ -256,7 +256,7 @@ html,body{
   position:absolute; top:0; left:100%; right:0; bottom:var(--envH, 234px);
   opacity:0; pointer-events:none;
   transition:opacity 0.55s ease, bottom 0.3s ease, left 0.45s ease;
-  z-index:15;
+  z-index:25;
   border-left:1px solid var(--line-strong);
 }
 #detailView.active{opacity:1; pointer-events:auto; left:58%;}
@@ -269,7 +269,7 @@ html,body{
 #detailScroll::-webkit-scrollbar-thumb{background:var(--dimmer);}
 
 #detailHeader{
-  position:absolute; top:16px; left:16px; z-index:19;
+  position:absolute; top:16px; left:16px; z-index:25;
   width:fit-content; max-width:calc(100% - 32px);
   background:rgba(6,6,5,0.62); backdrop-filter:blur(4px);
   padding:9px 12px 9px 10px; border-radius:2px;
@@ -281,7 +281,7 @@ html,body{
 
 #splitHandle{
   position:absolute; top:0; bottom:var(--envH, 234px);
-  left:calc(58% - 5px); width:10px; z-index:16;
+  left:calc(58% - 5px); width:10px; z-index:26;
   cursor:col-resize;
   opacity:0; pointer-events:none;
   transition:opacity 0.55s ease, left 0.45s ease;
