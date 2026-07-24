@@ -122,3 +122,8 @@ body.embed-mode .legend{display:none !important;}
 }
 body.embed-mode #embedLoading{display:flex;}
 body.embed-mode.embed-loaded #embedLoading{display:none;}
+
+#embedToggle{
+  position:absolute; left:14px; bottom:14px; z-index:6;
+}
+#embedToggle[hidden]{display:none;}
