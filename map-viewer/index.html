@@ -1095,16 +1095,30 @@ startPlay();
 (function initFullscreen(){
   const btn = document.getElementById('fullscreenBtn');
   if(!btn) return;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-  btn.title = 'Open full page';
-  btn.addEventListener('click', ()=>{
-    if(window.top === window) return; /* already standalone — nothing to do */
-    const url = new URL(location.href);
-    url.search = '';
-    if(currentDetailNode) url.searchParams.set('open', currentDetailNode.id);
-    url.searchParams.set('range', activeRange);
-    window.top.location.href = url.toString();
-  });
+  const ICON_EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  const ICON_COMPRESS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M15 21v-3a2 2 0 0 1 2-2h3M4 15h3a2 2 0 0 1 2 2v3"/></svg>';
+  const standalone = window.top === window;
+
+  if(standalone){
+    btn.innerHTML = ICON_COMPRESS;
+    btn.title = 'Back to site';
+    btn.addEventListener('click', ()=>{
+      const url = new URL('../index.html', location.href);
+      url.searchParams.set('view', 'map');
+      if(currentDetailNode) url.searchParams.set('open', currentDetailNode.id);
+      url.searchParams.set('range', activeRange);
+      location.href = url.toString();
+    });
+  } else {
+    btn.innerHTML = ICON_EXPAND;
+    btn.title = 'Open full page';
+    btn.addEventListener('click', ()=>{
+      const url = new URL(location.pathname, location.href);
+      if(currentDetailNode) url.searchParams.set('open', currentDetailNode.id);
+      url.searchParams.set('range', activeRange);
+      window.top.location.href = url.toString();
+    });
+  }
 })();
 
 /* restore state from a fullscreen handoff link (?open=<id>&range=<range>) */

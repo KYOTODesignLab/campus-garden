@@ -1088,6 +1088,18 @@ function buildGoTo3DPageUrl() {
   url.searchParams.set('state', encoded);
   return url.toString();
 }
+// Same target as buildGoTo3DPageUrl(), but carries the FULL current state
+// (dataset, colors, clipping, camera) — used when returning from the
+// standalone fullscreen view to the embedded one, where staying in exactly
+// the same session matters (unlike the specimen handoff, which deliberately
+// resets to the page's normal defaults).
+function buildBackToSiteUrl() {
+  const encoded = toBase64Url(buildStateSnapshot());
+  const url = new URL('../index.html', location.href);
+  url.searchParams.set('view', 'viewer');
+  url.searchParams.set('state', encoded);
+  return url.toString();
+}
 function readStateFromUrlHash() {
   const match = /(?:^|[#&])state=([^&]+)/.exec(location.hash);
   if (!match) return null;
@@ -1397,9 +1409,15 @@ bindRangeAndNumber(ui.clipVertical, ui.clipVerticalNum, v => {
 // own — simpler and more reliable than trying to expand nested iframes,
 // and works the same on mobile. The full current state (dataset, camera,
 // colors, clipping) carries over via the same URL-hash mechanism as Share.
+// When already standalone, the same button instead goes back to the
+// embedded view on campus-garden, carrying the same full state with it.
 function toggleFullscreen() {
-  if (window.top === window) return; // already standalone — nothing to do
-  window.top.location.href = buildShareUrl();
+  if (window.top !== window) window.top.location.href = buildShareUrl();
+  else location.href = buildBackToSiteUrl();
+}
+if (window.top === window) {
+  ui.fullscreenToggle.title = 'Back to site';
+  ui.fullscreenToggle.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 8 3 3 8 3"></polyline><polyline points="21 8 21 3 16 3"></polyline><polyline points="3 16 3 21 8 21"></polyline><polyline points="21 16 21 21 16 21"></polyline></svg>';
 }
 ui.fullscreenToggle.addEventListener('click', () => { toggleFullscreen(); });
 ui.shareView.addEventListener('click', async () => {
