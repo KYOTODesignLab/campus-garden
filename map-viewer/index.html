@@ -261,8 +261,7 @@ html,body{
 #detailView.active{opacity:1; pointer-events:auto; left:58%;}
 
 #detailScroll{
-  position:absolute; inset:0;
-  display:flex; flex-direction:column;
+  position:absolute; left:0; right:0; top:52%; bottom:0;
   overflow-y:auto;
 }
 #detailScroll::-webkit-scrollbar{width:3px;}
@@ -296,15 +295,12 @@ html,body{
 #mapView.no-transition, #detailView.no-transition{transition:none !important;}
 
 #viewport{
-  position:relative;
-  flex:0 0 52%;
-  min-width:0;
+  position:absolute; top:0; left:0; right:0; height:52%;
   min-height:0;
 }
 #vSplitHandle{
-  flex:0 0 9px;
+  position:absolute; left:0; right:0; top:calc(52% - 5px); height:10px; z-index:17;
   cursor:row-resize;
-  position:relative;
   background:transparent;
 }
 #vSplitHandle::after{
@@ -316,6 +312,7 @@ html,body{
 #viewport canvas{display:block; width:100%; height:100%;}
 #scanFrame{display:none; width:100%; height:100%; border:0;}
 #scanFrame.active{display:block;}
+#scanFrame.fullscreen{position:fixed; inset:0; z-index:9999;}
 
 #backBtn{
   flex:0 0 auto;
@@ -436,15 +433,15 @@ html,body{
       <div class="dp-name-ja" id="dpNameJa">—</div>
     </div>
 
+    <div id="viewport">
+      <canvas id="cloudCanvas"></canvas>
+      <iframe id="scanFrame" title="Point cloud specimen" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+      <div id="dragHint">DRAG ORBIT · SCROLL ZOOM · RIGHT-DRAG PAN</div>
+    </div>
+
+    <div id="vSplitHandle" title="Drag to resize"></div>
+
     <div id="detailScroll">
-      <div id="viewport">
-        <canvas id="cloudCanvas"></canvas>
-        <iframe id="scanFrame" title="Point cloud specimen" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
-        <div id="dragHint">DRAG ORBIT · SCROLL ZOOM · RIGHT-DRAG PAN</div>
-      </div>
-
-      <div id="vSplitHandle" title="Drag to resize"></div>
-
       <div id="dataPanel">
         <div class="tabs">
           <div class="tab active" data-tab="1" id="tabLabel1">SPECIES DATA</div>
@@ -1090,26 +1087,21 @@ const envPanel = document.getElementById('envPanel');
 const mapCaptionEl = document.getElementById('mapCaption');
 startPlay();
 
-/* ---- fullscreen toggle ---- */
+/* ---- fullscreen toggle ----
+   Fills the browser viewport via CSS instead of the native Fullscreen API:
+   that API always covers the whole physical screen (hiding browser chrome,
+   which isn't wanted here) and has poor/no support for arbitrary elements
+   on iOS Safari. When this page is itself embedded (e.g. inside campus-garden's
+   Map tab), a message is relayed to the parent page so IT can expand this
+   iframe to fill its own browser window — see the matching listener further
+   down for messages coming from the embedded 3D specimen viewer. */
 (function initFullscreen(){
   const btn = document.getElementById('fullscreenBtn');
-  const stageEl = document.getElementById('stage');
   const ICON_EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
   const ICON_COMPRESS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M15 21v-3a2 2 0 0 1 2-2h3M4 15h3a2 2 0 0 1 2 2v3"/></svg>';
+  let active = false;
 
-  function fsElement(){
-    return document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement || null;
-  }
-  function requestFs(el){
-    const fn = el.requestFullscreen || el.webkitRequestFullscreen || el.msRequestFullscreen;
-    if(fn) fn.call(el);
-  }
-  function exitFs(){
-    const fn = document.exitFullscreen || document.webkitExitFullscreen || document.msExitFullscreen;
-    if(fn) fn.call(document);
-  }
   function syncIcon(){
-    const active = !!fsElement();
     btn.innerHTML = active ? ICON_COMPRESS : ICON_EXPAND;
     btn.classList.toggle('active', active);
     btn.title = active ? 'Vollbild beenden' : 'Vollbild';
@@ -1118,14 +1110,31 @@ startPlay();
     /* chart's container size (and therefore aspect ratio) also changes */
     setTimeout(()=>{ if(typeof renderChart === 'function') renderChart(); }, 60);
   }
-  btn.addEventListener('click', ()=>{
-    if(fsElement()) exitFs(); else requestFs(stageEl);
-  });
-  ['fullscreenchange','webkitfullscreenchange','msfullscreenchange'].forEach(evt=>{
-    document.addEventListener(evt, syncIcon);
-  });
+  function setActive(next){
+    active = next;
+    document.body.classList.toggle('css-fullscreen', active);
+    syncIcon();
+    if(window.parent !== window){
+      window.parent.postMessage({ appFullscreen: active }, '*');
+    }
+  }
+  btn.addEventListener('click', ()=> setActive(!active));
+  window.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape' && active) setActive(false); });
   syncIcon();
 })();
+
+/* relay: when the embedded 3D specimen viewer (inside #scanFrame) asks to
+   go fullscreen, expand that iframe to fill this whole page instead — and
+   if this page is itself embedded, forward the same request further up */
+window.addEventListener('message', (ev)=>{
+  if(!ev.data || typeof ev.data.appFullscreen !== 'boolean') return;
+  const frame = document.getElementById('scanFrame');
+  if(frame && ev.source === frame.contentWindow){
+    frame.classList.toggle('fullscreen', ev.data.appFullscreen);
+    document.body.classList.toggle('scan-fullscreen', ev.data.appFullscreen);
+    if(window.parent !== window) window.parent.postMessage(ev.data, '*');
+  }
+});
 
 /* ---- map zoom / pan (SVG viewBox) ---- */
 const FULL_W = 3566, FULL_H = 1530;
@@ -1760,7 +1769,10 @@ const detailScroll = document.getElementById('detailScroll');
 const viewport = document.getElementById('viewport');
 let vSplitRatio = 0.52; // viewport's height as a fraction of the scroll area's own height
 function applyVSplit(){
-  viewport.style.flex = `0 0 ${(vSplitRatio*100).toFixed(2)}%`;
+  const pct = (vSplitRatio*100).toFixed(2)+'%';
+  viewport.style.height = pct;
+  vSplitHandle.style.top = `calc(${pct} - 5px)`;
+  detailScroll.style.top = pct;
 }
 let vSplitDragging = false;
 vSplitHandle.addEventListener('pointerdown', (ev)=>{
@@ -1771,7 +1783,7 @@ vSplitHandle.addEventListener('pointerdown', (ev)=>{
 });
 window.addEventListener('pointermove', (ev)=>{
   if(!vSplitDragging) return;
-  const rect = detailScroll.getBoundingClientRect();
+  const rect = detailView.getBoundingClientRect();
   let ratio = (ev.clientY - rect.top) / rect.height;
   ratio = Math.max(0.15, Math.min(0.85, ratio));
   vSplitRatio = ratio;

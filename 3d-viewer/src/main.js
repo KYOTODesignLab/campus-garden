@@ -1072,16 +1072,20 @@ function buildShareUrl() {
   url.hash = `state=${encoded}`;
   return url.toString();
 }
-// Only the camera position/target hands off to the standalone page — the
-// full share-state snapshot would also carry over the specimen's specific
-// dataset, colors, and clip settings, making the page load in a very
-// particular configuration instead of its normal defaults.
+// Only the camera position/target hands off — the full share-state snapshot
+// would also carry over the specimen's specific dataset, colors, and clip
+// settings, making the page load in a very particular configuration instead
+// of its normal defaults. Targets the campus-garden site's own 3D tab
+// (not the bare standalone viewer page) so the person keeps their bearings
+// via the site's normal navigation, with the state passed through as a
+// query param that the site's router forwards into this same iframe.
 function buildGoTo3DPageUrl() {
   const overlayEntry = state.overlay.leftEntry ?? state.overlay.rightEntry ?? state.panes.left.entry;
   const camera = serializeCameraSnapshot(overlayEntry);
   const encoded = toBase64Url({ camera });
-  const url = new URL(location.origin + location.pathname);
-  url.hash = `state=${encoded}`;
+  const url = new URL('../index.html', location.href);
+  url.searchParams.set('view', 'viewer');
+  url.searchParams.set('state', encoded);
   return url.toString();
 }
 function readStateFromUrlHash() {
@@ -1388,14 +1392,27 @@ bindRangeAndNumber(ui.clipVertical, ui.clipVerticalNum, v => {
   saveState();
 });
 
-function isFullscreen() { return Boolean(document.fullscreenElement); }
-async function toggleFullscreen() {
-  try {
-    if (!isFullscreen()) await document.documentElement.requestFullscreen();
-    else await document.exitFullscreen();
-  } catch (err) { console.warn('Fullscreen toggle failed', err); }
+// Fills the browser viewport via CSS instead of the native Fullscreen API:
+// that API covers the whole physical screen (hiding browser chrome, not
+// wanted here) and has poor/no support for arbitrary elements on iOS
+// Safari. When embedded (e.g. inside a map viewer's detail panel), relays
+// a message up so the parent page can expand this iframe to fill its own
+// browser window instead.
+let cssFullscreenActive = false;
+function isFullscreen() { return cssFullscreenActive; }
+function toggleFullscreen() {
+  cssFullscreenActive = !cssFullscreenActive;
+  document.body.classList.toggle('css-fullscreen', cssFullscreenActive);
+  if (window.parent !== window) {
+    window.parent.postMessage({ appFullscreen: cssFullscreenActive }, '*');
+  }
+  const fs = cssFullscreenActive;
+  ui.fullscreenToggle.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
+  ui.fullscreenToggle.setAttribute('aria-pressed', String(fs));
+  allLoadedEntries().forEach(e => e.instance.notifyChange());
 }
 ui.fullscreenToggle.addEventListener('click', () => { toggleFullscreen(); });
+window.addEventListener('keydown', (ev) => { if (ev.key === 'Escape' && cssFullscreenActive) toggleFullscreen(); });
 ui.shareView.addEventListener('click', async () => {
   const url = buildShareUrl();
   const originalLabel = ui.shareView.textContent;
@@ -1412,12 +1429,6 @@ ui.shareView.addEventListener('click', async () => {
 ui.goTo3DBtn?.addEventListener('click', () => {
   const url = buildGoTo3DPageUrl();
   (window.top ?? window).location.href = url;
-});
-document.addEventListener('fullscreenchange', () => {
-  const fs = isFullscreen();
-  ui.fullscreenToggle.title = fs ? 'Exit fullscreen' : 'Toggle fullscreen';
-  ui.fullscreenToggle.setAttribute('aria-pressed', String(fs));
-  allLoadedEntries().forEach(e => e.instance.notifyChange());
 });
 
 ui.splitDivider.addEventListener('pointerdown', event => { state.draggingSplit = true; ui.splitDivider.setPointerCapture?.(event.pointerId); event.preventDefault(); });
