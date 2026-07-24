@@ -37,6 +37,7 @@ html,body{
   min-height:520px;
   background:var(--bg);
 }
+body.css-fullscreen #stage{position:fixed; inset:0; z-index:9999; width:100vw; height:100vh; min-height:0;}
 
 #topbar{
   position:absolute; top:0; left:0; right:0;
@@ -1086,19 +1087,41 @@ const envPanel = document.getElementById('envPanel');
 const mapCaptionEl = document.getElementById('mapCaption');
 startPlay();
 
-/* ---- fullscreen ----
-   Leaves any embedding iframe (e.g. campus-garden's Map tab) and opens this
-   page directly at the top level, so it fills the whole browser window on
-   its own — simpler and more reliable than trying to expand nested iframes
-   via CSS/postMessage, and works the same on mobile. */
+/* ---- fullscreen toggle ----
+   Fills the browser viewport via CSS instead of the native Fullscreen API:
+   that API always covers the whole physical screen (hiding browser chrome,
+   which isn't wanted here) and has poor/no support for arbitrary elements
+   on iOS Safari. When this page is itself embedded (e.g. inside campus-garden's
+   Map tab), a message is relayed to the parent page so IT can expand this
+   iframe to fill its own browser window — a real toggle, not a one-way trip:
+   click again, or press Escape, to shrink back down. */
 (function initFullscreen(){
   const btn = document.getElementById('fullscreenBtn');
   if(!btn) return;
-  btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
-  btn.title = 'Open full page';
-  btn.addEventListener('click', ()=>{
-    if(window.top !== window) window.top.location.href = location.href;
-  });
+  const ICON_EXPAND = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3H5a2 2 0 0 0-2 2v3M16 3h3a2 2 0 0 1 2 2v3M21 16v3a2 2 0 0 1-2 2h-3M3 16v3a2 2 0 0 0 2 2h3"/></svg>';
+  const ICON_COMPRESS = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3v3a2 2 0 0 1-2 2H4M20 9h-3a2 2 0 0 1-2-2V4M15 21v-3a2 2 0 0 1 2-2h3M4 15h3a2 2 0 0 1 2 2v3"/></svg>';
+  let active = false;
+
+  function syncIcon(){
+    btn.innerHTML = active ? ICON_COMPRESS : ICON_EXPAND;
+    btn.classList.toggle('active', active);
+    btn.title = active ? 'Exit fullscreen' : 'Fullscreen';
+    /* map's viewport size changes when entering/exiting fullscreen */
+    setTimeout(()=>{ if(typeof sizeMapCover === 'function') sizeMapCover(); }, 60);
+    /* chart's container size (and therefore aspect ratio) also changes */
+    setTimeout(()=>{ if(typeof renderChart === 'function') renderChart(); }, 60);
+  }
+  function setActive(next){
+    active = next;
+    document.body.classList.toggle('css-fullscreen', active);
+    syncIcon();
+    if(window.parent !== window){
+      window.parent.postMessage({ appFullscreen: active }, '*');
+    }
+  }
+  btn.addEventListener('click', ()=> setActive(!active));
+  window.addEventListener('keydown', (ev)=>{ if(ev.key === 'Escape' && active) setActive(false); });
+  syncIcon();
 })();
 
 /* ---- map zoom / pan (SVG viewBox) ---- */
