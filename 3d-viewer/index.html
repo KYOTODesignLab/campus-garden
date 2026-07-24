@@ -14,9 +14,12 @@
       </div>
       <div id="viewOverlay" class="viewer-mode overlay-layer"></div>
       <div id="embedLoading">Loading…</div>
-      <div id="embedToggle" class="layers" role="group" aria-label="View mode" hidden>
-        <button data-view="specimen" aria-pressed="true">Specimen</button>
-        <button data-view="site" aria-pressed="false">Site</button>
+      <div id="embedBar">
+        <div id="embedToggle" class="layers" role="group" aria-label="View mode" hidden>
+          <button data-view="specimen" aria-pressed="true">Specimen</button>
+          <button data-view="site" aria-pressed="false">Site</button>
+        </div>
+        <button id="goTo3DBtn" class="toolbar-button" title="Save this camera view and open the full 3D viewer" hidden>Go to 3D Page</button>
       </div>
     </div>
 
