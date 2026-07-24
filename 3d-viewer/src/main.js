@@ -1195,11 +1195,17 @@ async function init() {
             if (btn.dataset.view === embedViewMode) return;
             embedViewMode = btn.dataset.view;
             updateEmbedToggleUI();
-            const target = embedViewMode === 'site' ? ENV_DATASET_ID : specimen.id;
-            // both datasets share the same real-world coordinates, so keep
-            // the exact camera position/target across the switch instead of
-            // re-fitting — the specimen should sit at the same spot in both
-            await loadEmbedPane(target, { keepCamera: true });
+            if (embedViewMode === 'site') {
+              // both datasets share the same real-world coordinates, so keep
+              // the exact camera position/target when moving out to the full
+              // scan — the specimen should sit at the same spot in both
+              await loadEmbedPane(ENV_DATASET_ID, { keepCamera: true });
+            } else {
+              // returning to the isolated specimen always resets to its
+              // default framing, rather than keeping wherever the camera
+              // ended up out in the site view
+              await loadEmbedPane(specimen.id, { oblique: true });
+            }
           });
         });
       }
