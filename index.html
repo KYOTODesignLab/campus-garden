@@ -171,9 +171,7 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
   border:1px solid var(--line-strong);
   background:radial-gradient(130% 120% at 50% 6%,#15170f,#070806)}
 .stage iframe{display:block;width:100%;height:100%;border:0}
-/* the interactive map needs more vertical room and should grow with width,
-   not just viewport height — it has its own fixed-height sensor panel inside */
-#view-map .stage{height:clamp(750px,60vw,950px)}
+.stage.page-fullscreen{position:fixed;inset:0;z-index:9999;width:100vw;height:100vh;max-width:none;border:0}
 
 /* ---------------- footer ---------------- */
 footer{border-top:1px solid var(--line);margin-top:30px}
@@ -419,6 +417,33 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
     scrollTo({top:0,behavior:'auto'});
   }
   btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+
+  /* deep link support, e.g. from the embedded specimen viewer's
+     "Go to 3D Page" button: ?view=viewer&state=<encoded-camera> */
+  const params=new URLSearchParams(location.search);
+  const stateParam=params.get('state');
+  if(stateParam){
+    const viewerFrame=document.querySelector('#view-viewer iframe');
+    if(viewerFrame)viewerFrame.src=`./3d/#state=${stateParam}`;
+  }
+  const initialView=params.get('view');
+  if(initialView&&views[initialView])show(initialView);
+})();
+
+/* fullscreen relay: the embedded map viewer and 3D viewer (and, nested
+   inside the map viewer's detail panel, a second embedded 3D viewer) ask
+   via postMessage to go fullscreen — expand the sending iframe's .stage to
+   fill this whole page instead of relying on the native Fullscreen API. */
+(function(){
+  const mapFrame=document.querySelector('#view-map iframe');
+  const viewerFrame=document.querySelector('#view-viewer iframe');
+  window.addEventListener('message',(ev)=>{
+    if(!ev.data||typeof ev.data.appFullscreen!=='boolean')return;
+    let stage=null;
+    if(mapFrame&&ev.source===mapFrame.contentWindow)stage=mapFrame.closest('.stage');
+    else if(viewerFrame&&ev.source===viewerFrame.contentWindow)stage=viewerFrame.closest('.stage');
+    if(stage)stage.classList.toggle('page-fullscreen',ev.data.appFullscreen);
+  });
 })();
 </script>
 </body>
