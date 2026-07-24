@@ -15,6 +15,7 @@ const SOLID_COLOR_ATTR = '__SOLID__';
 const ui = {
   stage: document.getElementById('stage'),
   embedToggle: document.getElementById('embedToggle'),
+  goTo3DBtn: document.getElementById('goTo3DBtn'),
   compareViews: document.getElementById('compareViews'),
   viewBefore: document.getElementById('viewBefore'),
   viewAfter: document.getElementById('viewAfter'),
@@ -486,6 +487,7 @@ function updateEmbedToggleUI() {
   ui.embedToggle.querySelectorAll('button').forEach(btn => {
     btn.setAttribute('aria-pressed', String(btn.dataset.view === embedViewMode));
   });
+  if (ui.goTo3DBtn) ui.goTo3DBtn.hidden = embedViewMode !== 'site';
 }
 
 // Shared by both the initial specimen load and the Specimen/Site toggle —
@@ -1070,6 +1072,18 @@ function buildShareUrl() {
   url.hash = `state=${encoded}`;
   return url.toString();
 }
+// Only the camera position/target hands off to the standalone page — the
+// full share-state snapshot would also carry over the specimen's specific
+// dataset, colors, and clip settings, making the page load in a very
+// particular configuration instead of its normal defaults.
+function buildGoTo3DPageUrl() {
+  const overlayEntry = state.overlay.leftEntry ?? state.overlay.rightEntry ?? state.panes.left.entry;
+  const camera = serializeCameraSnapshot(overlayEntry);
+  const encoded = toBase64Url({ camera });
+  const url = new URL(location.origin + location.pathname);
+  url.hash = `state=${encoded}`;
+  return url.toString();
+}
 function readStateFromUrlHash() {
   const match = /(?:^|[#&])state=([^&]+)/.exec(location.hash);
   if (!match) return null;
@@ -1394,6 +1408,10 @@ ui.shareView.addEventListener('click', async () => {
     ui.shareView.textContent = 'Copied!';
   }
   setTimeout(() => { ui.shareView.textContent = originalLabel; }, 1600);
+});
+ui.goTo3DBtn?.addEventListener('click', () => {
+  const url = buildGoTo3DPageUrl();
+  (window.top ?? window).location.href = url;
 });
 document.addEventListener('fullscreenchange', () => {
   const fs = isFullscreen();

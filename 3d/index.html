@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Web viewer for large COPC (.laz) point clouds with split-view and superimposed comparison, solid-color/RGB/M3C2 coloring, clipping, and filtering." />
     <title>COPC Point Cloud Viewer</title>
-    <script type="module" crossorigin src="/campus-garden/3d/assets/index-BT3SxLT5.js"></script>
-    <link rel="stylesheet" crossorigin href="/campus-garden/3d/assets/index-CArbNadv.css">
+    <script type="module" crossorigin src="/campus-garden/3d/assets/index-qI36N5UR.js"></script>
+    <link rel="stylesheet" crossorigin href="/campus-garden/3d/assets/index-DunbzxRZ.css">
   </head>
   <body>
     <div id="stage">
@@ -16,9 +16,12 @@
       </div>
       <div id="viewOverlay" class="viewer-mode overlay-layer"></div>
       <div id="embedLoading">Loading…</div>
-      <div id="embedToggle" class="layers" role="group" aria-label="View mode" hidden>
-        <button data-view="specimen" aria-pressed="true">Specimen</button>
-        <button data-view="site" aria-pressed="false">Site</button>
+      <div id="embedBar">
+        <div id="embedToggle" class="layers" role="group" aria-label="View mode" hidden>
+          <button data-view="specimen" aria-pressed="true">Specimen</button>
+          <button data-view="site" aria-pressed="false">Site</button>
+        </div>
+        <button id="goTo3DBtn" class="toolbar-button" title="Save this camera view and open the full 3D viewer" hidden>Go to 3D Page</button>
       </div>
     </div>
 
