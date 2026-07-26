@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Garden — Visual Parity Preview</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./script.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home">Campus Garden</a>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="#home" data-route="home">Home</a>
+        <a href="#map" data-route="map">Map</a>
+        <a href="#3d" data-route="3d">3D</a>
+        <a href="#maintenance" data-route="maintenance">Maintenance</a>
+        <a href="#archive" data-route="archive">Archive</a>
+        <a href="#about" data-route="about">About</a>
+        <a href="#people" data-route="people">People</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page home-page" data-page="home">
+      <div class="masthead">
+        <div class="hero-meta">
+          <span>Matsugasaki, Kyoto · 35.05°N 135.78°E</span>
+          <span>Spring · MMXXVI</span>
+        </div>
+        <div class="hero-images">
+          <div class="hero-panel">
+            <img src="../assets/images/home-physical.jpg" alt="Physical view of Campus Garden">
+            <span class="image-label image-label-left">Physical</span>
+          </div>
+          <div class="hero-panel">
+            <img src="../assets/images/home-record.jpg" alt="Digital record of Campus Garden">
+            <span class="image-label image-label-right">Record</span>
+          </div>
+          <div class="hero-shade"></div>
+          <div class="hero-copy">
+            <div class="shell">
+              <p class="hero-kicker">A garden is never finished</p>
+              <h1>Campus&nbsp;Garden</h1>
+              <p class="hero-lead">An experimental garden at Kyoto Institute of Technology — a living record, continuously observed, maintained, and re-recorded.</p>
+            </div>
+          </div>
+        </div>
+        <div class="conditions-ticker">
+          <div class="conditions-inner">
+            <span class="live-label" data-conditions-status><i></i>Current conditions · loading observations</span>
+            <div class="condition-values" aria-label="Current conditions">
+              <span><b>Wind</b><strong data-condition="wind">1.1 m/s</strong></span>
+              <span><b>Soil</b><strong data-condition="soil">48 %</strong></span>
+              <span><b>Air</b><strong data-condition="temp">21 °C</strong></span>
+              <span><b>Humidity</b><strong data-condition="humidity">84 %</strong></span>
+              <span><b>Light</b><strong data-condition="light">143 klux</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="shell home-content">
+        <section class="home-section ways-section" aria-labelledby="ways-title">
+          <div class="section-heading">
+            <h2 id="ways-title">Four ways into the garden</h2>
+            <p>Direct access</p>
+          </div>
+          <div class="ledger ways-ledger">
+            <a href="#map">
+              <span class="mode observe"><i></i>Observe</span>
+              <strong>Map</strong>
+              <span class="description">Site plan and live environmental sensing across the garden.</span>
+              <span class="arrow">↗</span>
+            </a>
+            <a href="#3d">
+              <span class="mode record"><i></i>Record</span>
+              <strong>3D Viewer</strong>
+              <span class="description">Point clouds from repeated 3D scans, compared over time.</span>
+              <span class="arrow">↗</span>
+            </a>
+            <a href="#maintenance">
+              <span class="mode maintain"><i></i>Maintain</span>
+              <strong>Maintenance</strong>
+              <span class="description">Practical knowledge and a record of care carried out on site.</span>
+              <span class="arrow">↗</span>
+            </a>
+            <a href="#archive">
+              <span class="mode remember"><i></i>Remember</span>
+              <strong>Archive</strong>
+              <span class="description">Activities and photographs — the garden's evolving record.</span>
+              <span class="arrow">↗</span>
+            </a>
+          </div>
+        </section>
+
+        <section class="home-section places-section" aria-labelledby="places-title">
+          <div class="section-heading">
+            <h2 id="places-title">Featured places</h2>
+            <p>The site, indexed</p>
+          </div>
+          <div class="ledger places-ledger">
+            <a href="#map"><span class="index">01</span><strong>Moss Area 01</strong><span class="place-meta"><span>Planting area</span><b>Sensor node</b></span><span class="thumb"><img src="../assets/images/home-physical.jpg" alt=""></span></a>
+            <a href="#3d"><span class="index">02</span><strong>Pine Tree 01</strong><span class="place-meta"><span>Tree</span><b>3D scan</b></span><span class="thumb"><img src="../assets/images/home-record.jpg" alt=""></span></a>
+            <a href="#archive-photographs"><span class="index">03</span><strong>Stepping Stones</strong><span class="place-meta"><span>Path</span><b>AR overlay</b></span><span class="thumb"><img src="../assets/images/home-physical.jpg" alt=""></span></a>
+            <a href="#archive-photographs"><span class="index">04</span><strong>Stone Arrangement</strong><span class="place-meta"><span>Landscape element</span><b>Plate</b></span><span class="thumb"><img src="../assets/images/home-record.jpg" alt=""></span></a>
+          </div>
+        </section>
+
+        <section class="home-section recent-section" aria-labelledby="recent-title">
+          <div class="section-heading">
+            <h2 id="recent-title">Recent activity</h2>
+            <p>Into the archive</p>
+          </div>
+          <div class="ledger recent-ledger">
+            <a href="#archive-xr"><span class="year">2025</span><strong>XR Garden</strong><span class="description">Design and on-site construction through XR-supported making.</span><span class="arrow">↗</span></a>
+            <a href="#archive-campus"><span class="year">2025</span><strong>Campus Garden</strong><span class="description">Observation, maintenance, environmental sensing, mapping, photography, and 3D recording.</span><span class="arrow">↗</span></a>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="page standard-page" data-page="map" hidden>
+      <div class="page-shell">
+        <p class="page-kicker observe"><i></i>Observe · Site map</p>
+        <h2 class="page-title">Where the garden lives.</h2>
+        <p class="page-lead">The full site plan and its live environmental sensing. Select any plant, stone, or path element to resolve its record.</p>
+        <div class="tool-frame">
+          <div class="tool-viewport map-viewport">
+            <iframe id="map-frame" src="../map-viewer/" title="Campus Garden interactive site map" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+        <div class="sensor-grid">
+          <div><b>Wind</b><span data-condition="wind">1.1 m/s</span></div><div><b>Soil</b><span data-condition="soil">48 %</span></div><div><b>Air</b><span data-condition="temp">21 °C</span></div><div><b>Humidity</b><span data-condition="humidity">84 %</span></div><div><b>Light</b><span data-condition="light">143 klux</span></div>
+        </div>
+        <p class="tool-note" data-map-conditions-note>Sensor model · loading current observations</p>
+      </div>
+    </section>
+
+    <section class="page standard-page" data-page="3d" hidden>
+      <div class="page-shell">
+        <p class="page-kicker record"><i></i>Record · Point cloud</p>
+        <h2 class="page-title">Explore the garden.</h2>
+        <p class="page-lead">Point clouds from repeated 3D scans, viewed freely — side by side, or superimposed to read the change between them.</p>
+        <div class="tool-frame">
+          <div class="tool-viewport cloud-viewport">
+            <iframe id="cloud-frame" src="../3d/" title="COPC point cloud viewer" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page standard-page" data-page="maintenance" hidden>
+      <div class="page-shell">
+        <p class="page-kicker maintain"><i></i>Maintain · Care</p>
+        <h2 class="page-title">Care over time.</h2>
+        <p class="page-lead maintenance-lead">This section gathers practical maintenance knowledge and a record of work carried out in the garden.</p>
+        <div class="maintenance-note">
+          <h3>Maintenance records are forthcoming.</h3>
+          <p>The first integration phase establishes this destination without connecting or modifying sensor-related files.</p>
+          <span>Section in progress</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="page standard-page archive-page" data-page="archive" hidden>
+      <div class="page-shell">
+        <p class="page-kicker remember"><i></i>Remember · Archive</p>
+        <h2 class="page-title">The evolving record.</h2>
+        <p class="page-lead archive-lead">Two ways in: the <strong>activities</strong> that shape the garden, and the <strong>photographs</strong> that document them.</p>
+        <div class="archive-tabs" role="tablist" aria-label="Archive sections">
+          <a href="#archive-activities" role="tab" data-archive-tab="activities">Activities</a>
+          <a href="#archive-photographs" role="tab" data-archive-tab="photographs">Photographs</a>
+        </div>
+
+        <div class="archive-panel" data-archive-panel="activities">
+          <article class="activity" id="activity-xr">
+            <div class="activity-image"><img src="../assets/images/home-record.jpg" alt="XR-supported work in Campus Garden"></div>
+            <div class="activity-copy">
+              <p class="activity-meta">2025 · XR · On-site construction</p>
+              <h3>XR Garden</h3>
+              <p class="activity-phase">Workshop 01 · Design &amp; Construction</p>
+              <p class="activity-description">Design and on-site construction supported by XR. Markers were registered on site, the digital overlay walked and checked against the physical ground, and the garden bench rebuilt by hand.</p>
+              <a class="external-link" href="https://www.d-lab.kit.ac.jp/" target="_blank" rel="noopener noreferrer">KYOTO Design Lab ↗</a>
+              <div class="documentation"><h4>Related documentation</h4><a href="#archive-photographs">Session plates <span>→</span></a><a href="#archive-photographs">Construction notes <span>→</span></a></div>
+            </div>
+          </article>
+          <article class="activity" id="activity-campus">
+            <div class="activity-image"><img src="../assets/images/home-physical.jpg" alt="Observation and care in Campus Garden"></div>
+            <div class="activity-copy">
+              <p class="activity-meta">2025 · Sensing · Mapping · Photography · 3D</p>
+              <h3>Campus Garden</h3>
+              <p class="activity-phase">Workshop 02 · Archive, Maintain, Connect</p>
+              <p class="activity-description">Ongoing observation and care of the garden — environmental sensing, mapping, photography, and repeated 3D recording, each experiment folded back into the evolving record.</p>
+              <a class="external-link" href="https://www.d-lab.kit.ac.jp/" target="_blank" rel="noopener noreferrer">KYOTO Design Lab ↗</a>
+              <div class="documentation"><h4>Related documentation</h4><a href="#archive-photographs">Environmental log <span>→</span></a><a href="#archive-photographs">Point-cloud sets <span>→</span></a><a href="#archive-photographs">Photograph plates <span>→</span></a></div>
+            </div>
+          </article>
+          <p class="more-note">More activities will be added as the garden develops</p>
+        </div>
+
+        <div class="archive-panel photographs" data-archive-panel="photographs" hidden>
+          <div class="photo-row">
+            <figure class="portrait"><img src="../assets/images/home-record.jpg" alt="Point cloud through the headset lens"><figcaption><span>Through the lens</span><b>PL.01</b></figcaption></figure>
+            <figure><img src="../assets/images/home-physical.jpg" alt="Marker registration"><figcaption><span>Marker registration</span><b>PL.02</b></figcaption></figure>
+            <figure><img src="../assets/images/home-record.jpg" alt="Walking the overlay"><figcaption><span>Walking the overlay</span><b>PL.03</b></figcaption></figure>
+            <figure><img src="../assets/images/home-physical.jpg" alt="Headset and hand"><figcaption><span>Headset and hand</span><b>PL.04</b></figcaption></figure>
+          </div>
+          <div class="photo-row">
+            <figure><img src="../assets/images/home-record.jpg" alt="Bench rebuilt"><figcaption><span>Bench, rebuilt</span><b>PL.05</b></figcaption></figure>
+            <figure><img src="../assets/images/home-physical.jpg" alt="Anchoring the survey"><figcaption><span>Anchoring the survey</span><b>PL.06</b></figcaption></figure>
+            <figure><img src="../assets/images/home-record.jpg" alt="Session in situ"><figcaption><span>Session in situ</span><b>PL.07</b></figcaption></figure>
+            <figure class="portrait"><img src="../assets/images/home-physical.jpg" alt="Clearing the ground"><figcaption><span>Clearing the ground</span><b>PL.08</b></figcaption></figure>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page about-page" data-page="about" hidden>
+      <div class="about-intro shell">
+        <p>About</p>
+        <h2>A garden is never finished.</h2>
+      </div>
+      <div class="about-copy narrow-shell">
+        <p class="about-lead">Campus Garden is an experimental garden at Kyoto Institute of Technology. Students, gardeners, faculty, and visitors continue to shape it through making, use, care, and observation.</p>
+        <p>The project brings hands-on knowledge together with digital tools. From on-site construction supported by XR to environmental sensing, photography, mapping, and 3D recording, each experiment becomes part of the garden's evolving record and informs what comes next.</p>
+      </div>
+      <div class="about-image shell"><img src="../assets/images/home-physical.jpg" alt="Campus Garden in use"></div>
+      <div class="about-evidence narrow-shell">
+        <blockquote>Each form of evidence — physical and digital — offers a different way to understand how the site changes through seasons, growth, use, and care.</blockquote>
+        <p>This website is an evolving project archive. Its structure and records will continue to develop as new observations and work are added — the record grows with the garden rather than closing around it.</p>
+      </div>
+      <div class="colophon shell">
+        <h3>Colophon</h3>
+        <dl>
+          <div><dt>Site</dt><dd>KIT campus garden</dd></div><div><dt>Display</dt><dd>HoloLens 2</dd></div>
+          <div><dt>Capture</dt><dd>Point cloud</dd></div><div><dt>Anchoring</dt><dd>QR + ICP</dd></div>
+          <div><dt>Differencing</dt><dd>M3C2</dd></div><div><dt>Δ Range</dt><dd>−0.40…+0.55 m</dd></div>
+          <div><dt>Season</dt><dd>Spring</dd></div>
+        </dl>
+      </div>
+    </section>
+
+    <section class="page standard-page people-page" data-page="people" hidden>
+      <div class="page-shell">
+        <p class="plain-kicker">People &amp; Credits</p>
+        <h2 class="page-title">People &amp; Credits</h2>
+        <p class="page-lead people-lead">Campus Garden developed across multiple workshop phases, bringing together project direction, design and construction, and the ongoing work of archiving, maintenance, and connection.</p>
+        <div class="people-groups">
+          <section class="people-group">
+            <h3>Project Team</h3><p>Project direction and institutional support</p>
+            <div class="people-grid"><span><i></i>Project Lead</span><span><i></i>Advisor</span><span><i></i>KYOTO Design Lab</span></div>
+          </section>
+          <section class="people-group">
+            <h3>Workshop 01</h3><p>Design &amp; Construction</p>
+            <div class="people-grid"><span><i></i>Participant</span><span><i></i>Participant</span><span><i></i>Participant</span></div>
+            <small>Participant names will be added after final confirmation.</small>
+          </section>
+          <section class="people-group">
+            <h3>Workshop 02</h3><p>Archive, Maintain, Connect</p>
+            <div class="people-grid"><span><i></i>Participant</span><span><i></i>Participant</span><span><i></i>Participant</span></div>
+            <small>Participant names will be added after final confirmation.</small>
+          </section>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner shell">
+      <div class="footer-grid">
+        <div class="footer-brand"><h2>Campus Garden</h2><p>A living record of a changing garden.<br>Matsugasaki Campus, Kyoto</p></div>
+        <nav aria-label="Footer explore"><h3>Explore</h3><a href="#map">Map</a><a href="#3d">3D Viewer</a><a href="#maintenance">Maintenance</a><a href="#archive">Archive</a></nav>
+        <nav aria-label="Footer project"><h3>Project</h3><a href="#about">About</a><a href="#people">People &amp; Credits</a></nav>
+        <div><h3>Connect</h3><a href="https://discord.gg/hxvePCkAM" target="_blank" rel="noopener noreferrer">Discord</a><p class="institutions">KYOTO Design Lab<br>Kyoto Institute of Technology</p></div>
+      </div>
+      <div class="copyright">© 2026 Campus Garden</div>
+    </div>
+  </footer>
+</body>
+</html>
