@@ -194,6 +194,21 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
 .specs dt{color:var(--ink-faint);letter-spacing:.08em;text-transform:uppercase;padding-right:18px;white-space:nowrap}
 .specs dd{margin:0;text-align:right;color:var(--ink)}
 
+/* ---------------- PEOPLE & CREDITS ---------------- */
+.credits{display:grid;gap:clamp(34px,5vw,64px);max-width:980px}
+.credits-group{border-top:1px solid var(--line-strong);padding-top:18px}
+.credits-group h3{margin:0 0 5px;font-size:clamp(20px,3vw,28px);font-weight:500}
+.credits-group .phase{margin:0 0 22px;color:var(--ink-soft);font-family:"Newsreader",serif;
+  font-size:clamp(17px,2vw,20px)}
+.credit-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.credit-entry{display:flex;align-items:center;gap:13px;min-height:52px;color:var(--ink)}
+.credit-placeholder{width:38px;height:38px;border-radius:50%;flex:0 0 auto;
+  border:1px solid var(--line-strong);background:var(--bg-soft)}
+.credit-entry span:last-child{font-family:"IBM Plex Mono",monospace;font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase}
+.credits-note{margin:0;color:var(--ink-faint);font-size:13px}
+@media(max-width:700px){.credit-list{grid-template-columns:1fr}}
+
 /* ---------------- 3D VIEWER ---------------- */
 .stage{position:relative;width:100%;height:clamp(440px,66vh,660px);overflow:hidden;
   border:1px solid var(--line-strong);
@@ -202,13 +217,31 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
 #view-map .stage{height:clamp(820px,58vw,950px)}
 
 /* ---------------- footer ---------------- */
-footer{border-top:1px solid var(--line);margin-top:30px}
-.foot-in{max-width:var(--maxw);margin:0 auto;padding:24px var(--gut);
-  display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center;
-  font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--ink-faint);
-  letter-spacing:.1em;text-transform:uppercase}
-.foot-in .dot{width:9px;height:9px;border-radius:50%;
-  background:conic-gradient(from 0deg,var(--spec-cy),var(--spec-bl),var(--spec-mg),var(--spec-cy))}
+.site-footer{border-top:1px solid var(--line);margin-top:30px}
+.footer-in{max-width:var(--maxw);margin:0 auto;padding:clamp(42px,6vw,72px) var(--gut) 24px}
+.footer-main{display:grid;grid-template-columns:minmax(260px,1.5fr) repeat(3,minmax(120px,1fr));
+  gap:clamp(30px,5vw,70px);padding-bottom:clamp(38px,5vw,60px)}
+.footer-brand h2{margin:0 0 15px;font-size:15px;font-weight:600;letter-spacing:.12em}
+.footer-brand p{margin:0;color:var(--ink-soft);font-family:"Newsreader",serif;font-size:18px;line-height:1.5}
+.footer-col{display:block;width:auto;overflow:visible;padding:0}
+.footer-col h3{margin:0 0 15px;color:var(--ink-faint);font-family:"IBM Plex Mono",monospace;
+  font-size:10px;font-weight:500;letter-spacing:.16em;text-transform:uppercase}
+.footer-col a{display:block;width:max-content;margin:0 0 8px;color:var(--ink-soft);
+  font-size:13px;text-decoration:none;transition:color .18s}
+.footer-col a:hover{color:var(--ink)}
+.footer-col a:focus-visible{outline:1px solid var(--spec-cy);outline-offset:3px}
+.footer-institutions{display:grid;gap:3px;margin-top:22px;color:var(--ink);font-size:12px}
+.footer-bottom{border-top:1px solid var(--line);padding-top:18px;color:var(--ink-faint);
+  font-family:"IBM Plex Mono",monospace;font-size:10px;letter-spacing:.08em;text-transform:uppercase}
+body.embedded-tool-view .site-footer{display:none}
+@media(max-width:820px){
+  .footer-main{grid-template-columns:repeat(3,minmax(0,1fr))}
+  .footer-brand{grid-column:1/-1}
+}
+@media(max-width:520px){
+  .footer-main{grid-template-columns:1fr 1fr}
+  .footer-brand,.footer-col:last-child{grid-column:1/-1}
+}
 
 
 @media(prefers-reduced-motion:reduce){
@@ -234,6 +267,7 @@ footer{border-top:1px solid var(--line);margin-top:30px}
       <button data-view="maintenance">Maintenance</button>
       <button data-view="photo">Archive</button>
       <button data-view="about">About</button>
+      <button data-view="people">People</button>
     </nav>
   </div>
 </header>
@@ -404,6 +438,46 @@ footer{border-top:1px solid var(--line);margin-top:30px}
     </div>
   </section>
 
+  <!-- ===== PEOPLE & CREDITS ===== -->
+  <section class="view" id="view-people" role="tabpanel">
+    <div class="section">
+      <p class="eyebrow">People &amp; Credits</p>
+      <h2 class="view-title">People &amp; Credits</h2>
+      <p class="view-lede">Campus Garden developed across multiple workshop phases, bringing together project direction, design and construction, and the ongoing work of archiving, maintenance, and connection.</p>
+      <div class="credits">
+        <section class="credits-group" aria-labelledby="project-team-title">
+          <h3 id="project-team-title">Project Team</h3>
+          <p class="phase">Project direction and institutional support</p>
+          <div class="credit-list">
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Project Lead</span></div>
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Advisor</span></div>
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>KYOTO Design Lab</span></div>
+          </div>
+        </section>
+        <section class="credits-group" aria-labelledby="workshop-01-title">
+          <h3 id="workshop-01-title">Workshop 01</h3>
+          <p class="phase">Design &amp; Construction</p>
+          <div class="credit-list" aria-label="Workshop 01 participant placeholders">
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Participant</span></div>
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Participant</span></div>
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Participant</span></div>
+          </div>
+          <p class="credits-note">Participant names will be added after final confirmation.</p>
+        </section>
+        <section class="credits-group" aria-labelledby="workshop-02-title">
+          <h3 id="workshop-02-title">Workshop 02</h3>
+          <p class="phase">Archive, Maintain, Connect</p>
+          <div class="credit-list" aria-label="Workshop 02 participant placeholders">
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Participant</span></div>
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Participant</span></div>
+            <div class="credit-entry"><span class="credit-placeholder" aria-hidden="true"></span><span>Participant</span></div>
+          </div>
+          <p class="credits-note">Participant names will be added after final confirmation.</p>
+        </section>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== 3D ===== -->
   <section class="view" id="view-viewer" role="tabpanel">
     <div class="section">
@@ -417,10 +491,37 @@ footer{border-top:1px solid var(--line);margin-top:30px}
   </section>
 </main>
 
-<footer>
-  <div class="foot-in">
-    <span style="display:flex;align-items:center;gap:9px"><span class="dot"></span>Campus Garden — XR field record</span>
-    <span>Kyoto · 2025</span>
+<footer class="site-footer">
+  <div class="footer-in">
+    <div class="footer-main">
+      <section class="footer-brand" aria-labelledby="footer-title">
+        <h2 id="footer-title">CAMPUS GARDEN</h2>
+        <p>A living record of a changing garden.<br>Matsugasaki Campus, Kyoto</p>
+      </section>
+      <nav class="footer-col" aria-label="Explore">
+        <h3>Explore</h3>
+        <a href="#map">Map</a>
+        <a href="#3d">3D Viewer</a>
+        <a href="#maintenance">Maintenance</a>
+        <a href="#archive">Archive</a>
+      </nav>
+      <nav class="footer-col" aria-label="Project">
+        <h3>Project</h3>
+        <a href="#about">About</a>
+        <a href="#people">People &amp; Credits</a>
+      </nav>
+      <div class="footer-col">
+        <h3>Connect</h3>
+        <a href="https://discord.gg/hxvePCkAM" target="_blank" rel="noopener noreferrer">Discord</a>
+        <div class="footer-institutions">
+          <span>KYOTO Design Lab</span>
+          <span>Kyoto Institute of Technology</span>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Campus Garden</span>
+    </div>
   </div>
 </footer>
 
@@ -499,17 +600,43 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
 /* ===== router ===== */
 (function(){
   const btns=[...document.querySelectorAll('nav button')];
-  const views={compare:'view-compare',map:'view-map',viewer:'view-viewer',maintenance:'view-maintenance',photo:'view-photo',about:'view-about'};
+  const routes={
+    home:{view:'compare',id:'view-compare'},
+    map:{view:'map',id:'view-map'},
+    '3d':{view:'viewer',id:'view-viewer'},
+    maintenance:{view:'maintenance',id:'view-maintenance'},
+    archive:{view:'photo',id:'view-photo'},
+    about:{view:'about',id:'view-about'},
+    people:{view:'people',id:'view-people'}
+  };
+  const hashes={compare:'home',map:'map',viewer:'3d',maintenance:'maintenance',photo:'archive',about:'about',people:'people'};
   function show(name){
-    for(const k in views)document.getElementById(views[k]).classList.toggle('active',k===name);
+    for(const route of Object.values(routes))document.getElementById(route.id).classList.toggle('active',route.view===name);
     btns.forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'true':'false'));
+    document.body.classList.toggle('embedded-tool-view',name==='map'||name==='viewer');
     if(name==='compare'&&window.__drawAR)setTimeout(window.__drawAR,30);
     if(name==='data'&&window.__drawChart)setTimeout(window.__drawChart,30);
     scrollTo({top:0,behavior:'auto'});
   }
-  btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
-  document.querySelector('[data-home-link]').addEventListener('click',()=>show('compare'));
-  document.querySelectorAll('[data-view-link]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.viewLink)));
+  function navigate(name){
+    const hash=hashes[name]||'home';
+    if(location.hash===`#${hash}`)show(routes[hash].view);
+    else location.hash=hash;
+  }
+  function routeFromHash(){
+    const hash=location.hash.slice(1).toLowerCase();
+    const route=routes[hash];
+    if(!route){
+      history.replaceState(null,'',`${location.pathname}${location.search}#home`);
+      show('compare');
+      return;
+    }
+    show(route.view);
+  }
+  btns.forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
+  document.querySelector('[data-home-link]').addEventListener('click',()=>navigate('compare'));
+  document.querySelectorAll('[data-view-link]').forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.viewLink)));
+  addEventListener('hashchange',routeFromHash);
 
   /* deep link support, e.g. from the embedded map/3D viewers' fullscreen
      buttons: ?view=viewer&state=<encoded> or ?view=map&open=<id>&range=<range> */
@@ -530,7 +657,10 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
     }
   }
   const initialView=params.get('view');
-  if(initialView&&views[initialView])show(initialView);
+  if(initialView&&hashes[initialView]&&!location.hash){
+    history.replaceState(null,'',`${location.pathname}${location.search}#${hashes[initialView]}`);
+  }
+  routeFromHash();
 })();
 </script>
 </body>
