@@ -3,9 +3,9 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Campus Garden — XR Field Record</title>
-  <link rel="stylesheet" href="./visual-parity/style.css">
-  <style>body.embedded-tool-view .site-footer{display:none}</style>
+  <title>Campus Garden — Visual Parity Preview</title>
+  <link rel="stylesheet" href="./style.css">
+  <script src="./script.js" defer></script>
 </head>
 <body>
   <header class="site-header">
@@ -32,11 +32,11 @@
         </div>
         <div class="hero-images">
           <div class="hero-panel">
-            <img src="./assets/images/home-physical.jpg" alt="Physical view of Campus Garden">
+            <img src="../assets/images/home-physical.jpg" alt="Physical view of Campus Garden">
             <span class="image-label image-label-left">Physical</span>
           </div>
           <div class="hero-panel">
-            <img src="./assets/images/home-record.jpg" alt="Digital record of Campus Garden">
+            <img src="../assets/images/home-record.jpg" alt="Digital record of Campus Garden">
             <span class="image-label image-label-right">Record</span>
           </div>
           <div class="hero-shade"></div>
@@ -102,10 +102,10 @@
             <p>The site, indexed</p>
           </div>
           <div class="ledger places-ledger">
-            <a href="#map"><span class="index">01</span><strong>Moss Area 01</strong><span class="place-meta"><span>Planting area</span><b>Sensor node</b></span><span class="thumb"><img src="./assets/images/home-physical.jpg" alt=""></span></a>
-            <a href="#3d"><span class="index">02</span><strong>Pine Tree 01</strong><span class="place-meta"><span>Tree</span><b>3D scan</b></span><span class="thumb"><img src="./assets/images/home-record.jpg" alt=""></span></a>
-            <a href="#archive-photographs"><span class="index">03</span><strong>Stepping Stones</strong><span class="place-meta"><span>Path</span><b>AR overlay</b></span><span class="thumb"><img src="./assets/images/home-physical.jpg" alt=""></span></a>
-            <a href="#archive-photographs"><span class="index">04</span><strong>Stone Arrangement</strong><span class="place-meta"><span>Landscape element</span><b>Plate</b></span><span class="thumb"><img src="./assets/images/home-record.jpg" alt=""></span></a>
+            <a href="#map"><span class="index">01</span><strong>Moss Area 01</strong><span class="place-meta"><span>Planting area</span><b>Sensor node</b></span><span class="thumb"><img src="../assets/images/home-physical.jpg" alt=""></span></a>
+            <a href="#3d"><span class="index">02</span><strong>Pine Tree 01</strong><span class="place-meta"><span>Tree</span><b>3D scan</b></span><span class="thumb"><img src="../assets/images/home-record.jpg" alt=""></span></a>
+            <a href="#archive-photographs"><span class="index">03</span><strong>Stepping Stones</strong><span class="place-meta"><span>Path</span><b>AR overlay</b></span><span class="thumb"><img src="../assets/images/home-physical.jpg" alt=""></span></a>
+            <a href="#archive-photographs"><span class="index">04</span><strong>Stone Arrangement</strong><span class="place-meta"><span>Landscape element</span><b>Plate</b></span><span class="thumb"><img src="../assets/images/home-record.jpg" alt=""></span></a>
           </div>
         </section>
 
@@ -115,8 +115,8 @@
             <p>Into the archive</p>
           </div>
           <div class="ledger recent-ledger">
-            <a href="#archive-xr-garden"><span class="year">2025</span><strong>XR Garden</strong><span class="description">Design and on-site construction through XR-supported making.</span><span class="arrow">↗</span></a>
-            <a href="#archive-campus-garden"><span class="year">2025</span><strong>Campus Garden</strong><span class="description">Observation, maintenance, environmental sensing, mapping, photography, and 3D recording.</span><span class="arrow">↗</span></a>
+            <a href="#archive-xr"><span class="year">2025</span><strong>XR Garden</strong><span class="description">Design and on-site construction through XR-supported making.</span><span class="arrow">↗</span></a>
+            <a href="#archive-campus"><span class="year">2025</span><strong>Campus Garden</strong><span class="description">Observation, maintenance, environmental sensing, mapping, photography, and 3D recording.</span><span class="arrow">↗</span></a>
           </div>
         </section>
       </div>
@@ -129,7 +129,7 @@
         <p class="page-lead">The full site plan and its live environmental sensing. Select any plant, stone, or path element to resolve its record.</p>
         <div class="tool-frame">
           <div class="tool-viewport map-viewport">
-            <iframe id="map-frame" src="./map-viewer/" title="Campus Garden interactive site map" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+            <iframe id="map-frame" src="../map-viewer/" title="Campus Garden interactive site map" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
           </div>
         </div>
         <div class="sensor-grid">
@@ -146,7 +146,7 @@
         <p class="page-lead">Point clouds from repeated 3D scans, viewed freely — side by side, or superimposed to read the change between them.</p>
         <div class="tool-frame">
           <div class="tool-viewport cloud-viewport">
-            <iframe id="cloud-frame" src="./3d/" title="COPC point cloud viewer" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
+            <iframe id="cloud-frame" src="../3d/" title="COPC point cloud viewer" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
           </div>
         </div>
       </div>
@@ -176,8 +176,8 @@
         </div>
 
         <div class="archive-panel" data-archive-panel="activities">
-          <article class="activity" id="archive-xr-garden" tabindex="-1">
-            <div class="activity-image"><img src="./assets/images/home-record.jpg" alt="XR-supported work in Campus Garden"></div>
+          <article class="activity" id="activity-xr">
+            <div class="activity-image"><img src="../assets/images/home-record.jpg" alt="XR-supported work in Campus Garden"></div>
             <div class="activity-copy">
               <p class="activity-meta">2025 · XR · On-site construction</p>
               <h3>XR Garden</h3>
@@ -187,8 +187,8 @@
               <div class="documentation"><h4>Related documentation</h4><a href="#archive-photographs">Session plates <span>→</span></a><a href="#archive-photographs">Construction notes <span>→</span></a></div>
             </div>
           </article>
-          <article class="activity" id="archive-campus-garden" tabindex="-1">
-            <div class="activity-image"><img src="./assets/images/home-physical.jpg" alt="Observation and care in Campus Garden"></div>
+          <article class="activity" id="activity-campus">
+            <div class="activity-image"><img src="../assets/images/home-physical.jpg" alt="Observation and care in Campus Garden"></div>
             <div class="activity-copy">
               <p class="activity-meta">2025 · Sensing · Mapping · Photography · 3D</p>
               <h3>Campus Garden</h3>
@@ -203,16 +203,16 @@
 
         <div class="archive-panel photographs" data-archive-panel="photographs" hidden>
           <div class="photo-row">
-            <figure class="portrait"><img src="./assets/images/home-record.jpg" alt="Point cloud through the headset lens"><figcaption><span>Through the lens</span><b>PL.01</b></figcaption></figure>
-            <figure><img src="./assets/images/home-physical.jpg" alt="Marker registration"><figcaption><span>Marker registration</span><b>PL.02</b></figcaption></figure>
-            <figure><img src="./assets/images/home-record.jpg" alt="Walking the overlay"><figcaption><span>Walking the overlay</span><b>PL.03</b></figcaption></figure>
-            <figure><img src="./assets/images/home-physical.jpg" alt="Headset and hand"><figcaption><span>Headset and hand</span><b>PL.04</b></figcaption></figure>
+            <figure class="portrait"><img src="../assets/images/home-record.jpg" alt="Point cloud through the headset lens"><figcaption><span>Through the lens</span><b>PL.01</b></figcaption></figure>
+            <figure><img src="../assets/images/home-physical.jpg" alt="Marker registration"><figcaption><span>Marker registration</span><b>PL.02</b></figcaption></figure>
+            <figure><img src="../assets/images/home-record.jpg" alt="Walking the overlay"><figcaption><span>Walking the overlay</span><b>PL.03</b></figcaption></figure>
+            <figure><img src="../assets/images/home-physical.jpg" alt="Headset and hand"><figcaption><span>Headset and hand</span><b>PL.04</b></figcaption></figure>
           </div>
           <div class="photo-row">
-            <figure><img src="./assets/images/home-record.jpg" alt="Bench rebuilt"><figcaption><span>Bench, rebuilt</span><b>PL.05</b></figcaption></figure>
-            <figure><img src="./assets/images/home-physical.jpg" alt="Anchoring the survey"><figcaption><span>Anchoring the survey</span><b>PL.06</b></figcaption></figure>
-            <figure><img src="./assets/images/home-record.jpg" alt="Session in situ"><figcaption><span>Session in situ</span><b>PL.07</b></figcaption></figure>
-            <figure class="portrait"><img src="./assets/images/home-physical.jpg" alt="Clearing the ground"><figcaption><span>Clearing the ground</span><b>PL.08</b></figcaption></figure>
+            <figure><img src="../assets/images/home-record.jpg" alt="Bench rebuilt"><figcaption><span>Bench, rebuilt</span><b>PL.05</b></figcaption></figure>
+            <figure><img src="../assets/images/home-physical.jpg" alt="Anchoring the survey"><figcaption><span>Anchoring the survey</span><b>PL.06</b></figcaption></figure>
+            <figure><img src="../assets/images/home-record.jpg" alt="Session in situ"><figcaption><span>Session in situ</span><b>PL.07</b></figcaption></figure>
+            <figure class="portrait"><img src="../assets/images/home-physical.jpg" alt="Clearing the ground"><figcaption><span>Clearing the ground</span><b>PL.08</b></figcaption></figure>
           </div>
         </div>
       </div>
@@ -227,7 +227,7 @@
         <p class="about-lead">Campus Garden is an experimental garden at Kyoto Institute of Technology. Students, gardeners, faculty, and visitors continue to shape it through making, use, care, and observation.</p>
         <p>The project brings hands-on knowledge together with digital tools. From on-site construction supported by XR to environmental sensing, photography, mapping, and 3D recording, each experiment becomes part of the garden's evolving record and informs what comes next.</p>
       </div>
-      <div class="about-image shell"><img src="./assets/images/home-physical.jpg" alt="Campus Garden in use"></div>
+      <div class="about-image shell"><img src="../assets/images/home-physical.jpg" alt="Campus Garden in use"></div>
       <div class="about-evidence narrow-shell">
         <blockquote>Each form of evidence — physical and digital — offers a different way to understand how the site changes through seasons, growth, use, and care.</blockquote>
         <p>This website is an evolving project archive. Its structure and records will continue to develop as new observations and work are added — the record grows with the garden rather than closing around it.</p>
@@ -279,167 +279,5 @@
       <div class="copyright">© 2026 Campus Garden</div>
     </div>
   </footer>
-  <script>
-  (() => {
-    "use strict";
-
-    const pages = [...document.querySelectorAll("[data-page]")];
-    const navLinks = [...document.querySelectorAll(".primary-nav [data-route]")];
-    const archiveTabs = [...document.querySelectorAll("[data-archive-tab]")];
-    const archivePanels = [...document.querySelectorAll("[data-archive-panel]")];
-    const mapFrame = document.getElementById("map-frame");
-    const cloudFrame = document.getElementById("cloud-frame");
-    const conditionsStatus = document.querySelector("[data-conditions-status]");
-    const mapConditionsNote = document.querySelector("[data-map-conditions-note]");
-    const conditionFields = [...document.querySelectorAll("[data-condition]")];
-    const metricKeys = ["wind", "soil", "temp", "humidity", "light"];
-    const sensorIds = ["s1", "s2", "s3", "s4"];
-    let conditionsTimer = 0;
-
-    const routes = {
-      home: { page: "home" },
-      map: { page: "map" },
-      "3d": { page: "3d" },
-      maintenance: { page: "maintenance" },
-      archive: { page: "archive", tab: "activities" },
-      "archive-activities": { page: "archive", tab: "activities" },
-      "archive-photographs": { page: "archive", tab: "photographs" },
-      "archive-xr-garden": { page: "archive", tab: "activities", target: "archive-xr-garden" },
-      "archive-campus-garden": { page: "archive", tab: "activities", target: "archive-campus-garden" },
-      "archive-xr": { page: "archive", tab: "activities", target: "archive-xr-garden" },
-      "archive-campus": { page: "archive", tab: "activities", target: "archive-campus-garden" },
-      about: { page: "about" },
-      people: { page: "people" }
-    };
-    const viewAliases = {
-      home: "home",
-      compare: "home",
-      map: "map",
-      "3d": "3d",
-      viewer: "3d",
-      maintenance: "maintenance",
-      archive: "archive",
-      photo: "archive",
-      about: "about",
-      people: "people"
-    };
-
-    function setArchiveTab(tab) {
-      archiveTabs.forEach((link) => {
-        const active = link.dataset.archiveTab === tab;
-        link.setAttribute("aria-selected", String(active));
-        link.tabIndex = active ? 0 : -1;
-      });
-      archivePanels.forEach((panel) => {
-        panel.hidden = panel.dataset.archivePanel !== tab;
-      });
-    }
-
-    function renderRoute() {
-      const rawHash = location.hash.slice(1).toLowerCase();
-      const route = routes[rawHash || "home"];
-      if (!route) {
-        history.replaceState(null, "", `${location.pathname}${location.search}#home`);
-        renderRoute();
-        return;
-      }
-
-      pages.forEach((page) => {
-        page.hidden = page.dataset.page !== route.page;
-      });
-      navLinks.forEach((link) => {
-        if (link.dataset.route === route.page) link.setAttribute("aria-current", "page");
-        else link.removeAttribute("aria-current");
-      });
-      document.body.classList.toggle("embedded-tool-view", route.page === "map" || route.page === "3d");
-
-      if (route.page === "archive") setArchiveTab(route.tab || "activities");
-
-      window.scrollTo({ top: 0, behavior: "auto" });
-      if (route.target) {
-        requestAnimationFrame(() => {
-          const target = document.getElementById(route.target);
-          if (target) {
-            target.focus({ preventScroll: true });
-            target.scrollIntoView({ block: "start", behavior: "auto" });
-          }
-        });
-      }
-    }
-
-    function showConditionsFallback() {
-      conditionsStatus.lastChild.textContent = "Current conditions · fallback values";
-      mapConditionsNote.textContent = "Sensor model unavailable · showing reference values";
-    }
-
-    function updateCurrentConditions() {
-      try {
-        const sensorWindow = mapFrame.contentWindow;
-        if (
-          typeof sensorWindow.currentValue !== "function" ||
-          typeof sensorWindow.fmtVal !== "function"
-        ) {
-          showConditionsFallback();
-          return false;
-        }
-
-        metricKeys.forEach((metric) => {
-          const average = sensorIds.reduce(
-            (sum, id) => sum + sensorWindow.currentValue({ id }, metric),
-            0
-          ) / sensorIds.length;
-          const formatted = sensorWindow.fmtVal(average, metric);
-          conditionFields
-            .filter((field) => field.dataset.condition === metric)
-            .forEach((field) => {
-              field.textContent = formatted;
-            });
-        });
-        conditionsStatus.lastChild.textContent = "Current conditions · observed now";
-        mapConditionsNote.textContent = "Current modeled sensor readings · updated every 6 seconds";
-        return true;
-      } catch {
-        showConditionsFallback();
-        return false;
-      }
-    }
-
-    function connectCurrentConditions() {
-      window.clearInterval(conditionsTimer);
-      updateCurrentConditions();
-      conditionsTimer = window.setInterval(updateCurrentConditions, 6000);
-    }
-
-    function forwardProductionState() {
-      const params = new URLSearchParams(location.search);
-      const stateParam = params.get("state");
-      if (stateParam) cloudFrame.src = `./3d/#state=${stateParam}`;
-
-      const openParam = params.get("open");
-      const rangeParam = params.get("range");
-      if (openParam || rangeParam) {
-        const mapParams = new URLSearchParams();
-        if (openParam) mapParams.set("open", openParam);
-        if (rangeParam) mapParams.set("range", rangeParam);
-        mapFrame.src = `./map-viewer/?${mapParams.toString()}`;
-      }
-
-      const initialView = params.get("view");
-      if (!location.hash && initialView && viewAliases[initialView.toLowerCase()]) {
-        history.replaceState(
-          null,
-          "",
-          `${location.pathname}${location.search}#${viewAliases[initialView.toLowerCase()]}`
-        );
-      }
-    }
-
-    mapFrame.addEventListener("load", connectCurrentConditions);
-    window.addEventListener("hashchange", renderRoute);
-    forwardProductionState();
-    showConditionsFallback();
-    renderRoute();
-  })();
-  </script>
 </body>
 </html>
