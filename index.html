@@ -41,13 +41,15 @@ img{display:block}
   backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
 .top-in{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut);
   display:flex;align-items:center;justify-content:space-between;min-height:62px;gap:16px}
-.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand{display:flex;align-items:center;gap:11px;min-width:0;appearance:none;border:0;
+  background:none;color:inherit;padding:8px 0;cursor:pointer;text-align:left;font-family:inherit}
 .brand .dot{width:11px;height:11px;border-radius:50%;flex:0 0 auto;
   background:conic-gradient(from 0deg,var(--spec-cy),var(--spec-bl),var(--spec-mg),var(--spec-cy));
   box-shadow:0 0 10px -1px var(--spec-mg)}
 .brand b{font-weight:600;font-size:14.5px;letter-spacing:.005em;white-space:nowrap}
 .brand .sub{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-faint);
   letter-spacing:.16em;text-transform:uppercase;white-space:nowrap}
+.brand:focus-visible{outline:1px solid var(--spec-cy);outline-offset:4px}
 @media(max-width:620px){.brand .sub{display:none}}
 nav{display:flex;gap:1px}
 nav button{appearance:none;border:0;background:none;cursor:pointer;color:var(--ink-soft);
@@ -59,6 +61,11 @@ nav button[aria-current=true]::after{content:"";position:absolute;left:12px;righ
   background:linear-gradient(90deg,var(--spec-cy),#fff,var(--spec-mg))}
 nav button:focus-visible{outline:1px solid var(--spec-cy);outline-offset:2px}
 @media(max-width:620px){nav button{padding:9px 8px;font-size:10px;letter-spacing:.04em}}
+@media(max-width:760px){
+  .top-in{flex-wrap:wrap;padding-top:4px;padding-bottom:4px}
+  nav{width:100%;overflow-x:auto;padding-bottom:2px}
+  nav button{flex:0 0 auto}
+}
 
 /* ---------------- shell ---------------- */
 main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
@@ -71,6 +78,27 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
 .eyebrow::before{content:"";width:26px;height:1px;background:linear-gradient(90deg,var(--spec-cy),var(--spec-mg))}
 .view-title{font-size:clamp(28px,5.2vw,52px);font-weight:500;line-height:1.02;margin:0;letter-spacing:-.015em}
 .view-lede{max-width:62ch;color:var(--ink-soft);margin:14px 0 34px;font-size:15px}
+
+/* ---------------- HOME SECTIONS ---------------- */
+.home-block{padding:clamp(38px,6vw,72px) 0;border-top:1px solid var(--line)}
+.home-head{display:flex;justify-content:space-between;align-items:end;gap:24px;
+  margin-bottom:26px;flex-wrap:wrap}
+.home-head .view-lede{margin:10px 0 0}
+.home-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.home-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media(max-width:760px){.home-grid,.home-grid.three{grid-template-columns:1fr}}
+.home-card{min-height:170px;border:1px solid var(--line);background:var(--bg-soft);
+  padding:22px;display:flex;flex-direction:column;justify-content:space-between;gap:26px}
+.home-card h3{margin:0;font-size:20px;font-weight:500}
+.home-card p{margin:7px 0 0;color:var(--ink-soft);font-size:13.5px;max-width:42ch}
+.home-card .meta{font-family:"IBM Plex Mono",monospace;font-size:10px;color:var(--ink-faint);
+  letter-spacing:.12em;text-transform:uppercase}
+.view-link{appearance:none;border:1px solid var(--line-strong);background:transparent;color:var(--ink);
+  cursor:pointer;font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.1em;
+  text-transform:uppercase;padding:11px 14px;align-self:flex-start}
+.view-link:hover{border-color:var(--spec-cy)}
+.view-link:focus-visible{outline:1px solid var(--spec-cy);outline-offset:3px}
+.placeholder{border-style:dashed}
 
 /* ---------------- HERO ---------------- */
 .hero{position:relative;left:50%;transform:translateX(-50%);width:100vw;
@@ -194,17 +222,18 @@ footer{border-top:1px solid var(--line);margin-top:30px}
 
 <header class="top">
   <div class="top-in">
-    <div class="brand">
+    <button class="brand" type="button" data-home-link aria-label="Campus Garden — return to Home">
       <span class="dot" aria-hidden="true"></span>
       <b>Campus&nbsp;Garden</b>
       <span class="sub">XR&nbsp;Field&nbsp;Record</span>
-    </div>
+    </button>
     <nav aria-label="Sections">
-      <button data-view="compare" aria-current="true">Index</button>
-      <button data-view="photo">Photo</button>
+      <button data-view="compare" aria-current="true">Home</button>
       <button data-view="map">Map</button>
-      <button data-view="about">About</button>
       <button data-view="viewer">3D</button>
+      <button data-view="maintenance">Maintenance</button>
+      <button data-view="photo">Archive</button>
+      <button data-view="about">About</button>
     </nav>
   </div>
 </header>
@@ -228,9 +257,9 @@ footer{border-top:1px solid var(--line);margin-top:30px}
     </div>
 
     <div class="section">
-      <p class="eyebrow">Comparison · 01</p>
-      <h2 class="view-title">Physical, then augmented.</h2>
-      <p class="view-lede">Drag the divider across the same frame: on one side the garden as it stands, on the other the registered point cloud projected back over it. The seam is coloured by the M3C2 distance ramp used throughout.</p>
+      <p class="eyebrow">Current Conditions</p>
+      <h2 class="view-title">The garden, observed now.</h2>
+      <p class="view-lede">Compare the physical garden with its registered point-cloud overlay. This existing field view remains an initial way to read current conditions against the recorded site.</p>
 
       <div class="compare" id="compare" style="--pos:50%">
         <img data-img="ba" alt="Campus garden, physical view">
@@ -249,6 +278,58 @@ footer{border-top:1px solid var(--line);margin-top:30px}
       <div class="compare-cap"><span>SITE / central hedge walk</span><span id="compare-pct">50% · 50%</span></div>
 
       <p class="note"><strong>About this view —</strong> the overlay is a generated stand-in scattered over your own photograph. To use a real capture, swap the canvas for a second photo (the registered/AR render) or a <code>&lt;video&gt;</code> — the clip-path divider works the same on any layer.</p>
+
+      <section class="home-block" aria-labelledby="explore-title">
+        <div class="home-head">
+          <div>
+            <p class="eyebrow">Explore</p>
+            <h2 class="view-title" id="explore-title">Map and 3D record.</h2>
+          </div>
+          <p class="view-lede">Move directly into the site map or explore the existing point-cloud documentation.</p>
+        </div>
+        <div class="home-grid">
+          <article class="home-card">
+            <div><h3>Garden Map</h3><p>Locate plants, paths, stones, and environmental observations across the site.</p></div>
+            <button class="view-link" type="button" data-view-link="map">Open Map</button>
+          </article>
+          <article class="home-card">
+            <div><h3>3D Documentation</h3><p>Move through the existing spatial record and compare captured point clouds.</p></div>
+            <button class="view-link" type="button" data-view-link="viewer">Open 3D</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="home-block" aria-labelledby="places-title">
+        <div class="home-head">
+          <div>
+            <p class="eyebrow">Featured Places</p>
+            <h2 class="view-title" id="places-title">Places within the garden.</h2>
+          </div>
+          <p class="view-lede">An initial index of significant areas. Detailed place pages will be added in a later phase.</p>
+        </div>
+        <div class="home-grid three">
+          <article class="home-card placeholder"><div><h3>Central Hedge Walk</h3><p>The primary route through the recorded garden.</p></div><span class="meta">Place profile · forthcoming</span></article>
+          <article class="home-card placeholder"><div><h3>Garden Bench</h3><p>A maintained structure documented through repair and rebuilding.</p></div><span class="meta">Place profile · forthcoming</span></article>
+          <article class="home-card placeholder"><div><h3>Stone Edge</h3><p>A reference area used in on-site observation and registration.</p></div><span class="meta">Place profile · forthcoming</span></article>
+        </div>
+      </section>
+
+      <section class="home-block" aria-labelledby="activity-title">
+        <div class="home-head">
+          <div>
+            <p class="eyebrow">Recent Activity</p>
+            <h2 class="view-title" id="activity-title">Work in the garden.</h2>
+          </div>
+          <p class="view-lede">Maintenance notes and new records will appear here as the project archive develops.</p>
+        </div>
+        <div class="home-grid">
+          <article class="home-card placeholder"><div><h3>Maintenance log</h3><p>Recent garden work has not yet been connected to this overview.</p></div><span class="meta">Data connection · forthcoming</span></article>
+          <article class="home-card">
+            <div><h3>Field documentation</h3><p>Browse the existing audiovisual record of scanning, registration, and on-site work.</p></div>
+            <button class="view-link" type="button" data-view-link="photo">Open Archive</button>
+          </article>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -271,6 +352,19 @@ footer{border-top:1px solid var(--line);margin-top:30px}
     </div>
   </section>
 
+  <!-- ===== MAINTENANCE ===== -->
+  <section class="view" id="view-maintenance" role="tabpanel">
+    <div class="section">
+      <p class="eyebrow">Maintenance</p>
+      <h2 class="view-title">Care over time.</h2>
+      <p class="view-lede">This section will gather practical maintenance knowledge and a record of work carried out in the garden.</p>
+      <div class="home-card placeholder">
+        <div><h3>Maintenance records are forthcoming.</h3><p>The first integration phase establishes this destination without connecting or modifying sensor-related files.</p></div>
+        <span class="meta">Section placeholder</span>
+      </div>
+    </div>
+  </section>
+
   <!-- ===== MAP (site map + live sensors) ===== -->
   <section class="view" id="view-map" role="tabpanel">
     <div class="section">
@@ -286,16 +380,13 @@ footer{border-top:1px solid var(--line);margin-top:30px}
   <!-- ===== ABOUT ===== -->
   <section class="view" id="view-about" role="tabpanel">
     <div class="section">
-      <p class="eyebrow">About · 04</p>
-      <h2 class="view-title">On recording change.</h2>
+      <p class="eyebrow">About</p>
+      <h2 class="view-title">A living project archive.</h2>
       <div class="about">
         <div class="prose">
-          <p class="drop">This project treats a single campus garden as a specimen observed across time. The same ground is captured as a point cloud, registered to fixed markers, and projected back over the site in mixed reality so that the record can be walked rather than only viewed.</p>
-          <p>Where conventional architectural drawing fixes a building at the instant of completion, a garden refuses that stillness. Foliage advances, a sapling thickens, a path is re-laid, a bench is rebuilt. The aim is not to arrest those changes but to make them legible — to let natural and human processes of growth and recession enter the design language rather than be cleaned away as noise.</p>
-          <h3>Method</h3>
-          <p>Two epochs are aligned through marker-anchored registration and differenced with the M3C2 algorithm, which measures signed distance along local surface normals. Growth toward the sensor reads warm; recession reads cool; stable surfaces fall near zero. The same ramp colours every quantitative element here, so the eye learns one scale and reuses it.</p>
-          <h3>Reading the record</h3>
-          <p>The index holds the physical garden against its augmented overlay; the plates collect the on-site sessions; the 3D view lets you move freely through the differenced cloud. Together they describe a garden less as an object than as a relationship between two times.</p>
+          <p class="drop">Campus Garden is a long-term study of a garden as a place that is observed, maintained, and recorded over time.</p>
+          <p>The project brings together environmental data, maintenance knowledge, audiovisual records, maps, and 3D documentation. Each form of evidence offers a different way to understand how the site changes through seasons, growth, use, and care.</p>
+          <p>This website is an evolving project archive. Its structure and records will continue to develop as new observations and work are added.</p>
         </div>
         <div class="specs" aria-label="Project metadata">
           <dl>
@@ -408,7 +499,7 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
 /* ===== router ===== */
 (function(){
   const btns=[...document.querySelectorAll('nav button')];
-  const views={compare:'view-compare',photo:'view-photo',map:'view-map',about:'view-about',viewer:'view-viewer'};
+  const views={compare:'view-compare',map:'view-map',viewer:'view-viewer',maintenance:'view-maintenance',photo:'view-photo',about:'view-about'};
   function show(name){
     for(const k in views)document.getElementById(views[k]).classList.toggle('active',k===name);
     btns.forEach(b=>b.setAttribute('aria-current',b.dataset.view===name?'true':'false'));
@@ -417,6 +508,8 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
     scrollTo({top:0,behavior:'auto'});
   }
   btns.forEach(b=>b.addEventListener('click',()=>show(b.dataset.view)));
+  document.querySelector('[data-home-link]').addEventListener('click',()=>show('compare'));
+  document.querySelectorAll('[data-view-link]').forEach(b=>b.addEventListener('click',()=>show(b.dataset.viewLink)));
 
   /* deep link support, e.g. from the embedded map/3D viewers' fullscreen
      buttons: ?view=viewer&state=<encoded> or ?view=map&open=<id>&range=<range> */
