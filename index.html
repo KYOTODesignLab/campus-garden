@@ -93,7 +93,7 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
   letter-spacing:.12em;text-transform:uppercase}
 .view-link{appearance:none;border:1px solid var(--line-strong);background:transparent;color:var(--ink);
   cursor:pointer;font-family:inherit;font-size:11px;letter-spacing:.1em;
-  text-transform:uppercase;padding:11px 14px;align-self:flex-start}
+  text-transform:uppercase;text-decoration:none;padding:11px 14px;align-self:flex-start}
 .view-link:hover{border-color:var(--spec-cy)}
 .view-link:focus-visible{outline:1px solid var(--spec-cy);outline-offset:3px}
 .placeholder{border-style:dashed}
@@ -162,7 +162,40 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
   font-family:inherit;font-size:12px;color:var(--ink);border:1px solid var(--line)}
 .note strong{color:var(--ink);font-weight:600}
 
-/* ---------------- PHOTO ---------------- */
+/* ---------------- ARCHIVE / PHOTO ---------------- */
+.archive-intro{max-width:760px;margin-bottom:clamp(54px,8vw,96px)}
+.archive-section{border-top:1px solid var(--line-strong);padding-top:18px}
+.archive-section + .archive-section{margin-top:clamp(70px,10vw,120px)}
+.archive-section-head{display:grid;grid-template-columns:minmax(150px,.55fr) minmax(0,1.45fr);
+  gap:clamp(24px,5vw,76px);align-items:start;margin-bottom:clamp(32px,5vw,58px)}
+.archive-section-head h3{margin:0;font-size:clamp(22px,3vw,34px);font-weight:500;letter-spacing:-.01em}
+.archive-section-head p{margin:3px 0 0;max-width:56ch;color:var(--ink-soft);font-size:14px}
+.activity-list{border-bottom:1px solid var(--line)}
+.activity-record{display:grid;grid-template-columns:minmax(110px,.4fr) minmax(0,1fr) minmax(230px,.72fr);
+  gap:clamp(22px,4vw,58px);padding:clamp(26px,4vw,48px) 0;border-top:1px solid var(--line);
+  scroll-margin-top:92px;transition:background-color .25s,border-color .25s}
+.activity-record.is-target{border-top-color:var(--moss);background:rgba(138,168,97,.035)}
+.activity-meta{font-size:10px;line-height:1.5;letter-spacing:.15em;text-transform:uppercase;color:var(--ink-faint)}
+.activity-copy h4{margin:0 0 12px;font-size:clamp(25px,3.4vw,42px);line-height:1.05;font-weight:500;
+  letter-spacing:-.02em}
+.activity-copy p{margin:0;max-width:43ch;color:var(--ink-soft);font-size:14px}
+.activity-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:28px}
+.activity-link{color:var(--ink);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;
+  text-decoration:none;border-bottom:1px solid var(--line-strong);padding-bottom:4px}
+.activity-link:hover{border-color:var(--moss)}
+.activity-placeholder{color:var(--ink-faint);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px dashed var(--line-strong);padding:8px 10px}
+.activity-image{aspect-ratio:4/3;overflow:hidden;background:var(--panel);border:1px solid var(--line)}
+.activity-image img{width:100%;height:100%;object-fit:cover;filter:saturate(.9)}
+@media(max-width:820px){
+  .archive-section-head{grid-template-columns:1fr}
+  .activity-record{grid-template-columns:minmax(90px,.3fr) minmax(0,1fr)}
+  .activity-image{grid-column:2}
+}
+@media(max-width:560px){
+  .activity-record{grid-template-columns:1fr}
+  .activity-image{grid-column:auto}
+}
 .gallery{column-count:3;column-gap:clamp(12px,1.6vw,20px)}
 @media(max-width:900px){.gallery{column-count:2}}
 @media(max-width:560px){.gallery{column-count:1}}
@@ -183,19 +216,29 @@ main{max-width:var(--maxw);margin:0 auto;padding:0 var(--gut)}
 .plate figcaption .n{color:var(--spec-cy)}
 
 /* ---------------- ABOUT ---------------- */
-.about{display:grid;grid-template-columns:1fr;gap:clamp(28px,5vw,64px)}
-@media(min-width:880px){.about{grid-template-columns:1.5fr .9fr}}
-.prose{font-family:inherit;font-weight:400;font-size:clamp(17px,2vw,20px);line-height:1.6;color:#dad9cf}
-.prose p{margin:0 0 1.05em;max-width:60ch}
-.prose .drop::first-letter{font-size:3.2em;line-height:.74;float:left;padding:8px 12px 0 0;
-  font-weight:400;color:var(--moss)}
-.prose h3{font-family:inherit;font-weight:500;font-size:12px;letter-spacing:.12em;
-  text-transform:uppercase;color:var(--ink-faint);margin:2em 0 .5em}
-.specs{align-self:start;border-top:1px solid var(--line-strong)}
-.specs dl{margin:0;display:grid;grid-template-columns:auto 1fr}
-.specs dt,.specs dd{font-family:inherit;font-size:12px;padding:10px 0;border-bottom:1px solid var(--line)}
-.specs dt{color:var(--ink-faint);letter-spacing:.08em;text-transform:uppercase;padding-right:18px;white-space:nowrap}
-.specs dd{margin:0;text-align:right;color:var(--ink)}
+.about-page{max-width:1080px}
+.about-statement{margin:clamp(38px,7vw,86px) 0 0;max-width:18ch;font-size:clamp(38px,7vw,82px);
+  line-height:.98;font-weight:500;letter-spacing:-.035em}
+.about-body{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(250px,.75fr);
+  gap:clamp(44px,8vw,110px);align-items:start;margin-top:clamp(54px,9vw,112px);
+  padding-top:20px;border-top:1px solid var(--line-strong)}
+.about-prose{max-width:650px;color:#dad9cf;font-size:clamp(17px,2vw,21px);line-height:1.65}
+.about-prose p{margin:0}
+.about-prose p + p{margin-top:1.65em}
+.about-image{aspect-ratio:4/5;overflow:hidden;background:var(--panel)}
+.about-image img{width:100%;height:100%;object-fit:cover;filter:saturate(.82)}
+.about-index{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin-top:clamp(70px,11vw,132px);
+  border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line)}
+.about-index section{min-height:120px;padding:17px 14px;border-right:1px solid var(--line)}
+.about-index section:last-child{border-right:0}
+.about-index h3{margin:0;color:var(--ink);font-size:12px;font-weight:500;letter-spacing:.1em;text-transform:uppercase}
+@media(max-width:700px){
+  .about-body{grid-template-columns:1fr}
+  .about-image{aspect-ratio:3/2}
+  .about-index{grid-template-columns:repeat(2,1fr)}
+  .about-index section:nth-child(2){border-right:0}
+  .about-index section:nth-child(-n+2){border-bottom:1px solid var(--line)}
+}
 
 /* ---------------- PEOPLE & CREDITS ---------------- */
 .credits{display:grid;gap:clamp(34px,5vw,64px);max-width:980px}
@@ -375,33 +418,75 @@ body.embedded-tool-view .site-footer{display:none}
         <div class="home-grid">
           <article class="home-card">
             <div><span class="meta">2025 · XR · On-site construction</span><h3>XR Garden</h3><p>Design and on-site construction through XR-supported making.</p></div>
-            <button class="view-link" type="button" data-view-link="photo">View activity</button>
+            <a class="view-link" href="#archive-xr-garden">View activity</a>
           </article>
           <article class="home-card">
             <div><span class="meta">2025 · Sensing · Mapping · 3D</span><h3>Campus Garden</h3><p>Observation, maintenance, environmental sensing, mapping, photography, and 3D recording.</p></div>
-            <button class="view-link" type="button" data-view-link="photo">Open Archive</button>
+            <a class="view-link" href="#archive-campus-garden">Open Archive</a>
           </article>
         </div>
       </section>
     </div>
   </section>
 
-  <!-- ===== PHOTO ===== -->
+  <!-- ===== ARCHIVE ===== -->
   <section class="view" id="view-photo" role="tabpanel">
     <div class="section">
-      <p class="eyebrow">Plates · 02</p>
-      <h2 class="view-title">Field documentation.</h2>
-      <p class="view-lede">The augmented-reality sessions on site — registering markers, walking the overlay, and rebuilding the garden bench by hand.</p>
-      <div class="gallery">
-        <figure class="plate"><img data-img="hero" alt="Point cloud through the headset lens"><figcaption><span class="t">Through the lens</span><span class="n">Pl.01</span></figcaption></figure>
-        <figure class="plate"><img data-img="marker" alt="QR marker fixed to a tree"><figcaption><span class="t">Marker registration</span><span class="n">Pl.02</span></figcaption></figure>
-        <figure class="plate"><img data-img="beam" alt="Reaching toward a wooden beam in AR"><figcaption><span class="t">Walking the overlay</span><span class="n">Pl.03</span></figcaption></figure>
-        <figure class="plate"><img data-img="ba" alt="Headset and gesture in the garden"><figcaption><span class="t">Headset and hand</span><span class="n">Pl.04</span></figcaption></figure>
-        <figure class="plate"><img data-img="bench" alt="A rebuilt wooden bench"><figcaption><span class="t">Bench, rebuilt</span><span class="n">Pl.05</span></figcaption></figure>
-        <figure class="plate"><img data-img="anchor" alt="Placing an anchor by the rocks"><figcaption><span class="t">Anchoring the survey</span><span class="n">Pl.06</span></figcaption></figure>
-        <figure class="plate"><img data-img="session" alt="On-site session discussion"><figcaption><span class="t">Session in situ</span><span class="n">Pl.07</span></figcaption></figure>
-        <figure class="plate"><img data-img="ground" alt="Clearing leaves from the ground"><figcaption><span class="t">Clearing the ground</span><span class="n">Pl.08</span></figcaption></figure>
+      <div class="archive-intro">
+        <p class="eyebrow">Archive</p>
+        <h2 class="view-title">A record of activity over time.</h2>
+        <p class="view-lede">Work in the garden is recorded through making, care, observation, and documentation.</p>
       </div>
+
+      <section class="archive-section" aria-labelledby="archive-activities-title">
+        <div class="archive-section-head">
+          <h3 id="archive-activities-title">Activities</h3>
+          <p>Project activities connect on-site work with the evolving record of the garden.</p>
+        </div>
+        <div class="activity-list">
+          <article class="activity-record" id="archive-xr-garden" tabindex="-1">
+            <div class="activity-meta">2025<br>Workshop phase</div>
+            <div class="activity-copy">
+              <h4>XR Garden</h4>
+              <p>Design and on-site construction through XR-supported making.</p>
+              <div class="activity-actions">
+                <a class="activity-link" href="#archive-xr-garden">Read activity</a>
+                <span class="activity-placeholder" aria-disabled="true">KYOTO Design Lab link — to be confirmed</span>
+              </div>
+            </div>
+            <div class="activity-image"><img data-img="hero" alt="XR-supported making in the garden"></div>
+          </article>
+          <article class="activity-record" id="archive-campus-garden" tabindex="-1">
+            <div class="activity-meta">2025<br>Ongoing record</div>
+            <div class="activity-copy">
+              <h4>Campus Garden</h4>
+              <p>Observation, maintenance, environmental sensing, mapping, photography, and 3D recording.</p>
+              <div class="activity-actions">
+                <a class="activity-link" href="#archive-campus-garden">Read activity</a>
+                <span class="activity-placeholder" aria-disabled="true">KYOTO Design Lab link — to be confirmed</span>
+              </div>
+            </div>
+            <div class="activity-image"><img data-img="ground" alt="Care and observation in the garden"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="archive-section" aria-labelledby="archive-photographs-title">
+        <div class="archive-section-head">
+          <h3 id="archive-photographs-title">Photographs</h3>
+          <p>The augmented-reality sessions on site — registering markers, walking the overlay, and rebuilding the garden bench by hand.</p>
+        </div>
+        <div class="gallery">
+          <figure class="plate"><img data-img="hero" alt="Point cloud through the headset lens"><figcaption><span class="t">Through the lens</span><span class="n">Pl.01</span></figcaption></figure>
+          <figure class="plate"><img data-img="marker" alt="QR marker fixed to a tree"><figcaption><span class="t">Marker registration</span><span class="n">Pl.02</span></figcaption></figure>
+          <figure class="plate"><img data-img="beam" alt="Reaching toward a wooden beam in AR"><figcaption><span class="t">Walking the overlay</span><span class="n">Pl.03</span></figcaption></figure>
+          <figure class="plate"><img data-img="ba" alt="Headset and gesture in the garden"><figcaption><span class="t">Headset and hand</span><span class="n">Pl.04</span></figcaption></figure>
+          <figure class="plate"><img data-img="bench" alt="A rebuilt wooden bench"><figcaption><span class="t">Bench, rebuilt</span><span class="n">Pl.05</span></figcaption></figure>
+          <figure class="plate"><img data-img="anchor" alt="Placing an anchor by the rocks"><figcaption><span class="t">Anchoring the survey</span><span class="n">Pl.06</span></figcaption></figure>
+          <figure class="plate"><img data-img="session" alt="On-site session discussion"><figcaption><span class="t">Session in situ</span><span class="n">Pl.07</span></figcaption></figure>
+          <figure class="plate"><img data-img="ground" alt="Clearing leaves from the ground"><figcaption><span class="t">Clearing the ground</span><span class="n">Pl.08</span></figcaption></figure>
+        </div>
+      </section>
     </div>
   </section>
 
@@ -432,27 +517,26 @@ body.embedded-tool-view .site-footer{display:none}
 
   <!-- ===== ABOUT ===== -->
   <section class="view" id="view-about" role="tabpanel">
-    <div class="section">
+    <div class="section about-page">
       <p class="eyebrow">About</p>
-      <h2 class="view-title">A living project archive.</h2>
-      <div class="about">
-        <div class="prose">
-          <p class="drop">Campus Garden is a long-term study of a garden as a place that is observed, maintained, and recorded over time.</p>
-          <p>The project brings together environmental data, maintenance knowledge, audiovisual records, maps, and 3D documentation. Each form of evidence offers a different way to understand how the site changes through seasons, growth, use, and care.</p>
-          <p>This website is an evolving project archive. Its structure and records will continue to develop as new observations and work are added.</p>
+      <h2 class="about-statement">A garden is never finished.</h2>
+      <div class="about-body">
+        <div class="about-prose">
+          <p>Campus Garden is an experimental garden at Kyoto Institute of Technology.<br>
+          Students, gardeners, faculty, and visitors continue to shape it through<br>
+          making, use, care, and observation.</p>
+          <p>The project brings hands-on knowledge together with digital tools.<br>
+          From on-site construction supported by XR to environmental sensing,<br>
+          photography, mapping, and 3D recording, each experiment becomes part<br>
+          of the garden’s evolving record and informs what comes next.</p>
         </div>
-        <div class="specs" aria-label="Project metadata">
-          <dl>
-            <dt>Site</dt><dd>KIT campus garden</dd>
-            <dt>Display</dt><dd>HoloLens 2</dd>
-            <dt>Capture</dt><dd>Point cloud</dd>
-            <dt>Anchoring</dt><dd>QR + ICP</dd>
-            <dt>Differencing</dt><dd>M3C2</dd>
-            <dt>Points</dt><dd id="pts-count">—</dd>
-            <dt>Δ range</dt><dd>−0.40…+0.55 m</dd>
-            <dt>Season</dt><dd>Spring</dd>
-          </dl>
-        </div>
+        <div class="about-image"><img data-img="session" alt="An on-site garden session"></div>
+      </div>
+      <div class="about-index" aria-label="About information areas">
+        <section><h3>Project</h3></section>
+        <section><h3>Place</h3></section>
+        <section><h3>Workshop</h3></section>
+        <section><h3>Methods</h3></section>
       </div>
     </div>
   </section>
@@ -619,6 +703,8 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
     '3d':{view:'viewer',id:'view-viewer'},
     maintenance:{view:'maintenance',id:'view-maintenance'},
     archive:{view:'photo',id:'view-photo'},
+    'archive-xr-garden':{view:'photo',id:'view-photo',focus:'archive-xr-garden'},
+    'archive-campus-garden':{view:'photo',id:'view-photo',focus:'archive-campus-garden'},
     about:{view:'about',id:'view-about'},
     people:{view:'people',id:'view-people'}
   };
@@ -645,6 +731,14 @@ function noiseFn(seed){let s=seed>>>0;const r=()=>{s=(s*1664525+1013904223)>>>0;
       return;
     }
     show(route.view);
+    document.querySelectorAll('.activity-record.is-target').forEach(el=>el.classList.remove('is-target'));
+    if(route.focus){
+      const record=document.getElementById(route.focus);
+      if(record){
+        record.classList.add('is-target');
+        requestAnimationFrame(()=>record.scrollIntoView({block:'start',behavior:'auto'}));
+      }
+    }
   }
   btns.forEach(b=>b.addEventListener('click',()=>navigate(b.dataset.view)));
   document.querySelector('[data-home-link]').addEventListener('click',()=>navigate('compare'));
