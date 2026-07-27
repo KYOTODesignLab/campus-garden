@@ -183,10 +183,23 @@ html,body{
   padding:14px 28px 16px;
   transition:opacity 0.25s, transform 0.25s;
   user-select:none; -webkit-user-select:none;
+  display:flex; flex-direction:column;
+  overflow-y:auto;
 }
 #envPanel.hiddenPanel{opacity:0; transform:translateY(12px); pointer-events:none;}
 
-#metricBar{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:12px;}
+#envSplitHandle{
+  position:absolute; left:0; right:0; bottom:calc(var(--envH, 234px) - 5px); height:10px; z-index:27;
+  cursor:row-resize;
+}
+#envSplitHandle::after{
+  content:""; position:absolute; left:0; right:0; top:50%; height:1px;
+  background:var(--line-strong); transform:translateY(-50%); transition:background 0.15s;
+}
+#envSplitHandle:hover::after, #envSplitHandle.dragging::after{background:var(--accent);}
+#envSplitHandle.no-transition{transition:none !important;}
+
+#metricBar{display:flex; flex-wrap:wrap; gap:6px; align-items:center; margin-bottom:12px; flex:0 0 auto;}
 .metricBtn{
   display:flex; align-items:center; gap:5px;
   font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.06em;
@@ -219,7 +232,7 @@ html,body{
 #playBtn:hover{color:var(--ink);}
 #playBtn.playing{color:var(--accent);}
 
-#chartWrap{position:relative; height:114px; padding-bottom:6px; cursor:crosshair;}
+#chartWrap{position:relative; flex:1 1 auto; min-height:50px; padding-bottom:6px; cursor:crosshair;}
 #chartSvg{width:100%; height:100%; overflow:visible;}
 .chartGrid{stroke:var(--line); stroke-width:1;}
 .chartLine{fill:none; stroke-width:1.8; opacity:0.9;}
@@ -247,7 +260,6 @@ html,body{
   #envPanel{padding:12px 16px 14px;}
   #metricBar{width:100%;}
   #scrubReadout{margin-left:0; width:100%; order:99;}
-  #chartWrap{height:125px;}
   #fullscreenBtn{top:9px; right:12px; width:28px; height:28px;}
   #topbar .status{gap:12px; max-width:calc(100vw - 130px); overflow:hidden; white-space:nowrap; text-overflow:ellipsis;}
 }
@@ -402,6 +414,8 @@ html,body{
     <div class="sp-sub" id="spSub">LIVE READING</div>
     <div id="spRows"></div>
   </div>
+
+  <div id="envSplitHandle" title="Drag to resize"></div>
 
   <div id="envPanel">
     <div id="metricBar">
@@ -1806,6 +1820,39 @@ window.addEventListener('pointerup', ()=>{
   if(!vSplitDragging) return;
   vSplitDragging = false;
   vSplitHandle.classList.remove('dragging', 'no-transition');
+});
+
+/* ---- draggable divider for the bottom data panel ----
+   Both the main view (map/detail) and #envPanel already size themselves
+   off the shared --envH custom property, so adjusting just that one
+   variable keeps everything in sync automatically. */
+const envSplitHandle = document.getElementById('envSplitHandle');
+let envH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--envH')) || 234;
+function applyEnvH(){
+  document.documentElement.style.setProperty('--envH', envH+'px');
+}
+let envDragging = false;
+envSplitHandle.addEventListener('pointerdown', (ev)=>{
+  envDragging = true;
+  envSplitHandle.classList.add('dragging', 'no-transition');
+  mapView.classList.add('no-transition');
+  detailView.classList.add('no-transition');
+  envSplitHandle.setPointerCapture(ev.pointerId);
+  ev.preventDefault();
+});
+window.addEventListener('pointermove', (ev)=>{
+  if(!envDragging) return;
+  const stageRect = document.getElementById('stage').getBoundingClientRect();
+  let h = stageRect.bottom - ev.clientY;
+  h = Math.max(80, Math.min(stageRect.height * 0.7, h));
+  envH = h;
+  applyEnvH();
+  sizeMapCover();
+});
+window.addEventListener('pointerup', ()=>{
+  if(!envDragging) return;
+  envDragging = false;
+  envSplitHandle.classList.remove('dragging', 'no-transition');
 });
 
 function openDetail(p){
