@@ -6,7 +6,6 @@
   <title>Campus Garden — XR Field Record</title>
   <link rel="stylesheet" href="./visual-parity/style.css">
   <link rel="stylesheet" href="./style.css">
-  <style>body.embedded-tool-view .site-footer{display:none}</style>
 </head>
 <body>
   <header class="site-header">
@@ -81,33 +80,15 @@
       </section>
     </section>
 
-    <section class="page standard-page" data-page="map" hidden>
-      <div class="page-shell">
-        <p class="page-kicker observe"><i></i>Observe · Site map</p>
-        <h2 class="page-title">Where the garden lives.</h2>
-        <p class="page-lead">The full site plan and its live environmental sensing. Select any plant, stone, or path element to resolve its record.</p>
-        <div class="tool-frame">
-          <div class="tool-viewport map-viewport">
-            <iframe id="map-frame" src="./map-viewer/" title="Campus Garden interactive site map" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
-          </div>
-        </div>
-        <div class="sensor-grid">
-          <div><b>Wind</b><span data-condition="wind">1.1 m/s</span></div><div><b>Soil</b><span data-condition="soil">48 %</span></div><div><b>Air</b><span data-condition="temp">21 °C</span></div><div><b>Humidity</b><span data-condition="humidity">84 %</span></div><div><b>Light</b><span data-condition="light">143 klux</span></div>
-        </div>
-        <p class="tool-note" data-map-conditions-note>Sensor model · loading current observations</p>
+    <section class="page workspace-page" data-page="map" hidden>
+      <div class="viewer-workspace">
+        <iframe id="map-frame" src="./map-viewer/" title="Campus Garden interactive site map" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
       </div>
     </section>
 
-    <section class="page standard-page" data-page="3d" hidden>
-      <div class="page-shell">
-        <p class="page-kicker record"><i></i>Record · Point cloud</p>
-        <h2 class="page-title">Explore the garden.</h2>
-        <p class="page-lead">Point clouds from repeated 3D scans, viewed freely — side by side, or superimposed to read the change between them.</p>
-        <div class="tool-frame">
-          <div class="tool-viewport cloud-viewport">
-            <iframe id="cloud-frame" src="./3d/" title="COPC point cloud viewer" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
-          </div>
-        </div>
+    <section class="page workspace-page" data-page="3d" hidden>
+      <div class="viewer-workspace">
+        <iframe id="cloud-frame" src="./3d/" title="COPC point cloud viewer" loading="lazy" allow="fullscreen" allowfullscreen></iframe>
       </div>
     </section>
 
@@ -331,7 +312,7 @@
 
     function showConditionsFallback() {
       conditionsStatus.lastChild.textContent = "Current conditions · fallback values";
-      mapConditionsNote.textContent = "Sensor model unavailable · showing reference values";
+      if (mapConditionsNote) mapConditionsNote.textContent = "Sensor model unavailable · showing reference values";
     }
 
     function updateCurrentConditions() {
@@ -358,7 +339,7 @@
             });
         });
         conditionsStatus.lastChild.textContent = "Current conditions · observed now";
-        mapConditionsNote.textContent = "Current modeled sensor readings · updated every 6 seconds";
+        if (mapConditionsNote) mapConditionsNote.textContent = "Current modeled sensor readings · updated every 6 seconds";
         return true;
       } catch {
         showConditionsFallback();
