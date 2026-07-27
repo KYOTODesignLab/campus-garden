@@ -1825,9 +1825,15 @@ window.addEventListener('pointerup', ()=>{
 /* ---- draggable divider for the bottom data panel ----
    Both the main view (map/detail) and #envPanel already size themselves
    off the shared --envH custom property, so adjusting just that one
-   variable keeps everything in sync automatically. */
+   variable keeps everything in sync automatically. Map view and detail
+   view remember separate heights: detail view defaults notably shorter,
+   since the 3D viewport and info text need the room more than the map
+   view's site-wide chart does. */
 const envSplitHandle = document.getElementById('envSplitHandle');
-let envH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--envH')) || 234;
+const defaultEnvH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--envH')) || 234;
+let envHMap = defaultEnvH;
+let envHDetail = Math.max(80, Math.round(defaultEnvH * 0.6));
+let envH = envHMap;
 function applyEnvH(){
   document.documentElement.style.setProperty('--envH', envH+'px');
 }
@@ -1846,6 +1852,7 @@ window.addEventListener('pointermove', (ev)=>{
   let h = stageRect.bottom - ev.clientY;
   h = Math.max(80, Math.min(stageRect.height * 0.7, h));
   envH = h;
+  if(currentDetailNode) envHDetail = h; else envHMap = h;
   applyEnvH();
   sizeMapCover();
 });
@@ -1867,6 +1874,8 @@ function openDetail(p){
   document.getElementById('topbarStatus').classList.add('hidden');
   openSensorId = null;
   currentDetailNode = p;
+  envH = envHDetail;
+  applyEnvH();
   clearCloud();
   setTimeout(sizeMapCover, 460); /* after the width transition finishes */
 
@@ -1909,6 +1918,8 @@ backBtn.addEventListener('click', ()=>{
   mapCaptionEl.classList.remove('faded');
   document.getElementById('topbarStatus').classList.remove('hidden');
   currentDetailNode = null;
+  envH = envHMap;
+  applyEnvH();
   refreshButtonValues();
   renderChart();
   setTimeout(sizeMapCover, 460);
