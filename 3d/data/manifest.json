@@ -6,6 +6,7 @@
     { "id": "after_FullRes", "label": "After_FullRes – 2025-10", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/After_FullRes_Crop.copc.laz" }
   ],
   "specimens": [
-    { "id": "PL-A1", "label": "Fringed Iris", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/specimens/PL-A1_FringedIris.copc.laz" }
+    { "id": "PL-A1", "label": "Fringed Iris", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/specimens/PL-A1_FringedIris.copc.laz" },
+    { "id": "PL-B6", "label": "Autumn Fern", "url": "https://pub-38ec09e9cfa5417db87de1a0d31277a0.r2.dev/specimens/PL-B6_AutumnFern.copc.laz" }
   ]
 }
