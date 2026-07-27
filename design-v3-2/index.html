@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Campus Garden — v3.2 Design Parity Preview</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="header-inner">
+      <a class="brand" href="#home">Campus Garden</a>
+      <nav class="primary-nav" aria-label="Primary navigation">
+        <a href="#home" data-route="home">Home</a>
+        <a href="#map" data-route="map">Map</a>
+        <a href="#3d" data-route="3d">3D</a>
+        <a href="#maintenance" data-route="maintenance">Maintenance</a>
+        <a href="#archive" data-route="archive">Archive</a>
+        <a href="#about" data-route="about">About</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="page home-page" data-page="home">
+      <section class="cloud-hero" aria-labelledby="home-title">
+        <canvas id="cg-cloud" aria-hidden="true"></canvas>
+        <div class="cloud-fade"></div>
+        <div class="cloud-title shell">
+          <h1 id="home-title">Campus&nbsp;Garden</h1>
+        </div>
+      </section>
+
+      <section class="home-intro shell">
+        <p class="home-lead">An experimental garden at Kyoto Institute of Technology — observed, cared for, and continuously re-recorded.</p>
+        <div class="conditions-row">
+          <span class="conditions-label"><i></i>Current conditions · observed now</span>
+          <div class="conditions-values" aria-label="Current conditions">
+            <span><b>Wind</b><strong>1.1 m/s</strong></span>
+            <span><b>Soil</b><strong>48 %</strong></span>
+            <span><b>Air</b><strong>21 °C</strong></span>
+            <span><b>Humidity</b><strong>84 %</strong></span>
+            <span><b>Light</b><strong>143 klux</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <section class="entry-list shell" aria-label="Primary garden tools">
+        <a class="entry-row entry-map" href="#map">
+          <span class="entry-badge"><i></i>Observe</span>
+          <strong>Map</strong>
+          <span class="entry-arrow">↗</span>
+        </a>
+        <a class="entry-row entry-3d" href="#3d">
+          <span class="entry-badge"><i></i>Record</span>
+          <strong>3D Viewer</strong>
+          <span class="entry-arrow">↗</span>
+        </a>
+      </section>
+
+      <section class="recent shell" aria-labelledby="recent-title">
+        <h2 id="recent-title">Recent activity</h2>
+
+        <a class="recent-scan" href="#3d">
+          <span class="recent-delta">Δ −0.12…+0.30 m</span>
+          <div class="media-placeholder wide"><span>Pine 01 — before / after point cloud</span></div>
+          <p><strong>Pine 01 re-scanned</strong> <span>— compared against the winter cloud ↗</span></p>
+        </a>
+
+        <a class="recent-log" href="#maintenance">
+          <span><strong>West moss watered.</strong> Decided against soil 48% · humidity 84% · no rain in six days.</span>
+          <span>↗</span>
+        </a>
+
+        <a class="recent-bench" href="#archive">
+          <div class="media-placeholder ratio-4-3"><span>Bench, rebuilt by hand</span></div>
+          <p><strong>Bench, rebuilt by hand</strong> <span>during XR-supported construction ↗</span></p>
+        </a>
+      </section>
+    </section>
+
+    <section class="page workspace-page" data-page="map" hidden>
+      <div class="map-workspace">
+        <div class="workspace-controls" aria-label="Map layers">
+          <button type="button" class="is-active">Plants</button>
+          <button type="button" class="is-active">Stones</button>
+          <button type="button" class="is-active">Sensors</button>
+        </div>
+        <div class="site-plan-placeholder">
+          <span class="marker marker-1"></span>
+          <span class="marker marker-2"></span>
+          <span class="marker marker-3"></span>
+          <span class="marker marker-4"></span>
+          <span class="marker marker-5"></span>
+          <div class="placeholder-center"><span class="placeholder-icon">▧</span><p>Site plan — drawing / plan render (fills the workspace)</p></div>
+        </div>
+        <div class="workspace-conditions">
+          <span class="conditions-label"><i></i>14:20 JST · observed now</span>
+          <div class="conditions-panel">
+            <span><b>Wind</b> 1.1 m/s</span><span><b>Soil</b> 48 %</span><span><b>Air</b> 21 °C</span><span><b>Humidity</b> 84 %</span><span><b>Light</b> 143 klux</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="page workspace-page" data-page="3d" hidden>
+      <div class="viewer-placeholder">
+        <div class="placeholder-center"><span class="placeholder-icon">▧</span><p>COPC point-cloud viewer — embedded here (its own split / superimpose / clipping)</p></div>
+      </div>
+    </section>
+
+    <section class="page deep-page" data-page="maintenance" hidden>
+      <div class="deep-shell shell">
+        <a class="back-link" href="#home">← Back to the garden</a>
+        <h2>Knowing the garden by hand.</h2>
+        <p class="deep-lead">Care is not only keeping the garden the same. Open a task to see what it reads, the judgement made, and how the ground changed before and after.</p>
+
+        <div class="accordion" data-accordion>
+          <article class="accordion-item is-open">
+            <button class="accordion-trigger" type="button" aria-expanded="true">
+              <i class="dot maintain"></i><span>Watering the moss</span><b>⌃</b>
+            </button>
+            <div class="accordion-panel">
+              <div class="accordion-copy">
+                <p>Reads the west bed against soil moisture, humidity, and days since rain before deciding when and how much — over-watering is as much a risk as drought.</p>
+                <a href="#archive">To the log →</a>
+              </div>
+              <div class="before-after">
+                <figure><div class="media-placeholder"><span>Before</span></div><figcaption>Before · Apr 02</figcaption></figure>
+                <figure><div class="media-placeholder"><span>After</span></div><figcaption>After · Apr 03</figcaption></figure>
+              </div>
+            </div>
+          </article>
+
+          <article class="accordion-item">
+            <button class="accordion-trigger" type="button" aria-expanded="false">
+              <i class="dot record"></i><span>Reading the ground</span><b>⌄</b>
+            </button>
+            <div class="accordion-panel" hidden>
+              <div class="accordion-copy">
+                <p>Compaction, drainage, and root spread along the stepping stones — checked by hand and against the repeated 3D survey to see what shifted underfoot.</p>
+                <a href="#3d">To 3D →</a>
+              </div>
+              <div class="before-after">
+                <figure><div class="media-placeholder"><span>January</span></div><figcaption>Jan</figcaption></figure>
+                <figure><div class="media-placeholder"><span>March</span></div><figcaption>Mar</figcaption></figure>
+              </div>
+            </div>
+          </article>
+
+          <article class="accordion-item">
+            <button class="accordion-trigger" type="button" aria-expanded="false">
+              <i class="dot archive"></i><span>Seasonal pruning</span><b>⌄</b>
+            </button>
+            <div class="accordion-panel" hidden>
+              <div class="accordion-copy">
+                <p>Light, growth, and use guide each cut; every pass is noted so the next season can be planned rather than repeated blindly.</p>
+                <a href="#archive">To the archive →</a>
+              </div>
+              <div class="before-after">
+                <figure><div class="media-placeholder"><span>Before</span></div><figcaption>Before</figcaption></figure>
+                <figure><div class="media-placeholder"><span>After</span></div><figcaption>After</figcaption></figure>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="page deep-page" data-page="archive" hidden>
+      <div class="deep-shell shell">
+        <a class="back-link" href="#home">← Back to the garden</a>
+        <h2>Reading the garden back.</h2>
+        <p class="deep-lead">Each medium keeps its own form — activities, photographs, methods, and data are not flattened into one grid, but tied across place, time, and action.</p>
+
+        <div class="archive-axes"><span>Place</span><span>Time</span><span>Subject</span><span>Action</span><span>Record</span></div>
+        <h3 class="section-label">Activities</h3>
+
+        <article class="archive-activity">
+          <div class="media-placeholder ratio-4-3"><span>XR Garden</span></div>
+          <div class="archive-copy">
+            <p class="archive-meta">2025 · XR · On-site construction</p>
+            <h3>XR Garden</h3>
+            <p>Design and on-site construction supported by XR. Markers were registered on site, the digital overlay walked and checked against the physical ground, and the garden bench rebuilt by hand.</p>
+            <div class="archive-links"><a href="#archive">Session plates →</a><a href="#map">Stepping Stones →</a></div>
+          </div>
+        </article>
+
+        <article class="archive-activity">
+          <div class="media-placeholder ratio-4-3"><span>Campus Garden</span></div>
+          <div class="archive-copy">
+            <p class="archive-meta">2025 · Sensing · Mapping · Photography · 3D</p>
+            <h3>Campus Garden</h3>
+            <p>Ongoing observation and care of the garden — environmental sensing, mapping, photography, and repeated 3D recording, each experiment folded back into the evolving record.</p>
+            <div class="archive-links"><a href="#3d">Point-cloud sets →</a><a href="#map">Environmental log →</a></div>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="page deep-page" data-page="about" hidden>
+      <div class="deep-shell about-shell shell">
+        <a class="back-link" href="#home">← Back to the garden</a>
+        <p class="section-label about-label">About</p>
+        <h2>A garden is never finished.</h2>
+        <div class="about-copy">
+          <p>Campus Garden is an experimental garden at Kyoto Institute of Technology. Students, gardeners, faculty, and visitors continue to shape it through making, use, care, and observation.</p>
+          <p>The project brings hands-on knowledge together with digital tools — construction, environmental sensing, photography, mapping, and 3D recording. Each activity and record is shared to deepen understanding of the garden and support what happens next.</p>
+        </div>
+        <div class="about-facets">
+          <div><h3>Place</h3><p>A courtyard garden on the Matsugasaki campus, Kyoto Institute of Technology.</p></div>
+          <div><h3>Project</h3><p>An experimental garden held as a living, shared record rather than a finished result.</p></div>
+          <div><h3>Workshop</h3><p>Developed across phases: design &amp; construction, then archive, maintenance, and connection.</p></div>
+          <div><h3>Methods</h3><p>Body-led judgement joined with XR, sensing, photography, mapping, and 3D scanning.</p></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-grid shell">
+      <div>
+        <p>Campus Garden</p>
+        <p>A living record of a changing garden.<br>Matsugasaki Campus, Kyoto</p>
+        <p>© 2026 Campus Garden</p>
+      </div>
+      <div><p>Explore</p><a href="#map">Map</a><a href="#3d">3D Viewer</a><a href="#maintenance">Maintenance</a><a href="#archive">Archive</a></div>
+      <div><p>Project</p><a href="#about">About</a></div>
+      <div><p>Connect</p><a href="#">Discord</a><p>KYOTO Design Lab<br>Kyoto Institute of Technology</p></div>
+    </div>
+  </footer>
+
+  <script src="./script.js"></script>
+</body>
+</html>
