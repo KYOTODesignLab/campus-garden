@@ -20,6 +20,7 @@
   --panel:#0a0a09;
   --tag-ink:#d6d4cd;
   --pulse-base:#e2e0d7;
+  --envH:170px;
 }
 *{box-sizing:border-box; margin:0; padding:0;}
 html,body{
@@ -256,7 +257,7 @@ html,body{
 #mapView.panning{cursor:grabbing;}
 
 @media (max-width:820px){
-  :root{--envH:279px;}
+  :root{--envH:210px;}
   #envPanel{padding:12px 16px 14px;}
   #metricBar{width:100%;}
   #scrubReadout{margin-left:0; width:100%; order:99;}
@@ -1830,7 +1831,7 @@ window.addEventListener('pointerup', ()=>{
    since the 3D viewport and info text need the room more than the map
    view's site-wide chart does. */
 const envSplitHandle = document.getElementById('envSplitHandle');
-const defaultEnvH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--envH')) || 234;
+const defaultEnvH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--envH')) || 170;
 let envHMap = defaultEnvH;
 let envHDetail = Math.max(80, Math.round(defaultEnvH * 0.6));
 let envH = envHMap;
