@@ -62,6 +62,7 @@
   const ctx = canvas?.getContext("2d");
   const points = buildGardenPoints();
   const palette = ["234,232,223", "206,209,214", "182,193,197"];
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let width = 0;
   let height = 0;
   let target = 0;
@@ -80,11 +81,14 @@
     canvas.height = Math.round(height * dpr);
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     needsDraw = true;
+    requestCloudDraw();
   }
 
   function updateTarget() {
     target = Math.max(0, Math.min(1, (window.scrollY || 0) / (window.innerHeight * 0.9)));
+    if (reducedMotion.matches) current = target;
     needsDraw = true;
+    requestCloudDraw();
   }
 
   function drawCloud(progress) {
@@ -125,15 +129,23 @@
     updateTarget();
     current = target;
     drawCloud(current);
+    needsDraw = false;
+  }
+
+  function requestCloudDraw() {
+    if (!raf) raf = requestAnimationFrame(loop);
   }
 
   function loop() {
-    current += (target - current) * 0.1;
-    if (needsDraw || Math.abs(target - current) > 0.001) {
+    raf = 0;
+    if (reducedMotion.matches) current = target;
+    else current += (target - current) * 0.1;
+    const settling = Math.abs(target - current) > 0.001;
+    if (needsDraw || settling) {
       drawCloud(current);
-      if (Math.abs(target - current) <= 0.001) needsDraw = false;
+      if (!settling) needsDraw = false;
     }
-    raf = requestAnimationFrame(loop);
+    if (needsDraw || settling) requestCloudDraw();
   }
 
   window.addEventListener("hashchange", () => {
@@ -141,9 +153,22 @@
   });
   window.addEventListener("resize", resizeCloud);
   window.addEventListener("scroll", updateTarget, { passive: true });
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) needsDraw = true; });
+  reducedMotion.addEventListener("change", () => {
+    current = target;
+    needsDraw = true;
+    requestCloudDraw();
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) {
+      needsDraw = true;
+      requestCloudDraw();
+    }
+  });
   resizeCloud();
   updateTarget();
-  raf = requestAnimationFrame(loop);
-  window.addEventListener("pagehide", () => cancelAnimationFrame(raf), { once: true });
+  requestCloudDraw();
+  window.addEventListener("pagehide", () => {
+    cancelAnimationFrame(raf);
+    raf = 0;
+  }, { once: true });
 })();
