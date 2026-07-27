@@ -1,6 +1,18 @@
 (() => {
   "use strict";
 
+  document.querySelectorAll(".accordion-trigger").forEach((trigger) => {
+    trigger.addEventListener("click", () => {
+      const item = trigger.closest(".accordion-item");
+      const panel = item.querySelector(".accordion-panel");
+      const open = trigger.getAttribute("aria-expanded") === "true";
+      trigger.setAttribute("aria-expanded", String(!open));
+      panel.hidden = open;
+      item.classList.toggle("is-open", !open);
+      trigger.querySelector("b").textContent = open ? "⌄" : "⌃";
+    });
+  });
+
   function seededRandom(seed = 3421) {
     let state = seed >>> 0;
     return () => {
