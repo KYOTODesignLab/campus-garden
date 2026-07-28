@@ -567,3 +567,195 @@
     raf = 0;
   }, { once: true });
 })();
+
+// Home COPC introduction. This is deliberately isolated from the full Viewer:
+// one reduced cloud, one fixed camera, no controls, and the procedural canvas
+// remains underneath as the no-CORS / no-WebGL fallback.
+(() => {
+  "use strict";
+
+  const hero = document.querySelector(".cloud-hero");
+  const target = document.getElementById("cg-real-cloud");
+  if (!hero || !target || !window.WebGL2RenderingContext) return;
+
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let instance = null;
+  let cloud = null;
+  let camera = null;
+  let initialPosition = null;
+  let initialQuaternion = null;
+  let forward = null;
+  let sceneScale = 1;
+  let targetProgress = 0;
+  let currentProgress = 0;
+  let scrollRaf = 0;
+  let loadTimeout = 0;
+  let revealed = false;
+
+  const clamp01 = value => Math.max(0, Math.min(1, value));
+  const smoothstep = value => {
+    const t = clamp01(value);
+    return t * t * (3 - 2 * t);
+  };
+
+  function fail(error) {
+    clearTimeout(loadTimeout);
+    hero.classList.add("cloud-load-failed");
+    hero.classList.remove("has-real-cloud");
+    target.replaceChildren();
+    console.error(`[Home cloud] COPC unavailable; using procedural fallback. ${error?.message || error}`);
+  }
+
+  function readScrollTarget() {
+    targetProgress = clamp01((window.scrollY || 0) / Math.max(window.innerHeight * 1.02, 1));
+    if (reducedMotion.matches) currentProgress = targetProgress;
+    requestScrollRender();
+  }
+
+  function renderCamera(progress) {
+    if (!instance || !camera || !initialPosition || !forward) return;
+    const eased = smoothstep(progress);
+    camera.position.copy(initialPosition)
+      .addScaledVector(forward, sceneScale * 0.18 * eased);
+    camera.position.z -= sceneScale * 0.025 * eased;
+    camera.quaternion.copy(initialQuaternion);
+    camera.updateMatrixWorld();
+
+    // The cloud remains present through most of the Hero, then dissolves just
+    // before the concept introduction reaches the main viewport.
+    const opacity = 1 - smoothstep((progress - 0.68) / 0.32);
+    hero.style.setProperty("--cloud-opacity", opacity.toFixed(3));
+    instance.notifyChange(camera);
+  }
+
+  function scrollTick() {
+    scrollRaf = 0;
+    if (reducedMotion.matches) currentProgress = targetProgress;
+    else currentProgress += (targetProgress - currentProgress) * 0.085;
+    renderCamera(currentProgress);
+    if (Math.abs(targetProgress - currentProgress) > 0.001) requestScrollRender();
+  }
+
+  function requestScrollRender() {
+    if (!scrollRaf) scrollRaf = requestAnimationFrame(scrollTick);
+  }
+
+  async function loadHomeCloud() {
+    try {
+      const {
+        Instance,
+        PointCloud,
+        COPCSource,
+        setLazPerfPath,
+        ColorMap,
+        CoordinateSystem,
+        Box3,
+        Color,
+        MathUtils,
+        Vector3
+      } = await import("./home-cloud-runtime.js");
+
+      setLazPerfPath(new URL("./3d/wasm/", document.baseURI).href);
+
+      const manifestResponse = await fetch("./3d/data/manifest.json", { cache: "no-store" });
+      if (!manifestResponse.ok) throw new Error("manifest request failed");
+      const manifest = await manifestResponse.json();
+      const dataset = manifest.datasets?.find(entry => entry.id === "after")
+        || manifest.datasets?.[0];
+      if (!dataset?.url) throw new Error("no Home dataset in manifest");
+
+      const source = new COPCSource({ url: dataset.url, decimate: 8 });
+      await source.initialize();
+      const metadata = await source.getMetadata();
+      const sceneCrs = CoordinateSystem.register(
+        "campus-garden-local",
+        "+proj=merc +a=6378137 +b=6378137 +lat_ts=0 +lon_0=0 +x_0=0 +y_0=0 +k=1 +units=m +nadgrids=@null +wktext +no_defs +type=crs"
+      );
+      // The file's CRS record is present but incomplete, so use the known
+      // local-coordinate scene consistently for both the source and entity.
+      metadata.crs = sceneCrs;
+      source.crs = sceneCrs;
+      const getMetadata = source.getMetadata.bind(source);
+      source.getMetadata = async () => {
+        const value = await getMetadata();
+        value.crs = sceneCrs;
+        return value;
+      };
+
+      instance = new Instance({
+        target,
+        // The scan uses local engineering coordinates and declares no EPSG
+        // code, so register an explicit local scene CRS without reprojecting.
+        crs: sceneCrs,
+        backgroundColor: null
+      });
+      instance.view.minNearPlane = 0.05;
+      instance.view.camera.fov = 55;
+      instance.view.camera.updateProjectionMatrix();
+      instance.renderingOptions.enableEDL = false;
+
+      cloud = new PointCloud({ source, crs: sceneCrs });
+      cloud.pointBudget = 350000;
+      cloud.subdivisionThreshold = 5;
+      cloud.pointSize = 1.5;
+      cloud.elevationColorMap = new ColorMap({
+        colors: [new Color("#f4f2ea"), new Color("#f4f2ea")],
+        min: 0,
+        max: 1
+      });
+      cloud.setActiveAttributes([]);
+      cloud.setColoringMode("attribute");
+      await instance.add(cloud);
+
+      const box = cloud.getBoundingBox(new Box3());
+      const center = box.getCenter(new Vector3());
+      const size = box.getSize(new Vector3());
+      camera = instance.view.camera;
+      sceneScale = Math.max(size.x, size.y, size.z, 1);
+      const radius = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y, size.z) * 0.5;
+      const distance = radius / Math.tan(MathUtils.degToRad(camera.fov) / 2) * 1.55;
+      camera.position.set(
+        center.x + distance * 0.58,
+        center.y - distance * 0.78,
+        center.z + distance * 0.48
+      );
+      camera.up.set(0, 0, 1);
+      camera.lookAt(center.x, center.y, center.z + size.z * 0.08);
+      camera.updateMatrixWorld();
+      initialPosition = camera.position.clone();
+      initialQuaternion = camera.quaternion.clone();
+      forward = new Vector3(0, 0, -1).applyQuaternion(initialQuaternion).normalize();
+
+      instance.addEventListener("update-end", () => {
+        if (revealed || cloud.displayedPointCount < 1) return;
+        revealed = true;
+        clearTimeout(loadTimeout);
+        hero.classList.add("has-real-cloud");
+      });
+      instance.notifyChange(camera);
+      loadTimeout = window.setTimeout(() => {
+        if (!revealed) fail(new Error("no point data rendered"));
+      }, 30000);
+      readScrollTarget();
+    } catch (error) {
+      fail(error);
+    }
+  }
+
+  window.addEventListener("scroll", readScrollTarget, { passive: true });
+  window.addEventListener("resize", () => {
+    if (instance) instance.notifyChange();
+    readScrollTarget();
+  });
+  reducedMotion.addEventListener("change", () => {
+    currentProgress = targetProgress;
+    requestScrollRender();
+  });
+  window.addEventListener("pagehide", () => {
+    clearTimeout(loadTimeout);
+    cancelAnimationFrame(scrollRaf);
+    scrollRaf = 0;
+  }, { once: true });
+
+  loadHomeCloud();
+})();
