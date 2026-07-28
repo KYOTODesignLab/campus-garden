@@ -576,6 +576,8 @@
 
   const hero = document.querySelector(".cloud-hero");
   const target = document.getElementById("cg-real-cloud");
+  const cloudStage = document.querySelector(".cloud-stage");
+  const conditionsRow = document.querySelector(".conditions-row");
   if (!hero || !target || !window.WebGL2RenderingContext) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -592,6 +594,7 @@
   let scrollRaf = 0;
   let loadTimeout = 0;
   let revealed = false;
+  let cloudActive = true;
 
   const clamp01 = value => Math.max(0, Math.min(1, value));
   const smoothstep = value => {
@@ -608,14 +611,37 @@
   }
 
   function readScrollTarget() {
-    targetProgress = clamp01((window.scrollY || 0) / Math.max(window.innerHeight * 1.02, 1));
+    const conditionsTop = conditionsRow
+      ? conditionsRow.getBoundingClientRect().top + (window.scrollY || 0)
+      : window.innerHeight * 1.02;
+    const fadeEnd = Math.max(conditionsTop - window.innerHeight * 0.15, window.innerHeight);
+    targetProgress = clamp01((window.scrollY || 0) / Math.max(fadeEnd, 1));
     if (reducedMotion.matches) currentProgress = targetProgress;
     requestScrollRender();
   }
 
   function renderCamera(progress) {
-    if (!instance || !camera || !initialPosition || !finalPosition || !initialQuaternion || !finalQuaternion) return;
     const eased = smoothstep(progress);
+
+    if (eased >= 0.999) {
+      hero.style.setProperty("--cloud-opacity", "0");
+      if (cloudActive) {
+        cloudActive = false;
+        if (cloud && instance) {
+          cloud.visible = false;
+          instance.notifyChange(cloud);
+        }
+        cloudStage?.classList.add("is-inactive");
+      }
+      return;
+    }
+    if (!cloudActive) {
+      cloudActive = true;
+      if (cloud) cloud.visible = true;
+      cloudStage?.classList.remove("is-inactive");
+    }
+    if (!instance || !camera || !initialPosition || !finalPosition || !initialQuaternion || !finalQuaternion) return;
+
     camera.position.lerpVectors(initialPosition, finalPosition, eased);
     camera.quaternion.slerpQuaternions(initialQuaternion, finalQuaternion, eased);
     camera.updateMatrixWorld();
@@ -720,6 +746,9 @@
       );
       camera.up.set(0, 0, 1);
       const initialTarget = new Vector3(center.x, center.y, center.z + size.z * 0.08);
+      const compositionLift = sceneScale * 0.025;
+      camera.position.z -= compositionLift;
+      initialTarget.z -= compositionLift;
       camera.lookAt(initialTarget);
       camera.updateMatrixWorld();
       initialPosition = camera.position.clone();
