@@ -334,6 +334,80 @@
     link.addEventListener("click", openArchiveProjects);
   });
 
+  const photoButtons = [...document.querySelectorAll(".archive-photo-button")];
+  const photoLightbox = document.querySelector(".photo-lightbox");
+  const photoLightboxImage = photoLightbox?.querySelector(".photo-lightbox-image");
+  const photoLightboxClose = photoLightbox?.querySelector(".photo-lightbox-close");
+  const photoLightboxPrevious = photoLightbox?.querySelector(".photo-lightbox-previous");
+  const photoLightboxNext = photoLightbox?.querySelector(".photo-lightbox-next");
+  const photoLightboxControls = [photoLightboxClose, photoLightboxPrevious, photoLightboxNext].filter(Boolean);
+  let activePhotoIndex = 0;
+  let photoReturnFocus = null;
+
+  function showPhoto(index) {
+    if (!photoLightboxImage || !photoButtons.length) return;
+    activePhotoIndex = (index + photoButtons.length) % photoButtons.length;
+    const source = photoButtons[activePhotoIndex].querySelector("img");
+    if (!source) return;
+    photoLightboxImage.src = source.currentSrc || source.src;
+    photoLightboxImage.alt = source.alt;
+  }
+
+  function openPhotoLightbox(index, trigger) {
+    if (!photoLightbox || !photoLightboxClose) return;
+    photoReturnFocus = trigger;
+    showPhoto(index);
+    photoLightbox.hidden = false;
+    document.body.classList.add("has-photo-lightbox");
+    photoLightboxClose.focus({ preventScroll: true });
+  }
+
+  function closePhotoLightbox() {
+    if (!photoLightbox || photoLightbox.hidden) return;
+    photoLightbox.hidden = true;
+    document.body.classList.remove("has-photo-lightbox");
+    photoReturnFocus?.focus({ preventScroll: true });
+    photoReturnFocus = null;
+  }
+
+  photoButtons.forEach((button, index) => {
+    button.addEventListener("click", () => openPhotoLightbox(index, button));
+  });
+  photoLightboxClose?.addEventListener("click", closePhotoLightbox);
+  photoLightboxPrevious?.addEventListener("click", () => showPhoto(activePhotoIndex - 1));
+  photoLightboxNext?.addEventListener("click", () => showPhoto(activePhotoIndex + 1));
+  photoLightbox?.addEventListener("click", (event) => {
+    if (event.target === photoLightbox) closePhotoLightbox();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (!photoLightbox || photoLightbox.hidden) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closePhotoLightbox();
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      showPhoto(activePhotoIndex - 1);
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      showPhoto(activePhotoIndex + 1);
+      return;
+    }
+    if (event.key !== "Tab" || !photoLightboxControls.length) return;
+    const firstControl = photoLightboxControls[0];
+    const lastControl = photoLightboxControls[photoLightboxControls.length - 1];
+    if (event.shiftKey && document.activeElement === firstControl) {
+      event.preventDefault();
+      lastControl.focus();
+    } else if (!event.shiftKey && document.activeElement === lastControl) {
+      event.preventDefault();
+      firstControl.focus();
+    }
+  });
+
   function seededRandom(seed = 3421) {
     let state = seed >>> 0;
     return () => {

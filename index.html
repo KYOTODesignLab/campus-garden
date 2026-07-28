@@ -189,18 +189,23 @@
             </button>
             <div class="archive-panel" id="archive-log-panel" aria-hidden="true">
               <div class="archive-panel-inner">
-                <div class="archive-log" aria-label="Future archive log structure">
+                <div class="archive-log" aria-label="Archive log">
                   <div class="archive-log-header" aria-hidden="true"><span>Date</span><span>Type</span><span>Title</span></div>
-                  <div class="archive-log-entry" aria-label="Empty log placeholder">
-                    <span class="archive-placeholder-line is-date" aria-hidden="true"></span>
-                    <span class="archive-placeholder-line is-type" aria-hidden="true"></span>
-                    <span class="archive-placeholder-line is-title" aria-hidden="true"></span>
-                  </div>
-                  <div class="archive-log-entry" aria-label="Empty log placeholder">
-                    <span class="archive-placeholder-line is-date" aria-hidden="true"></span>
-                    <span class="archive-placeholder-line is-type" aria-hidden="true"></span>
-                    <span class="archive-placeholder-line is-title" aria-hidden="true"></span>
-                  </div>
+                  <a class="archive-log-entry" href="https://www.d-lab.kit.ac.jp/application/2025/xr-garden-project/" target="_blank" rel="noopener noreferrer">
+                    <span>15 OCT 2025</span>
+                    <span>KICK-OFF</span>
+                    <span class="archive-log-title">XR Garden Project with Princeton University ↗</span>
+                  </a>
+                  <a class="archive-log-entry" href="https://www.d-lab.kit.ac.jp/events/2026/daniela-mitterberger-eleni-vasiliki-alexi-lecture/" target="_blank" rel="noopener noreferrer">
+                    <span>05 MAR 2026</span>
+                    <span>LECTURE</span>
+                    <span class="archive-log-title">Extended Augmentation: Between Human, Machine, and Material ↗</span>
+                  </a>
+                  <a class="archive-log-entry" href="https://www.d-lab.kit.ac.jp/events/2026/campus-garden-project/" target="_blank" rel="noopener noreferrer">
+                    <span>12 MAY 2026</span>
+                    <span>WORKSHOP</span>
+                    <span class="archive-log-title">Campus Garden — Archive, Maintain, Connect ↗</span>
+                  </a>
                 </div>
               </div>
             </div>
@@ -216,13 +221,25 @@
             </button>
             <div class="archive-panel" id="archive-photography-panel" aria-hidden="true">
               <div class="archive-panel-inner">
-                <div class="archive-photography" aria-label="Photography placeholders">
-                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
-                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
-                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
-                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
-                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
-                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                <div class="archive-photography" aria-label="Photography">
+                  <button class="archive-photo-button" type="button" aria-label="View garden construction overview">
+                    <img class="archive-photo" src="./assets/images/archive/photography/construction-overview.webp" alt="Garden construction overview">
+                  </button>
+                  <button class="archive-photo-button" type="button" aria-label="View stone being lifted by a crane">
+                    <img class="archive-photo" src="./assets/images/archive/photography/stone-crane.webp" alt="Stone being lifted by a crane">
+                  </button>
+                  <button class="archive-photo-button" type="button" aria-label="View excavation work in sand">
+                    <img class="archive-photo" src="./assets/images/archive/photography/sand-excavation.webp" alt="Excavation work in sand">
+                  </button>
+                  <button class="archive-photo-button" type="button" aria-label="View augmented reality tool used on site">
+                    <img class="archive-photo" src="./assets/images/archive/photography/ar-tool-on-site.webp" alt="Augmented reality tool used on site">
+                  </button>
+                  <button class="archive-photo-button" type="button" aria-label="View stone being digitally scanned">
+                    <img class="archive-photo" src="./assets/images/archive/photography/stone-scanning.webp" alt="Stone being digitally scanned">
+                  </button>
+                  <button class="archive-photo-button" type="button" aria-label="View stepping stones in the garden">
+                    <img class="archive-photo" src="./assets/images/archive/photography/stepping-stones.webp" alt="Stepping stones in the garden">
+                  </button>
                 </div>
               </div>
             </div>
@@ -230,6 +247,13 @@
         </div>
       </div>
     </section>
+
+    <div class="photo-lightbox" role="dialog" aria-modal="true" aria-label="Photography viewer" hidden>
+      <button class="photo-lightbox-close" type="button">Close ×</button>
+      <button class="photo-lightbox-previous" type="button" aria-label="Previous photograph">←</button>
+      <img class="photo-lightbox-image" src="" alt="">
+      <button class="photo-lightbox-next" type="button" aria-label="Next photograph">→</button>
+    </div>
 
     <section class="page deep-page" data-page="archive-xr-detail" hidden>
       <div class="deep-shell xr-detail-shell shell">
