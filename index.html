@@ -93,60 +93,41 @@
     </section>
 
     <section class="page deep-page" data-page="maintenance" hidden>
-      <div class="deep-shell shell">
+      <div class="deep-shell maintenance-shell shell">
         <a class="back-link" href="#home">← Back to the garden</a>
-        <h2>Knowing the garden by hand.</h2>
-        <p class="deep-lead">Care is not only keeping the garden the same. Open a task to see what it reads, the judgement made, and how the ground changed before and after.</p>
+        <h2>Maintenance</h2>
+        <p class="deep-lead">A species index of the garden, held as specimen records. Each plant is tied to the places where it is registered.</p>
 
-        <div class="accordion" data-accordion>
-          <article class="accordion-item is-open">
-            <button class="accordion-trigger" type="button" aria-expanded="true" aria-controls="maintenance-watering">
-              <i class="dot maintain"></i><span>Watering the moss</span><b aria-hidden="true">⌃</b>
-            </button>
-            <div class="accordion-panel" id="maintenance-watering">
-              <div class="accordion-copy">
-                <p>Reads the west bed against soil moisture, humidity, and days since rain before deciding when and how much — over-watering is as much a risk as drought.</p>
-                <a href="#archive">To the log →</a>
-              </div>
-              <div class="before-after">
-                <figure><div class="media-placeholder"><span>Before</span></div><figcaption>Before · Apr 02</figcaption></figure>
-                <figure><div class="media-placeholder"><span>After</span></div><figcaption>After · Apr 03</figcaption></figure>
-              </div>
-            </div>
+        <div class="species-index" aria-label="Registered plant species">
+          <article class="species-cell" data-species="fringed-iris" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
+            <div class="species-name"><h3>Fringed Iris</h3><p>シャガ</p></div>
+            <div class="species-meta"><span>Island 01</span><span>1 location</span><span class="species-3d">3D specimen</span></div>
           </article>
-
-          <article class="accordion-item">
-            <button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="maintenance-ground">
-              <i class="dot record"></i><span>Reading the ground</span><b aria-hidden="true">⌄</b>
-            </button>
-            <div class="accordion-panel" id="maintenance-ground" hidden>
-              <div class="accordion-copy">
-                <p>Compaction, drainage, and root spread along the stepping stones — checked by hand and against the repeated 3D survey to see what shifted underfoot.</p>
-                <a href="#3d">To 3D →</a>
-              </div>
-              <div class="before-after">
-                <figure><div class="media-placeholder"><span>January</span></div><figcaption>Jan</figcaption></figure>
-                <figure><div class="media-placeholder"><span>March</span></div><figcaption>Mar</figcaption></figure>
-              </div>
-            </div>
+          <article class="species-cell" data-species="haircap-moss" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
+            <div class="species-name"><h3>Haircap Moss</h3><p>スギゴケ</p></div>
+            <div class="species-meta"><span>4 locations</span></div>
           </article>
-
-          <article class="accordion-item">
-            <button class="accordion-trigger" type="button" aria-expanded="false" aria-controls="maintenance-pruning">
-              <i class="dot archive"></i><span>Seasonal pruning</span><b aria-hidden="true">⌄</b>
-            </button>
-            <div class="accordion-panel" id="maintenance-pruning" hidden>
-              <div class="accordion-copy">
-                <p>Light, growth, and use guide each cut; every pass is noted so the next season can be planned rather than repeated blindly.</p>
-                <a href="#archive">To the archive →</a>
-              </div>
-              <div class="before-after">
-                <figure><div class="media-placeholder"><span>Before</span></div><figcaption>Before</figcaption></figure>
-                <figure><div class="media-placeholder"><span>After</span></div><figcaption>After</figcaption></figure>
-              </div>
-            </div>
+          <article class="species-cell" data-species="spiraea-thunbergii" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
+            <div class="species-name"><h3>Spiraea Thunbergii</h3><p>ユキヤナギ</p></div>
+            <div class="species-meta"><span>Island 02</span><span>1 location</span></div>
+          </article>
+          <article class="species-cell" data-species="autumn-fern" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
+            <div class="species-name"><h3>Autumn Fern</h3><p>ベニシダ</p></div>
+            <div class="species-meta"><span>Island 03</span><span>2 locations</span><span class="species-3d">3D specimen</span></div>
           </article>
         </div>
+
+        <section class="species-detail" id="species-detail" aria-labelledby="species-detail-title" hidden>
+          <p class="species-detail-kicker">Specimen record</p>
+          <h3 id="species-detail-title">Fringed Iris</h3>
+          <div class="species-locations">
+            <section data-detail-locations>
+              <h4 data-detail-summary>シャガ <span>1 registered location</span></h4>
+              <p class="species-detail-kicker">Registered locations</p>
+              <div class="location-row"><div><strong>PL-A1</strong><span>Island 01</span></div><div class="location-actions"><a href="./?view=map&amp;open=a1#map">View on Map →</a><a class="link-3d" href="./3d/?dataset=PL-A1&amp;embed=1">Open in 3D →</a></div></div>
+            </section>
+          </div>
+        </section>
       </div>
     </section>
 

@@ -1,17 +1,148 @@
 (() => {
   "use strict";
 
-  document.querySelectorAll(".accordion-trigger").forEach((trigger) => {
-    trigger.addEventListener("click", () => {
-      const item = trigger.closest(".accordion-item");
-      const panel = item.querySelector(".accordion-panel");
-      const open = trigger.getAttribute("aria-expanded") === "true";
-      trigger.setAttribute("aria-expanded", String(!open));
-      panel.hidden = open;
-      item.classList.toggle("is-open", !open);
-      trigger.querySelector("b").textContent = open ? "⌄" : "⌃";
+  const speciesData = {
+    "fringed-iris": {
+      en: "Fringed Iris",
+      jp: "シャガ",
+      count: "1 registered location",
+      locations: [
+        { code: "PL-A1", island: "Island 01", map: "./?view=map&open=a1#map", d3: "./3d/?dataset=PL-A1&embed=1" }
+      ]
+    },
+    "haircap-moss": {
+      en: "Haircap Moss",
+      jp: "スギゴケ",
+      count: "4 registered locations",
+      locations: [
+        { code: "PL-A3", map: "./?view=map&open=a3#map" },
+        { code: "PL-A4", map: "./?view=map&open=a4#map" },
+        { code: "PL-B1", map: "./?view=map&open=b1#map" },
+        { code: "PL-B2", map: "./?view=map&open=b2#map" }
+      ]
+    },
+    "spiraea-thunbergii": {
+      en: "Spiraea Thunbergii",
+      jp: "ユキヤナギ",
+      count: "1 registered location",
+      locations: [
+        { code: "PL-A5", island: "Island 02", map: "./?view=map&open=a5#map" }
+      ]
+    },
+    "autumn-fern": {
+      en: "Autumn Fern",
+      jp: "ベニシダ",
+      count: "2 registered locations",
+      locations: [
+        { code: "PL-B3", island: "Island 03", map: "./?view=map&open=b3#map" },
+        { code: "PL-B6", island: "Island 03", map: "./?view=map&open=b6#map", d3: "./3d/?dataset=PL-B6&embed=1" }
+      ]
+    }
+  };
+  const speciesCells = [...document.querySelectorAll(".species-cell[data-species]")];
+  const speciesDetail = document.getElementById("species-detail");
+  const speciesDetailTitle = document.getElementById("species-detail-title");
+  const speciesDetailLocations = speciesDetail?.querySelector("[data-detail-locations]");
+  const speciesDetailSummary = speciesDetail?.querySelector("[data-detail-summary]");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  let openSpecies = "";
+
+  function createLocationRow(location) {
+    const row = document.createElement("div");
+    row.className = "location-row";
+
+    const identity = document.createElement("div");
+    const code = document.createElement("strong");
+    code.textContent = location.code;
+    identity.append(code);
+    if (location.island) {
+      const island = document.createElement("span");
+      island.textContent = location.island;
+      identity.append(island);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "location-actions";
+    const mapLink = document.createElement("a");
+    mapLink.href = location.map;
+    mapLink.textContent = "View on Map →";
+    actions.append(mapLink);
+    if (location.d3) {
+      const d3Link = document.createElement("a");
+      d3Link.className = "link-3d";
+      d3Link.href = location.d3;
+      d3Link.textContent = "Open in 3D →";
+      actions.append(d3Link);
+    }
+
+    row.append(identity, actions);
+    return row;
+  }
+
+  function renderSpecies(key) {
+    openSpecies = speciesData[key] ? key : "";
+
+    speciesCells.forEach((item) => {
+      const selected = item.dataset.species === openSpecies;
+      item.classList.toggle("is-selected", selected);
+      item.setAttribute("aria-expanded", String(selected));
+    });
+
+    if (!speciesDetail || !speciesDetailTitle || !speciesDetailLocations || !speciesDetailSummary) return;
+    speciesDetail.hidden = !openSpecies;
+    if (!openSpecies) return;
+
+    const species = speciesData[openSpecies];
+    speciesDetailTitle.textContent = species.en;
+    speciesDetailSummary.replaceChildren(document.createTextNode(`${species.jp} `));
+    const count = document.createElement("span");
+    count.textContent = species.count;
+    speciesDetailSummary.append(count);
+    speciesDetailLocations.querySelectorAll(".location-row").forEach((row) => row.remove());
+    species.locations.forEach((location) => speciesDetailLocations.append(createLocationRow(location)));
+  }
+
+  function updateSpeciesUrl(key) {
+    const url = new URL(location.href);
+    if (key) url.searchParams.set("species", key);
+    else url.searchParams.delete("species");
+    url.hash = "maintenance";
+    history.pushState(history.state, "", url);
+  }
+
+  function scrollToSpeciesDetail() {
+    if (!speciesDetail || speciesDetail.hidden) return;
+    requestAnimationFrame(() => {
+      speciesDetail.scrollIntoView({
+        block: "start",
+        behavior: reducedMotion.matches ? "auto" : "smooth"
+      });
+    });
+  }
+
+  function toggleSpecies(cell) {
+    const key = cell.dataset.species;
+    const nextSpecies = openSpecies === key ? "" : key;
+    renderSpecies(nextSpecies);
+    updateSpeciesUrl(nextSpecies);
+    if (nextSpecies) scrollToSpeciesDetail();
+  }
+
+  function restoreSpeciesFromUrl() {
+    const key = new URLSearchParams(location.search).get("species") || "";
+    renderSpecies(key);
+  }
+
+  speciesCells.forEach((cell) => {
+    cell.addEventListener("click", () => toggleSpecies(cell));
+    cell.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggleSpecies(cell);
     });
   });
+  window.addEventListener("popstate", restoreSpeciesFromUrl);
+  restoreSpeciesFromUrl();
 
   function seededRandom(seed = 3421) {
     let state = seed >>> 0;
@@ -62,7 +193,6 @@
   const ctx = canvas?.getContext("2d");
   const points = buildGardenPoints();
   const palette = ["234,232,223", "206,209,214", "182,193,197"];
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let width = 0;
   let height = 0;
   let target = 0;
