@@ -619,7 +619,7 @@
   function renderCamera(progress) {
     if (Math.abs(progress - lastRenderedProgress) < 0.0005) return;
     lastRenderedProgress = progress;
-    const opacity = 1 - smoothstep((progress - 0.18) / 0.72);
+    const opacity = 1 - smoothstep((progress - 0.18) / 0.66);
     cloudStage.style.opacity = opacity.toFixed(3);
 
     if (opacity <= 0.001) {
