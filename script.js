@@ -727,29 +727,29 @@
 
       camera = instance.view.camera;
       camera.position.set(
-        -16.1252518446,
-        8.6890567167,
-        1.4523522597
+        -13.1135149877,
+        6.4582607142,
+        0.0128176161
       );
       camera.up.set(0, 0, 1);
       initialTarget = new Vector3(
-        -0.3390437268,
-        9.4254987893,
-        1.0699874094
+        -0.3526744171,
+        6.5684404153,
+        0.4086828565
       );
       camera.lookAt(initialTarget);
       camera.updateMatrixWorld();
       initialPosition = camera.position.clone();
       cameraTarget = initialTarget.clone();
       finalPosition = new Vector3(
-        -12.2664709430,
-        9.3344039007,
-        0.2283297217
+        -10.5327927289,
+        6.4644407032,
+        1.0084969376
       );
       finalTarget = new Vector3(
-        -2.1925011145,
-        9.6647186314,
-        1.1133948855
+        -0.3809103735,
+        6.5520941268,
+        1.3234273943
       );
 
       instance.addEventListener("update-end", () => {
