@@ -577,7 +577,6 @@
   const hero = document.querySelector(".cloud-hero");
   const target = document.getElementById("cg-real-cloud");
   const cloudStage = document.querySelector(".cloud-stage");
-  const conditionsRow = document.querySelector(".conditions-row");
   if (!hero || !target || !window.WebGL2RenderingContext) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -611,35 +610,29 @@
   }
 
   function readScrollTarget() {
-    const conditionsTop = conditionsRow
-      ? conditionsRow.getBoundingClientRect().top + (window.scrollY || 0)
-      : window.innerHeight * 1.02;
-    // Finish before Current Conditions first enters the viewport.
-    const fadeEnd = Math.max(conditionsTop - window.innerHeight, 1);
-    targetProgress = clamp01((window.scrollY || 0) / Math.max(fadeEnd, 1));
+    targetProgress = clamp01((window.scrollY || 0) / Math.max(hero.offsetHeight, 1));
     if (reducedMotion.matches) currentProgress = targetProgress;
     requestScrollRender();
   }
 
   function renderCamera(progress) {
     const eased = smoothstep(progress);
+    const opacity = 1 - smoothstep((progress - 0.6) / 0.29);
+    cloudStage.style.opacity = opacity.toFixed(3);
 
-    if (eased >= 0.999) {
-      cloudStage.style.opacity = "0";
+    if (opacity <= 0.001) {
       if (cloudActive) {
         cloudActive = false;
         if (cloud && instance) {
           cloud.visible = false;
           instance.notifyChange(cloud);
         }
-        cloudStage?.classList.add("is-inactive");
       }
       return;
     }
     if (!cloudActive) {
       cloudActive = true;
       if (cloud) cloud.visible = true;
-      cloudStage?.classList.remove("is-inactive");
     }
     if (!instance || !camera || !initialPosition || !finalPosition || !initialQuaternion || !finalQuaternion) return;
 
@@ -649,8 +642,6 @@
 
     // The cloud remains present through most of the Hero, then dissolves just
     // before the concept introduction reaches the main viewport.
-    const opacity = 1 - smoothstep((progress - 0.68) / 0.32);
-    cloudStage.style.opacity = opacity.toFixed(3);
     instance.notifyChange(camera);
   }
 
@@ -738,15 +729,15 @@
       camera = instance.view.camera;
       sceneScale = Math.max(size.x, size.y, size.z, 1);
       camera.position.set(
-        -15.9527046632,
-        9.2135362269,
-        4.2978990562
+        -16.1252518446,
+        8.6890567167,
+        1.4523522597
       );
       camera.up.set(0, 0, 1);
       const initialTarget = new Vector3(
-        -2.1925011145,
-        9.6647186314,
-        1.1133948855
+        -0.3390437268,
+        9.4254987893,
+        1.0699874094
       );
       camera.lookAt(initialTarget);
       camera.updateMatrixWorld();

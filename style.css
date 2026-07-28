@@ -16,7 +16,6 @@ a{color:inherit}a:hover{color:inherit}button{font:inherit}.font-ja{font-family:"
 .cloud-hero{position:relative;height:115vh;min-height:660px;overflow:visible;background:transparent}
 .cloud-hero::before{content:"";display:block;width:100%;height:100vh;min-height:580px;pointer-events:none}
 .cloud-stage{position:fixed;z-index:0;inset:0 0 auto;width:100%;height:100vh;min-height:580px;overflow:hidden;background:transparent;opacity:1;pointer-events:none}
-.cloud-stage.is-inactive{visibility:hidden}
 #cg-cloud,#cg-real-cloud{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:auto}
 #cg-real-cloud{z-index:1;opacity:0;background:transparent;transition:opacity 700ms ease}
 #cg-real-cloud canvas{display:block;width:100%;height:100%;pointer-events:none!important;touch-action:auto!important}
