@@ -1,16 +1,411 @@
 (() => {
   "use strict";
 
-  document.querySelectorAll(".accordion-trigger").forEach((trigger) => {
-    trigger.addEventListener("click", () => {
-      const item = trigger.closest(".accordion-item");
-      const panel = item.querySelector(".accordion-panel");
-      const open = trigger.getAttribute("aria-expanded") === "true";
-      trigger.setAttribute("aria-expanded", String(!open));
-      panel.hidden = open;
-      item.classList.toggle("is-open", !open);
-      trigger.querySelector("b").textContent = open ? "⌄" : "⌃";
+  const speciesData = {
+    "fringed-iris": {
+      en: "Fringed Iris",
+      jp: "シャガ",
+      count: "1 registered location",
+      locations: [
+        { code: "PL-A1", island: "Island 01", map: "./?view=map&open=a1#map", d3: "./3d/?dataset=PL-A1&embed=1" }
+      ]
+    },
+    "haircap-moss": {
+      en: "Haircap Moss",
+      jp: "スギゴケ",
+      count: "4 registered locations",
+      locations: [
+        { code: "PL-A3", map: "./?view=map&open=a3#map" },
+        { code: "PL-A4", map: "./?view=map&open=a4#map" },
+        { code: "PL-B1", map: "./?view=map&open=b1#map" },
+        { code: "PL-B2", map: "./?view=map&open=b2#map" }
+      ]
+    },
+    "spiraea-thunbergii": {
+      en: "Spiraea Thunbergii",
+      jp: "ユキヤナギ",
+      count: "1 registered location",
+      locations: [
+        { code: "PL-A5", island: "Island 02", map: "./?view=map&open=a5#map" }
+      ]
+    },
+    "autumn-fern": {
+      en: "Autumn Fern",
+      jp: "ベニシダ",
+      count: "2 registered locations",
+      locations: [
+        { code: "PL-B3", island: "Island 03", map: "./?view=map&open=b3#map" },
+        { code: "PL-B6", island: "Island 03", map: "./?view=map&open=b6#map", d3: "./3d/?dataset=PL-B6&embed=1" }
+      ]
+    }
+  };
+  const speciesDetails = {
+    "fringed-iris": {
+      identity: {
+        body: "An evergreen perennial that spreads by rhizomes. It produces pale flowers with violet and orange markings in spring.",
+        facts: ["Evergreen perennial", "Height 25–45 cm", "Flowers Apr–May"]
+      },
+      conditions: {
+        body: "Partial to bright shade, with moist, humus-rich soil that drains well. Avoid prolonged dryness and standing water.",
+        facts: ["Light — Partial shade", "Moisture — Moist", "Drainage — Well drained"]
+      },
+      watch: "Check for prolonged dryness or waterlogging, yellowing or dead leaves, old flower stems, slug damage, and growth beyond the intended area.",
+      care: [
+        ["Watering", "Water slowly at the base when the soil remains dry. Do not add water when the soil is already saturated."],
+        ["Remove dead leaves", "Remove only fully dead leaves near the base. Do not cut healthy green leaves or new shoots."],
+        ["Remove flower stems", "After flowering, cut old flower stems near the base without damaging the surrounding leaves."]
+      ],
+      tools: ["Watering can", "Gloves", "Clean garden shears"],
+      showCodes: false
+    },
+    "haircap-moss": {
+      identity: {
+        body: "A tuft-forming moss recorded here under the general name Haircap Moss. It forms dense green patches, but the exact species has not yet been confirmed.",
+        facts: ["Moss", "Dense tufts", "Exact species unconfirmed"]
+      },
+      conditions: {
+        body: "Moist, slightly acidic ground with limited disturbance. Avoid prolonged drying, standing water, and heavy foot traffic.",
+        facts: ["Light — Partial shade", "Moisture — Consistently moist", "Ground — Slightly acidic"]
+      },
+      watch: "Check for prolonged drying, dark or soft patches, fallen leaves covering the surface, loose soil, and damage from trampling.",
+      care: [
+        ["Watering", "Water or mist gently when the moss and upper soil remain dry. Do not flood the surface or use a strong jet."],
+        ["Remove debris", "Lift fallen leaves and twigs carefully by hand or with soft tweezers. Do not pull the moss from the soil."],
+        ["Protect the surface", "Keep feet and tools off the moss. Do not rake or loosen the surface."]
+      ],
+      tools: ["Watering can with a fine rose", "Gloves", "Soft tweezers"],
+      showCodes: true
+    },
+    "spiraea-thunbergii": {
+      identity: {
+        body: "A deciduous shrub with slender, arching branches and many small white flowers in early spring.",
+        facts: ["Deciduous shrub", "Height up to about 1.5 m", "Flowers in early spring"]
+      },
+      conditions: {
+        body: "Full sun to light shade, in moderately moist soil that drains well. Avoid persistently wet ground.",
+        facts: ["Light — Sun to partial shade", "Moisture — Moderate", "Drainage — Well drained"]
+      },
+      watch: "Check for prolonged dryness, waterlogged soil, dead or crossing branches, damaged shoots, and reduced flowering.",
+      care: [
+        ["Watering", "Water slowly at the base during prolonged dry periods. Do not add water when the soil remains wet."],
+        ["Remove dead branches", "Remove dead or damaged branches cleanly at their point of origin."],
+        ["Pruning", "Prune only as needed immediately after flowering. Avoid heavy pruning later in the year, when next season’s flowering growth may be removed."]
+      ],
+      tools: ["Watering can", "Gloves", "Clean pruning shears"],
+      showCodes: false
+    },
+    "autumn-fern": {
+      identity: {
+        body: "A semi-evergreen fern that forms compact clumps. New fronds emerge coppery pink and mature to glossy green.",
+        facts: ["Semi-evergreen fern", "Height up to about 75 cm", "Copper-coloured new fronds"]
+      },
+      conditions: {
+        body: "Cool, moist, lightly shaded conditions. It can tolerate more sun when the soil remains moist. Avoid prolonged drying and standing water.",
+        facts: ["Light — Partial to full shade", "Moisture — Moist", "Drainage — Well drained"]
+      },
+      watch: "Check for dry or scorched fronds, damaged new growth, old fronds crowding the centre, and soil that remains waterlogged.",
+      care: [
+        ["Watering", "Water slowly at the base when the soil remains dry. Do not add water when the soil is already saturated."],
+        ["Remove old fronds", "Remove fully dead or damaged fronds before new growth develops. Cut close to the base without damaging emerging fronds."],
+        ["Divide the clump", "Divide only when the clump becomes crowded and the garden plan requires it. Carry this out in spring."]
+      ],
+      tools: ["Watering can", "Gloves", "Clean garden shears"],
+      showCodes: true
+    }
+  };
+  const speciesCells = [...document.querySelectorAll(".species-cell[data-species]")];
+  const speciesDetail = document.getElementById("species-detail");
+  const speciesDetailTitle = document.getElementById("species-detail-title");
+  const speciesDetailLocations = speciesDetail?.querySelector("[data-detail-locations]");
+  const speciesDetailSummary = speciesDetail?.querySelector("[data-detail-summary]");
+  const speciesDetailSections = speciesDetail?.querySelector("[data-detail-sections]");
+  const speciesDetailQuick = speciesDetail?.querySelector("[data-detail-quick]");
+  const speciesLocations = speciesDetail?.querySelector(".species-locations");
+  const maintenanceLinks = [...document.querySelectorAll(
+    '.primary-nav [data-route="maintenance"], .site-footer a[href="#maintenance"]'
+  )];
+  let openSpecies = "";
+
+  function createLocationRow(location, options = {}) {
+    const { showCode = true, showIsland = true } = options;
+    const row = document.createElement("div");
+    row.className = "location-row";
+
+    const identity = document.createElement("div");
+    if (showCode) {
+      const code = document.createElement("strong");
+      code.textContent = location.code;
+      identity.append(code);
+    }
+    if (showIsland && location.island) {
+      const island = document.createElement("span");
+      island.textContent = location.island;
+      identity.append(island);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "location-actions";
+    const mapLink = document.createElement("a");
+    mapLink.href = location.map;
+    mapLink.textContent = "View on Map →";
+    actions.append(mapLink);
+    if (location.d3) {
+      const d3Link = document.createElement("a");
+      d3Link.className = "link-3d";
+      d3Link.href = location.d3;
+      d3Link.textContent = "Open in 3D →";
+      actions.append(d3Link);
+    }
+
+    if (showCode || (showIsland && location.island)) row.append(identity);
+    row.append(actions);
+    return row;
+  }
+
+  function createDetailSection(title, body, facts = []) {
+    const section = document.createElement("section");
+    section.className = "species-detail-section";
+    const heading = document.createElement("h4");
+    heading.textContent = title;
+    const paragraph = document.createElement("p");
+    paragraph.textContent = body;
+    section.append(heading, paragraph);
+    if (facts.length) {
+      const list = document.createElement("ul");
+      list.className = "species-detail-facts";
+      facts.forEach((fact) => {
+        const item = document.createElement("li");
+        item.textContent = fact;
+        list.append(item);
+      });
+      section.append(list);
+    }
+    return section;
+  }
+
+  function renderDetailSections(detail) {
+    if (!speciesDetailSections) return;
+    const identity = createDetailSection("What is it?", detail.identity.body, detail.identity.facts);
+    const conditions = createDetailSection(
+      "What conditions does it prefer?",
+      detail.conditions.body,
+      detail.conditions.facts
+    );
+    const watch = createDetailSection("What should you look for?", detail.watch);
+    const care = document.createElement("section");
+    care.className = "species-detail-section";
+    const careHeading = document.createElement("h4");
+    careHeading.textContent = "When and how should you care for it?";
+    const tasks = document.createElement("div");
+    tasks.className = "species-care-tasks";
+    detail.care.forEach(([title, body]) => {
+      const task = document.createElement("div");
+      const heading = document.createElement("h5");
+      heading.textContent = title;
+      const paragraph = document.createElement("p");
+      paragraph.textContent = body;
+      task.append(heading, paragraph);
+      tasks.append(task);
     });
+    const toolsHeading = document.createElement("h5");
+    toolsHeading.className = "species-tools-title";
+    toolsHeading.textContent = "Tools";
+    const tools = document.createElement("ul");
+    tools.className = "species-tools";
+    detail.tools.forEach((tool) => {
+      const item = document.createElement("li");
+      item.textContent = tool;
+      tools.append(item);
+    });
+    care.append(careHeading, tasks, toolsHeading, tools);
+    speciesDetailSections.replaceChildren(identity, conditions, watch, care);
+  }
+
+  function renderSpecies(key) {
+    openSpecies = speciesData[key] ? key : "";
+
+    speciesCells.forEach((item) => {
+      const selected = item.dataset.species === openSpecies;
+      item.classList.toggle("is-selected", selected);
+      item.setAttribute("aria-expanded", String(selected));
+      const toggle = item.querySelector("[data-species-toggle]");
+      if (toggle) toggle.textContent = selected ? "Close ↑" : "Explore ↓";
+    });
+
+    if (!speciesDetail || !speciesDetailTitle || !speciesDetailLocations || !speciesDetailSummary) return;
+    speciesDetail.hidden = !openSpecies;
+    if (!openSpecies) return;
+
+    const species = speciesData[openSpecies];
+    const detail = speciesDetails[openSpecies];
+    const hasMultipleLocations = species.locations.length > 1;
+    if (speciesDetailQuick) {
+      speciesDetailQuick.hidden = false;
+      speciesDetailQuick.replaceChildren();
+      speciesDetailQuick.classList.toggle("has-multiple", hasMultipleLocations);
+      species.locations.forEach((location) => {
+        speciesDetailQuick.append(createLocationRow(location, {
+          showCode: detail.showCodes,
+          showIsland: false
+        }));
+      });
+    }
+    if (speciesLocations) speciesLocations.hidden = true;
+    speciesDetailTitle.textContent = species.en;
+    renderDetailSections(detail);
+    const japaneseName = document.createElement("span");
+    japaneseName.className = "font-ja";
+    japaneseName.lang = "ja";
+    japaneseName.textContent = species.jp;
+    speciesDetailSummary.replaceChildren(japaneseName, document.createTextNode(" "));
+    const count = document.createElement("span");
+    count.textContent = species.count;
+    speciesDetailSummary.append(count);
+    speciesDetailLocations.querySelectorAll(".location-row").forEach((row) => row.remove());
+    species.locations.forEach((location) => speciesDetailLocations.append(createLocationRow(location)));
+  }
+
+  function updateSpeciesUrl(key) {
+    const url = new URL(location.href);
+    if (key) url.searchParams.set("species", key);
+    else url.searchParams.delete("species");
+    url.hash = "maintenance";
+    history.pushState(history.state, "", url);
+  }
+
+  function toggleSpecies(cell) {
+    const key = cell.dataset.species;
+    const nextSpecies = openSpecies === key ? "" : key;
+    renderSpecies(nextSpecies);
+    updateSpeciesUrl(nextSpecies);
+  }
+
+  function restoreSpeciesFromUrl() {
+    const key = new URLSearchParams(location.search).get("species") || "";
+    renderSpecies(key);
+  }
+
+  speciesCells.forEach((cell) => {
+    cell.addEventListener("click", () => toggleSpecies(cell));
+    cell.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggleSpecies(cell);
+    });
+  });
+  maintenanceLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      renderSpecies("");
+      const url = new URL(location.href);
+      url.searchParams.delete("species");
+      url.hash = "maintenance";
+      history.pushState(history.state, "", url);
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
+    });
+  });
+  window.addEventListener("popstate", restoreSpeciesFromUrl);
+  restoreSpeciesFromUrl();
+
+  const archiveTriggers = [...document.querySelectorAll(".archive-trigger[aria-controls]")];
+  const archiveProjectLinks = [...document.querySelectorAll(".archive-project-link, .xr-back-link")];
+  const projectsTrigger = document.querySelector('[aria-controls="archive-projects-panel"]');
+  const projectsPanel = document.getElementById("archive-projects-panel");
+  const openArchiveProjects = () => {
+    if (!projectsTrigger || !projectsPanel) return;
+    projectsTrigger.setAttribute("aria-expanded", "true");
+    projectsPanel.setAttribute("aria-hidden", "false");
+  };
+
+  archiveTriggers.forEach((trigger) => {
+    const panel = document.getElementById(trigger.getAttribute("aria-controls"));
+    if (!panel) return;
+    trigger.addEventListener("pointerup", () => trigger.blur());
+    trigger.addEventListener("click", () => {
+      const willOpen = trigger.getAttribute("aria-expanded") !== "true";
+      trigger.setAttribute("aria-expanded", String(willOpen));
+      panel.setAttribute("aria-hidden", String(!willOpen));
+    });
+  });
+  archiveProjectLinks.forEach((link) => {
+    link.addEventListener("pointerup", () => link.blur());
+  });
+  document.querySelectorAll("[data-open-archive-projects]").forEach((link) => {
+    link.addEventListener("click", openArchiveProjects);
+  });
+
+  const photoButtons = [...document.querySelectorAll(".archive-photo-button")];
+  const photoLightbox = document.querySelector(".photo-lightbox");
+  const photoLightboxImage = photoLightbox?.querySelector(".photo-lightbox-image");
+  const photoLightboxClose = photoLightbox?.querySelector(".photo-lightbox-close");
+  const photoLightboxPrevious = photoLightbox?.querySelector(".photo-lightbox-previous");
+  const photoLightboxNext = photoLightbox?.querySelector(".photo-lightbox-next");
+  const photoLightboxControls = [photoLightboxClose, photoLightboxPrevious, photoLightboxNext].filter(Boolean);
+  let activePhotoIndex = 0;
+  let photoReturnFocus = null;
+
+  function showPhoto(index) {
+    if (!photoLightboxImage || !photoButtons.length) return;
+    activePhotoIndex = (index + photoButtons.length) % photoButtons.length;
+    const source = photoButtons[activePhotoIndex].querySelector("img");
+    if (!source) return;
+    photoLightboxImage.src = source.currentSrc || source.src;
+    photoLightboxImage.alt = source.alt;
+  }
+
+  function openPhotoLightbox(index, trigger) {
+    if (!photoLightbox || !photoLightboxClose) return;
+    photoReturnFocus = trigger;
+    showPhoto(index);
+    photoLightbox.hidden = false;
+    document.body.classList.add("has-photo-lightbox");
+    photoLightboxClose.focus({ preventScroll: true });
+  }
+
+  function closePhotoLightbox() {
+    if (!photoLightbox || photoLightbox.hidden) return;
+    photoLightbox.hidden = true;
+    document.body.classList.remove("has-photo-lightbox");
+    photoReturnFocus?.focus({ preventScroll: true });
+    photoReturnFocus = null;
+  }
+
+  photoButtons.forEach((button, index) => {
+    button.addEventListener("click", () => openPhotoLightbox(index, button));
+  });
+  photoLightboxClose?.addEventListener("click", closePhotoLightbox);
+  photoLightboxPrevious?.addEventListener("click", () => showPhoto(activePhotoIndex - 1));
+  photoLightboxNext?.addEventListener("click", () => showPhoto(activePhotoIndex + 1));
+  photoLightbox?.addEventListener("click", (event) => {
+    if (event.target === photoLightbox) closePhotoLightbox();
+  });
+  document.addEventListener("keydown", (event) => {
+    if (!photoLightbox || photoLightbox.hidden) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      closePhotoLightbox();
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      showPhoto(activePhotoIndex - 1);
+      return;
+    }
+    if (event.key === "ArrowRight") {
+      event.preventDefault();
+      showPhoto(activePhotoIndex + 1);
+      return;
+    }
+    if (event.key !== "Tab" || !photoLightboxControls.length) return;
+    const firstControl = photoLightboxControls[0];
+    const lastControl = photoLightboxControls[photoLightboxControls.length - 1];
+    if (event.shiftKey && document.activeElement === firstControl) {
+      event.preventDefault();
+      lastControl.focus();
+    } else if (!event.shiftKey && document.activeElement === lastControl) {
+      event.preventDefault();
+      firstControl.focus();
+    }
   });
 
   function seededRandom(seed = 3421) {
@@ -60,9 +455,9 @@
 
   const canvas = document.getElementById("cg-cloud");
   const ctx = canvas?.getContext("2d");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const points = buildGardenPoints();
   const palette = ["234,232,223", "206,209,214", "182,193,197"];
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   let width = 0;
   let height = 0;
   let target = 0;
