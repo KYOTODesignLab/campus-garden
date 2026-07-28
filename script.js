@@ -308,6 +308,15 @@
   restoreSpeciesFromUrl();
 
   const archiveTriggers = [...document.querySelectorAll(".archive-trigger[aria-controls]")];
+  const archiveProjectLinks = [...document.querySelectorAll(".archive-project-link, .xr-back-link")];
+  const projectsTrigger = document.querySelector('[aria-controls="archive-projects-panel"]');
+  const projectsPanel = document.getElementById("archive-projects-panel");
+  const openArchiveProjects = () => {
+    if (!projectsTrigger || !projectsPanel) return;
+    projectsTrigger.setAttribute("aria-expanded", "true");
+    projectsPanel.setAttribute("aria-hidden", "false");
+  };
+
   archiveTriggers.forEach((trigger) => {
     const panel = document.getElementById(trigger.getAttribute("aria-controls"));
     if (!panel) return;
@@ -317,6 +326,12 @@
       trigger.setAttribute("aria-expanded", String(willOpen));
       panel.setAttribute("aria-hidden", String(!willOpen));
     });
+  });
+  archiveProjectLinks.forEach((link) => {
+    link.addEventListener("pointerup", () => link.blur());
+  });
+  document.querySelectorAll("[data-open-archive-projects]").forEach((link) => {
+    link.addEventListener("click", openArchiveProjects);
   });
 
   function seededRandom(seed = 3421) {

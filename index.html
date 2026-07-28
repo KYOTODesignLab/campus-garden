@@ -159,10 +159,12 @@
               <div class="archive-panel-inner">
                 <div class="archive-projects">
                   <article class="archive-project">
-                    <p class="archive-project-kicker">Workshop</p>
-                    <h3>XR Garden</h3>
-                    <p class="archive-project-subtitle">Design &amp; Construction</p>
-                    <div class="archive-project-placeholder" aria-hidden="true"></div>
+                    <a class="archive-project-link" href="#archive-xr-garden">
+                      <p class="archive-project-kicker">Workshop</p>
+                      <h3>XR Garden</h3>
+                      <p class="archive-project-subtitle">Design &amp; Construction</p>
+                      <div class="archive-project-placeholder" aria-hidden="true"></div>
+                    </a>
                   </article>
                   <article class="archive-project">
                     <p class="archive-project-kicker">Workshop</p>
@@ -224,6 +226,47 @@
             </div>
           </section>
         </div>
+      </div>
+    </section>
+
+    <section class="page deep-page" data-page="archive-xr-detail" hidden>
+      <div class="deep-shell xr-detail-shell shell">
+        <a class="back-link xr-back-link" href="#archive" data-open-archive-projects>← Back to Archive</a>
+        <p class="xr-detail-kicker">Workshop</p>
+        <h2>XR Garden</h2>
+        <p class="xr-detail-subtitle">Design &amp; Construction</p>
+        <p class="xr-detail-lead">A workshop using extended reality to study the position and form of the garden, connecting those decisions with its on-site design and construction.</p>
+        <div class="xr-media xr-media-wide" aria-hidden="true"></div>
+
+        <div class="xr-detail-sections">
+          <section class="xr-detail-section">
+            <h3>Design and spatial studies</h3>
+            <p>Positions, forms, and boundaries were tested against the physical site through the headset overlay, ahead of any fixed drawing.</p>
+            <div class="xr-media xr-media-wide" aria-hidden="true"></div>
+          </section>
+
+          <section class="xr-detail-section">
+            <h3>On-site process</h3>
+            <p>The overlay was walked and checked against the ground itself, so decisions made in the headset could be read directly against the site.</p>
+            <div class="xr-media-pair">
+              <div class="xr-media xr-media-paired" aria-hidden="true"></div>
+              <div class="xr-media xr-media-paired" aria-hidden="true"></div>
+            </div>
+          </section>
+
+          <section class="xr-detail-section">
+            <h3>Construction</h3>
+            <p>Construction followed from the studies above, carrying the positions and forms fixed on site into the built garden.</p>
+            <div class="xr-media xr-media-wide" aria-hidden="true"></div>
+          </section>
+
+          <section class="xr-detail-section xr-detail-documentation">
+            <h3>Documentation</h3>
+            <p>Records from the workshop — plates, scans, and site notes — are gathered into the wider Archive as they are prepared.</p>
+          </section>
+        </div>
+
+        <a class="back-link xr-back-link xr-back-link-bottom" href="#archive" data-open-archive-projects>← Back to Archive</a>
       </div>
     </section>
 
@@ -306,9 +349,9 @@
       archive: { page: "archive" },
       "archive-activities": { page: "archive", target: "archive-activities" },
       "archive-photographs": { page: "archive", target: "archive-photographs" },
-      "archive-xr-garden": { page: "archive", target: "archive-xr-garden" },
+      "archive-xr-garden": { page: "archive-xr-detail", nav: "archive" },
       "archive-campus-garden": { page: "archive", target: "archive-campus-garden" },
-      "archive-xr": { page: "archive", target: "archive-xr-garden" },
+      "archive-xr": { page: "archive-xr-detail", nav: "archive" },
       "archive-campus": { page: "archive", target: "archive-campus-garden" },
       about: { page: "about" },
       people: { page: "people" }
@@ -339,7 +382,7 @@
         page.hidden = page.dataset.page !== route.page;
       });
       navLinks.forEach((link) => {
-        if (link.dataset.route === route.page) link.setAttribute("aria-current", "page");
+        if (link.dataset.route === (route.nav || route.page)) link.setAttribute("aria-current", "page");
         else link.removeAttribute("aria-current");
       });
       document.body.classList.toggle("embedded-tool-view", route.page === "map" || route.page === "3d");
