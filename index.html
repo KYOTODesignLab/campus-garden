@@ -141,33 +141,89 @@
     </section>
 
     <section class="page deep-page" data-page="archive" hidden>
-      <div class="deep-shell shell">
+      <div class="deep-shell archive-shell shell">
         <a class="back-link" href="#home">← Back to the garden</a>
-        <h2>Reading the garden back.</h2>
-        <p class="deep-lead">Each medium keeps its own form — activities, photographs, methods, and data are not flattened into one grid, but tied across place, time, and action.</p>
+        <h2>Archive</h2>
+        <p class="deep-lead">An archive for tracing Campus Garden through projects, dated records, and photography.</p>
 
-        <div class="archive-axes" id="archive-photographs" tabindex="-1"><span>Place</span><span>Time</span><span>Subject</span><span>Action</span><span>Record</span></div>
-        <h3 class="section-label" id="archive-activities" tabindex="-1">Activities</h3>
+        <div class="archive-index">
+          <section class="archive-row">
+            <button class="archive-trigger" type="button" aria-expanded="false" aria-controls="archive-projects-panel">
+              <span class="archive-heading">
+                <span class="archive-title">Projects</span>
+                <span class="archive-description">Two connected projects trace the garden from design and construction to the ongoing gathering of information.</span>
+              </span>
+              <span class="archive-arrow" aria-hidden="true">↓</span>
+            </button>
+            <div class="archive-panel" id="archive-projects-panel" aria-hidden="true">
+              <div class="archive-panel-inner">
+                <div class="archive-projects">
+                  <article class="archive-project">
+                    <p class="archive-project-kicker">Workshop</p>
+                    <h3>XR Garden</h3>
+                    <p class="archive-project-subtitle">Design &amp; Construction</p>
+                    <div class="archive-project-placeholder" aria-hidden="true"></div>
+                  </article>
+                  <article class="archive-project">
+                    <p class="archive-project-kicker">Workshop</p>
+                    <h3>Campus Garden</h3>
+                    <p class="archive-project-subtitle">Gathering Information</p>
+                    <div class="archive-project-placeholder" aria-hidden="true"></div>
+                  </article>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        <article class="archive-activity" id="archive-xr-garden" tabindex="-1">
-          <div class="media-placeholder ratio-4-3"><span>XR Garden</span></div>
-          <div class="archive-copy">
-            <p class="archive-meta">2025 · XR · On-site construction</p>
-            <h3>XR Garden</h3>
-            <p>Design and on-site construction supported by XR. Markers were registered on site, the digital overlay walked and checked against the physical ground, and the garden bench rebuilt by hand.</p>
-            <div class="archive-links"><a href="#archive-photographs">Session plates →</a><a href="#map">Stepping Stones →</a></div>
-          </div>
-        </article>
+          <section class="archive-row">
+            <button class="archive-trigger" type="button" aria-expanded="false" aria-controls="archive-log-panel">
+              <span class="archive-heading">
+                <span class="archive-title">Log</span>
+                <span class="archive-description">A dated record of work, observations, and changes in the garden.</span>
+              </span>
+              <span class="archive-arrow" aria-hidden="true">↓</span>
+            </button>
+            <div class="archive-panel" id="archive-log-panel" aria-hidden="true">
+              <div class="archive-panel-inner">
+                <div class="archive-log" aria-label="Future archive log structure">
+                  <div class="archive-log-header" aria-hidden="true"><span>Date</span><span>Type</span><span>Title</span></div>
+                  <div class="archive-log-entry" aria-label="Empty log placeholder">
+                    <span class="archive-placeholder-line is-date" aria-hidden="true"></span>
+                    <span class="archive-placeholder-line is-type" aria-hidden="true"></span>
+                    <span class="archive-placeholder-line is-title" aria-hidden="true"></span>
+                  </div>
+                  <div class="archive-log-entry" aria-label="Empty log placeholder">
+                    <span class="archive-placeholder-line is-date" aria-hidden="true"></span>
+                    <span class="archive-placeholder-line is-type" aria-hidden="true"></span>
+                    <span class="archive-placeholder-line is-title" aria-hidden="true"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
-        <article class="archive-activity" id="archive-campus-garden" tabindex="-1">
-          <div class="media-placeholder ratio-4-3"><span>Campus Garden</span></div>
-          <div class="archive-copy">
-            <p class="archive-meta">2025 · Sensing · Mapping · Photography · 3D</p>
-            <h3>Campus Garden</h3>
-            <p>Ongoing observation and care of the garden — environmental sensing, mapping, photography, and repeated 3D recording, each experiment folded back into the evolving record.</p>
-            <div class="archive-links"><a href="#3d">Point-cloud sets →</a><a href="#map">Environmental log →</a></div>
-          </div>
-        </article>
+          <section class="archive-row">
+            <button class="archive-trigger" type="button" aria-expanded="false" aria-controls="archive-photography-panel">
+              <span class="archive-heading">
+                <span class="archive-title">Photography</span>
+                <span class="archive-description">A photographic record of the garden’s conditions, actions, and seasonal fragments.</span>
+              </span>
+              <span class="archive-arrow" aria-hidden="true">↓</span>
+            </button>
+            <div class="archive-panel" id="archive-photography-panel" aria-hidden="true">
+              <div class="archive-panel-inner">
+                <div class="archive-photography" aria-label="Photography placeholders">
+                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                  <div class="archive-photo-placeholder" aria-hidden="true"></div>
+                </div>
+              </div>
+            </div>
+          </section>
+        </div>
       </div>
     </section>
 

@@ -307,6 +307,18 @@
   window.addEventListener("popstate", restoreSpeciesFromUrl);
   restoreSpeciesFromUrl();
 
+  const archiveTriggers = [...document.querySelectorAll(".archive-trigger[aria-controls]")];
+  archiveTriggers.forEach((trigger) => {
+    const panel = document.getElementById(trigger.getAttribute("aria-controls"));
+    if (!panel) return;
+    trigger.addEventListener("pointerup", () => trigger.blur());
+    trigger.addEventListener("click", () => {
+      const willOpen = trigger.getAttribute("aria-expanded") !== "true";
+      trigger.setAttribute("aria-expanded", String(willOpen));
+      panel.setAttribute("aria-hidden", String(!willOpen));
+    });
+  });
+
   function seededRandom(seed = 3421) {
     let state = seed >>> 0;
     return () => {
@@ -354,6 +366,7 @@
 
   const canvas = document.getElementById("cg-cloud");
   const ctx = canvas?.getContext("2d");
+  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
   const points = buildGardenPoints();
   const palette = ["234,232,223", "206,209,214", "182,193,197"];
   let width = 0;
