@@ -583,8 +583,9 @@
   let cloud = null;
   let camera = null;
   let initialPosition = null;
+  let finalPosition = null;
   let initialQuaternion = null;
-  let forward = null;
+  let finalQuaternion = null;
   let sceneScale = 1;
   let targetProgress = 0;
   let currentProgress = 0;
@@ -613,12 +614,10 @@
   }
 
   function renderCamera(progress) {
-    if (!instance || !camera || !initialPosition || !forward) return;
+    if (!instance || !camera || !initialPosition || !finalPosition || !initialQuaternion || !finalQuaternion) return;
     const eased = smoothstep(progress);
-    camera.position.copy(initialPosition)
-      .addScaledVector(forward, sceneScale * 0.18 * eased);
-    camera.position.z -= sceneScale * 0.025 * eased;
-    camera.quaternion.copy(initialQuaternion);
+    camera.position.lerpVectors(initialPosition, finalPosition, eased);
+    camera.quaternion.slerpQuaternions(initialQuaternion, finalQuaternion, eased);
     camera.updateMatrixWorld();
 
     // The cloud remains present through most of the Hero, then dissolves just
@@ -695,6 +694,7 @@
       instance.renderingOptions.enableEDL = false;
 
       cloud = new PointCloud({ source, crs: sceneCrs });
+      await instance.add(cloud);
       cloud.pointBudget = 350000;
       cloud.subdivisionThreshold = 5;
       cloud.pointSize = 1.5;
@@ -705,7 +705,6 @@
       });
       cloud.setActiveAttributes([]);
       cloud.setColoringMode("attribute");
-      await instance.add(cloud);
 
       const box = cloud.getBoundingBox(new Box3());
       const center = box.getCenter(new Vector3());
@@ -720,11 +719,27 @@
         center.z + distance * 0.48
       );
       camera.up.set(0, 0, 1);
-      camera.lookAt(center.x, center.y, center.z + size.z * 0.08);
+      const initialTarget = new Vector3(center.x, center.y, center.z + size.z * 0.08);
+      camera.lookAt(initialTarget);
       camera.updateMatrixWorld();
       initialPosition = camera.position.clone();
       initialQuaternion = camera.quaternion.clone();
-      forward = new Vector3(0, 0, -1).applyQuaternion(initialQuaternion).normalize();
+
+      // Descend vertically while explicitly pitching the existing azimuth
+      // toward a slightly downward, near-horizontal final gaze.
+      const horizontalForward = new Vector3(0, 0, -1)
+        .applyQuaternion(camera.quaternion)
+        .setZ(0)
+        .normalize();
+      finalPosition = initialPosition.clone();
+      finalPosition.z -= sceneScale * 0.08;
+      const finalPitch = MathUtils.degToRad(-8);
+      const finalDirection = horizontalForward
+        .multiplyScalar(Math.cos(finalPitch));
+      finalDirection.z = Math.sin(finalPitch);
+      const finalCamera = camera.clone();
+      finalCamera.lookAt(initialPosition.clone().add(finalDirection));
+      finalQuaternion = finalCamera.quaternion.clone();
 
       instance.addEventListener("update-end", () => {
         if (revealed || cloud.displayedPointCount < 1) return;
