@@ -15,13 +15,11 @@ a{color:inherit}a:hover{color:inherit}button{font:inherit}.font-ja{font-family:"
 .home-page{position:relative;isolation:isolate;background:var(--bg)}
 .cloud-hero{position:relative;height:115vh;min-height:660px;overflow:visible;background:transparent}
 .cloud-hero::before{content:"";display:block;width:100%;height:100vh;min-height:580px;pointer-events:none}
-.cloud-stage{--cloud-opacity:1;position:fixed;z-index:0;inset:0 0 auto;width:100%;height:100vh;min-height:580px;overflow:hidden;background:transparent;pointer-events:none}
-.cloud-stage.is-inactive{visibility:hidden}
+.cloud-stage{position:fixed;z-index:0;inset:0 0 auto;width:100%;height:100vh;min-height:580px;overflow:hidden;background:transparent;opacity:1;pointer-events:none}
 #cg-cloud,#cg-real-cloud{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:auto}
 #cg-real-cloud{z-index:1;opacity:0;background:transparent;transition:opacity 700ms ease}
 #cg-real-cloud canvas{display:block;width:100%;height:100%;pointer-events:none!important;touch-action:auto!important}
-.cloud-hero.has-real-cloud #cg-real-cloud{opacity:var(--cloud-opacity)}
-.cloud-hero.has-real-cloud .cloud-fade{opacity:var(--cloud-opacity)}
+.cloud-hero.has-real-cloud #cg-real-cloud{opacity:1}
 .cloud-hero.has-real-cloud #cg-cloud{opacity:0}
 .cloud-loading{position:absolute;z-index:2;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(234,232,223,.5);pointer-events:none}
 .cloud-hero.has-real-cloud .cloud-loading,.cloud-hero.cloud-load-failed .cloud-loading{display:none}
