@@ -584,12 +584,13 @@
   let cloud = null;
   let camera = null;
   let initialPosition = null;
+  let initialTarget = null;
   let finalPosition = null;
-  let initialQuaternion = null;
-  let finalQuaternion = null;
-  let sceneScale = 1;
+  let finalTarget = null;
+  let cameraTarget = null;
   let targetProgress = 0;
   let currentProgress = 0;
+  let lastRenderedProgress = -1;
   let scrollRaf = 0;
   let loadTimeout = 0;
   let revealed = false;
@@ -616,7 +617,8 @@
   }
 
   function renderCamera(progress) {
-    const eased = smoothstep(progress);
+    if (Math.abs(progress - lastRenderedProgress) < 0.0005) return;
+    lastRenderedProgress = progress;
     const opacity = 1 - smoothstep((progress - 0.6) / 0.29);
     cloudStage.style.opacity = opacity.toFixed(3);
 
@@ -634,10 +636,13 @@
       cloudActive = true;
       if (cloud) cloud.visible = true;
     }
-    if (!instance || !camera || !initialPosition || !finalPosition || !initialQuaternion || !finalQuaternion) return;
+    if (!instance || !camera || !initialPosition || !initialTarget || !finalPosition || !finalTarget) return;
 
-    camera.position.lerpVectors(initialPosition, finalPosition, eased);
-    camera.quaternion.slerpQuaternions(initialQuaternion, finalQuaternion, eased);
+    const motionProgress = smoothstep(clamp01(progress / 0.89));
+    camera.position.lerpVectors(initialPosition, finalPosition, motionProgress);
+    cameraTarget.lerpVectors(initialTarget, finalTarget, motionProgress);
+    camera.up.set(0, 0, 1);
+    camera.lookAt(cameraTarget);
     camera.updateMatrixWorld();
 
     // The cloud remains present through most of the Hero, then dissolves just
@@ -647,10 +652,8 @@
 
   function scrollTick() {
     scrollRaf = 0;
-    if (reducedMotion.matches) currentProgress = targetProgress;
-    else currentProgress += (targetProgress - currentProgress) * 0.085;
+    currentProgress = targetProgress;
     renderCamera(currentProgress);
-    if (Math.abs(targetProgress - currentProgress) > 0.001) requestScrollRender();
   }
 
   function requestScrollRender() {
@@ -666,9 +669,7 @@
         setLazPerfPath,
         ColorMap,
         CoordinateSystem,
-        Box3,
         Color,
-        MathUtils,
         Vector3
       } = await import("./home-cloud-runtime.js");
 
@@ -681,7 +682,7 @@
         || manifest.datasets?.[0];
       if (!dataset?.url) throw new Error("no Home dataset in manifest");
 
-      const source = new COPCSource({ url: dataset.url, decimate: 8 });
+      const source = new COPCSource({ url: dataset.url, decimate: 10 });
       await source.initialize();
       const metadata = await source.getMetadata();
       const sceneCrs = CoordinateSystem.register(
@@ -713,7 +714,7 @@
 
       cloud = new PointCloud({ source, crs: sceneCrs });
       await instance.add(cloud);
-      cloud.pointBudget = 350000;
+      cloud.pointBudget = 250000;
       cloud.subdivisionThreshold = 5;
       cloud.pointSize = 1.5;
       cloud.elevationColorMap = new ColorMap({
@@ -724,17 +725,14 @@
       cloud.setActiveAttributes([]);
       cloud.setColoringMode("attribute");
 
-      const box = cloud.getBoundingBox(new Box3());
-      const size = box.getSize(new Vector3());
       camera = instance.view.camera;
-      sceneScale = Math.max(size.x, size.y, size.z, 1);
       camera.position.set(
         -16.1252518446,
         8.6890567167,
         1.4523522597
       );
       camera.up.set(0, 0, 1);
-      const initialTarget = new Vector3(
+      initialTarget = new Vector3(
         -0.3390437268,
         9.4254987893,
         1.0699874094
@@ -742,23 +740,17 @@
       camera.lookAt(initialTarget);
       camera.updateMatrixWorld();
       initialPosition = camera.position.clone();
-      initialQuaternion = camera.quaternion.clone();
-
-      // Descend vertically while explicitly pitching the existing azimuth
-      // toward a slightly downward, near-horizontal final gaze.
-      const horizontalForward = new Vector3(0, 0, -1)
-        .applyQuaternion(camera.quaternion)
-        .setZ(0)
-        .normalize();
-      finalPosition = initialPosition.clone();
-      finalPosition.z -= sceneScale * 0.08;
-      const finalPitch = MathUtils.degToRad(-8);
-      const finalDirection = horizontalForward
-        .multiplyScalar(Math.cos(finalPitch));
-      finalDirection.z = Math.sin(finalPitch);
-      const finalCamera = camera.clone();
-      finalCamera.lookAt(initialPosition.clone().add(finalDirection));
-      finalQuaternion = finalCamera.quaternion.clone();
+      cameraTarget = initialTarget.clone();
+      finalPosition = new Vector3(
+        -12.2664709430,
+        9.3344039007,
+        0.2283297217
+      );
+      finalTarget = new Vector3(
+        -2.1925011145,
+        9.6647186314,
+        1.1133948855
+      );
 
       instance.addEventListener("update-end", () => {
         if (revealed || cloud.displayedPointCount < 1) return;
