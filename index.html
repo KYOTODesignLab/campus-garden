@@ -167,10 +167,12 @@
                     </a>
                   </article>
                   <article class="archive-project">
-                    <p class="archive-project-kicker">Workshop</p>
-                    <h3>Campus Garden</h3>
-                    <p class="archive-project-subtitle">Gathering Information</p>
-                    <div class="archive-project-placeholder" aria-hidden="true"></div>
+                    <a class="archive-project-link" href="#archive-campus-garden">
+                      <p class="archive-project-kicker">Workshop</p>
+                      <h3>Campus Garden</h3>
+                      <p class="archive-project-subtitle">Gathering Information</p>
+                      <div class="archive-project-placeholder" aria-hidden="true"></div>
+                    </a>
                   </article>
                 </div>
               </div>
@@ -266,7 +268,65 @@
           </section>
         </div>
 
+        <div class="archive-next-project">
+          <p>Next project</p>
+          <a class="archive-next-project-link" href="#archive-campus-garden">
+            <strong>Campus Garden →</strong>
+            <span>Gathering Information</span>
+          </a>
+        </div>
+
         <a class="back-link xr-back-link xr-back-link-bottom" href="#archive" data-open-archive-projects>← Back to Archive</a>
+      </div>
+    </section>
+
+    <section class="page deep-page" data-page="archive-campus-detail" hidden>
+      <div class="deep-shell xr-detail-shell shell">
+        <a class="back-link xr-back-link" href="#archive" data-open-archive-projects>← Back to Archive</a>
+        <p class="xr-detail-kicker">Workshop</p>
+        <h2>Campus Garden</h2>
+        <p class="xr-detail-subtitle">Gathering Information</p>
+        <p class="xr-detail-lead">An ongoing workshop observing the completed garden and gathering information about its plants, maintenance, spaces, and activities across different forms of record.</p>
+        <div class="xr-media xr-media-wide" aria-hidden="true"></div>
+
+        <div class="xr-detail-sections">
+          <section class="xr-detail-section">
+            <h3>Observation and recording</h3>
+            <p>The garden’s conditions, activities, and changes over time are recorded through observation on site.</p>
+            <div class="xr-media xr-media-wide" aria-hidden="true"></div>
+          </section>
+
+          <section class="xr-detail-section">
+            <h3>Plants and maintenance</h3>
+            <p>Plant species, locations, conditions, and methods of care are organised as information for maintaining the garden.</p>
+            <div class="xr-media-pair">
+              <div class="xr-media xr-media-paired" aria-hidden="true"></div>
+              <div class="xr-media xr-media-paired" aria-hidden="true"></div>
+            </div>
+          </section>
+
+          <section class="xr-detail-section">
+            <h3>Spatial documentation</h3>
+            <p>Maps, point clouds, and photography document the garden’s position, form, and changing conditions.</p>
+            <div class="xr-media xr-media-wide" aria-hidden="true"></div>
+          </section>
+
+          <section class="xr-detail-section xr-detail-documentation">
+            <h3>Connecting the records</h3>
+            <p>The gathered information is connected so that it can be read through Map, 3D Viewer, Maintenance, and Archive.</p>
+            <nav class="campus-record-links" aria-label="Connected garden records">
+              <a class="is-map" href="#map">Map →</a>
+              <a class="is-3d" href="#3d">3D Viewer →</a>
+              <a class="is-maintenance" href="#maintenance">Maintenance →</a>
+              <a class="is-archive" href="#archive">Archive →</a>
+            </nav>
+          </section>
+        </div>
+
+        <div class="campus-detail-links">
+          <a class="campus-previous-link" href="#archive-xr-garden">← XR Garden</a>
+          <a class="back-link xr-back-link" href="#archive" data-open-archive-projects>← Back to Archive</a>
+        </div>
       </div>
     </section>
 
@@ -350,9 +410,9 @@
       "archive-activities": { page: "archive", target: "archive-activities" },
       "archive-photographs": { page: "archive", target: "archive-photographs" },
       "archive-xr-garden": { page: "archive-xr-detail", nav: "archive" },
-      "archive-campus-garden": { page: "archive", target: "archive-campus-garden" },
+      "archive-campus-garden": { page: "archive-campus-detail", nav: "archive" },
       "archive-xr": { page: "archive-xr-detail", nav: "archive" },
-      "archive-campus": { page: "archive", target: "archive-campus-garden" },
+      "archive-campus": { page: "archive-campus-detail", nav: "archive" },
       about: { page: "about" },
       people: { page: "people" }
     };
