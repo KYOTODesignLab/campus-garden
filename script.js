@@ -44,7 +44,9 @@
   const speciesDetailTitle = document.getElementById("species-detail-title");
   const speciesDetailLocations = speciesDetail?.querySelector("[data-detail-locations]");
   const speciesDetailSummary = speciesDetail?.querySelector("[data-detail-summary]");
-  const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const maintenanceLinks = [...document.querySelectorAll(
+    '.primary-nav [data-route="maintenance"], .site-footer a[href="#maintenance"]'
+  )];
   let openSpecies = "";
 
   function createLocationRow(location) {
@@ -94,7 +96,11 @@
 
     const species = speciesData[openSpecies];
     speciesDetailTitle.textContent = species.en;
-    speciesDetailSummary.replaceChildren(document.createTextNode(`${species.jp} `));
+    const japaneseName = document.createElement("span");
+    japaneseName.className = "font-ja";
+    japaneseName.lang = "ja";
+    japaneseName.textContent = species.jp;
+    speciesDetailSummary.replaceChildren(japaneseName, document.createTextNode(" "));
     const count = document.createElement("span");
     count.textContent = species.count;
     speciesDetailSummary.append(count);
@@ -110,22 +116,11 @@
     history.pushState(history.state, "", url);
   }
 
-  function scrollToSpeciesDetail() {
-    if (!speciesDetail || speciesDetail.hidden) return;
-    requestAnimationFrame(() => {
-      speciesDetail.scrollIntoView({
-        block: "start",
-        behavior: reducedMotion.matches ? "auto" : "smooth"
-      });
-    });
-  }
-
   function toggleSpecies(cell) {
     const key = cell.dataset.species;
     const nextSpecies = openSpecies === key ? "" : key;
     renderSpecies(nextSpecies);
     updateSpeciesUrl(nextSpecies);
-    if (nextSpecies) scrollToSpeciesDetail();
   }
 
   function restoreSpeciesFromUrl() {
@@ -139,6 +134,17 @@
       if (event.key !== "Enter" && event.key !== " ") return;
       event.preventDefault();
       toggleSpecies(cell);
+    });
+  });
+  maintenanceLinks.forEach((link) => {
+    link.addEventListener("click", (event) => {
+      event.preventDefault();
+      renderSpecies("");
+      const url = new URL(location.href);
+      url.searchParams.delete("species");
+      url.hash = "maintenance";
+      history.pushState(history.state, "", url);
+      window.dispatchEvent(new HashChangeEvent("hashchange"));
     });
   });
   window.addEventListener("popstate", restoreSpeciesFromUrl);
