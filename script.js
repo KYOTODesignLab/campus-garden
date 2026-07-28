@@ -591,6 +591,9 @@
   let targetProgress = 0;
   let currentProgress = 0;
   let lastRenderedProgress = -1;
+  let targetOpacity = 1;
+  let displayedOpacity = 1;
+  let lastOpacityFrame = 0;
   let scrollRaf = 0;
   let loadTimeout = 0;
   let revealed = false;
@@ -619,23 +622,6 @@
   function renderCamera(progress) {
     if (Math.abs(progress - lastRenderedProgress) < 0.0005) return;
     lastRenderedProgress = progress;
-    const opacity = 1 - smoothstep((progress - 0.18) / 0.66);
-    cloudStage.style.opacity = opacity.toFixed(3);
-
-    if (opacity <= 0.001) {
-      if (cloudActive) {
-        cloudActive = false;
-        if (cloud && instance) {
-          cloud.visible = false;
-          instance.notifyChange(cloud);
-        }
-      }
-      return;
-    }
-    if (!cloudActive) {
-      cloudActive = true;
-      if (cloud) cloud.visible = true;
-    }
     if (!instance || !camera || !initialPosition || !initialTarget || !finalPosition || !finalTarget) return;
 
     const motionProgress = smoothstep(clamp01(progress / 0.89));
@@ -650,10 +636,47 @@
     instance.notifyChange(camera);
   }
 
-  function scrollTick() {
+  function updateDisplayedOpacity(now) {
+    targetOpacity = 1 - smoothstep((targetProgress - 0.18) / 0.62);
+
+    if (!cloudActive && targetOpacity > 0.001) {
+      cloudActive = true;
+      if (cloud && instance) {
+        cloud.visible = true;
+        instance.notifyChange(cloud);
+      }
+    }
+
+    const elapsed = lastOpacityFrame ? (now - lastOpacityFrame) / 1000 : 1 / 60;
+    const dt = Math.min(elapsed > 0.1 ? 1 / 60 : elapsed, 0.05);
+    const damping = 8;
+    displayedOpacity += (targetOpacity - displayedOpacity) * (1 - Math.exp(-damping * dt));
+    displayedOpacity = clamp01(displayedOpacity);
+
+    if (Math.abs(targetOpacity - displayedOpacity) < 0.001) {
+      displayedOpacity = targetOpacity;
+      lastOpacityFrame = 0;
+    } else {
+      lastOpacityFrame = now;
+    }
+    cloudStage.style.opacity = displayedOpacity.toFixed(3);
+
+    if (displayedOpacity <= 0.001 && targetOpacity <= 0.001 && cloudActive) {
+      cloudActive = false;
+      if (cloud && instance) {
+        cloud.visible = false;
+        instance.notifyChange(cloud);
+      }
+    }
+
+    return Math.abs(targetOpacity - displayedOpacity) >= 0.001;
+  }
+
+  function scrollTick(now) {
     scrollRaf = 0;
     currentProgress = targetProgress;
     renderCamera(currentProgress);
+    if (updateDisplayedOpacity(now)) requestScrollRender();
   }
 
   function requestScrollRender() {
@@ -682,7 +705,7 @@
         || manifest.datasets?.[0];
       if (!dataset?.url) throw new Error("no Home dataset in manifest");
 
-      const source = new COPCSource({ url: dataset.url, decimate: 10 });
+      const source = new COPCSource({ url: dataset.url, decimate: 12 });
       await source.initialize();
       const metadata = await source.getMetadata();
       const sceneCrs = CoordinateSystem.register(
@@ -714,7 +737,7 @@
 
       cloud = new PointCloud({ source, crs: sceneCrs });
       await instance.add(cloud);
-      cloud.pointBudget = 250000;
+      cloud.pointBudget = 200000;
       cloud.subdivisionThreshold = 5;
       cloud.pointSize = 1.5;
       cloud.elevationColorMap = new ColorMap({
