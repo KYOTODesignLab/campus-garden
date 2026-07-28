@@ -614,7 +614,8 @@
     const conditionsTop = conditionsRow
       ? conditionsRow.getBoundingClientRect().top + (window.scrollY || 0)
       : window.innerHeight * 1.02;
-    const fadeEnd = Math.max(conditionsTop - window.innerHeight * 0.15, window.innerHeight);
+    // Finish before Current Conditions first enters the viewport.
+    const fadeEnd = Math.max(conditionsTop - window.innerHeight, 1);
     targetProgress = clamp01((window.scrollY || 0) / Math.max(fadeEnd, 1));
     if (reducedMotion.matches) currentProgress = targetProgress;
     requestScrollRender();
@@ -624,7 +625,7 @@
     const eased = smoothstep(progress);
 
     if (eased >= 0.999) {
-      hero.style.setProperty("--cloud-opacity", "0");
+      cloudStage.style.opacity = "0";
       if (cloudActive) {
         cloudActive = false;
         if (cloud && instance) {
@@ -649,7 +650,7 @@
     // The cloud remains present through most of the Hero, then dissolves just
     // before the concept introduction reaches the main viewport.
     const opacity = 1 - smoothstep((progress - 0.68) / 0.32);
-    hero.style.setProperty("--cloud-opacity", opacity.toFixed(3));
+    cloudStage.style.opacity = opacity.toFixed(3);
     instance.notifyChange(camera);
   }
 
@@ -733,22 +734,20 @@
       cloud.setColoringMode("attribute");
 
       const box = cloud.getBoundingBox(new Box3());
-      const center = box.getCenter(new Vector3());
       const size = box.getSize(new Vector3());
       camera = instance.view.camera;
       sceneScale = Math.max(size.x, size.y, size.z, 1);
-      const radius = Math.max(size.x / Math.max(camera.aspect, 0.01), size.y, size.z) * 0.5;
-      const distance = radius / Math.tan(MathUtils.degToRad(camera.fov) / 2) * 1.55;
       camera.position.set(
-        center.x + distance * 0.58,
-        center.y - distance * 0.78,
-        center.z + distance * 0.48
+        -15.9527046632,
+        9.2135362269,
+        4.2978990562
       );
       camera.up.set(0, 0, 1);
-      const initialTarget = new Vector3(center.x, center.y, center.z + size.z * 0.08);
-      const compositionLift = sceneScale * 0.025;
-      camera.position.z -= compositionLift;
-      initialTarget.z -= compositionLift;
+      const initialTarget = new Vector3(
+        -2.1925011145,
+        9.6647186314,
+        1.1133948855
+      );
       camera.lookAt(initialTarget);
       camera.updateMatrixWorld();
       initialPosition = camera.position.clone();
