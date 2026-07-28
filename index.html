@@ -101,25 +101,34 @@
         <div class="species-index" aria-label="Registered plant species">
           <article class="species-cell" data-species="fringed-iris" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
             <div class="species-name"><h3>Fringed Iris</h3><p class="font-ja" lang="ja">シャガ</p></div>
-            <div class="species-meta"><span>Island 01</span><span>1 location</span><span class="species-3d">3D specimen</span></div>
+            <p class="species-summary">Evergreen perennial spreading by rhizomes and flowering in spring.</p>
+            <span class="species-toggle" data-species-toggle>Explore ↓</span>
           </article>
           <article class="species-cell" data-species="haircap-moss" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
             <div class="species-name"><h3>Haircap Moss</h3><p class="font-ja" lang="ja">スギゴケ</p></div>
-            <div class="species-meta"><span>4 locations</span></div>
+            <p class="species-summary">Dense moss that prefers moist, lightly shaded ground.</p>
+            <span class="species-toggle" data-species-toggle>Explore ↓</span>
           </article>
           <article class="species-cell" data-species="spiraea-thunbergii" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
             <div class="species-name"><h3>Spiraea Thunbergii</h3><p class="font-ja" lang="ja">ユキヤナギ</p></div>
-            <div class="species-meta"><span>Island 02</span><span>1 location</span></div>
+            <p class="species-summary">Deciduous shrub with arching branches and early spring flowers.</p>
+            <span class="species-toggle" data-species-toggle>Explore ↓</span>
           </article>
           <article class="species-cell" data-species="autumn-fern" role="button" tabindex="0" aria-expanded="false" aria-controls="species-detail">
             <div class="species-name"><h3>Autumn Fern</h3><p class="font-ja" lang="ja">ベニシダ</p></div>
-            <div class="species-meta"><span>Island 03</span><span>2 locations</span><span class="species-3d">3D specimen</span></div>
+            <p class="species-summary">Semi-evergreen fern with copper-coloured new fronds.</p>
+            <span class="species-toggle" data-species-toggle>Explore ↓</span>
           </article>
         </div>
 
         <section class="species-detail" id="species-detail" aria-labelledby="species-detail-title" hidden>
-          <p class="species-detail-kicker">Specimen record</p>
-          <h3 id="species-detail-title">Fringed Iris</h3>
+          <div class="species-detail-header">
+            <div>
+              <h3 id="species-detail-title">Fringed Iris</h3>
+            </div>
+            <div class="species-detail-quick" data-detail-quick hidden></div>
+          </div>
+          <div class="species-detail-sections" data-detail-sections></div>
           <div class="species-locations">
             <section data-detail-locations>
               <h4 data-detail-summary><span class="font-ja" lang="ja">シャガ</span> <span>1 registered location</span></h4>
