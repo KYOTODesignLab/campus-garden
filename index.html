@@ -474,6 +474,7 @@
         else link.removeAttribute("aria-current");
       });
       document.body.classList.toggle("embedded-tool-view", route.page === "map" || route.page === "3d");
+      document.body.classList.toggle("home-view", route.page === "home");
 
       window.scrollTo({ top: 0, behavior: "auto" });
       if (route.target) {
