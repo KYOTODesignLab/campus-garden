@@ -111,6 +111,16 @@ body.embed-mode .split-labels,
 body.embed-mode .compare-hint,
 body.embed-mode .viewhint,
 body.embed-mode .legend{display:none !important;}
+body.preview-mode .hud,
+body.preview-mode .toolbar-right,
+body.preview-mode .split-divider,
+body.preview-mode .split-labels,
+body.preview-mode .compare-hint,
+body.preview-mode .viewhint,
+body.preview-mode .legend,
+body.preview-mode #panel,
+body.preview-mode #clipPanel,
+body.preview-mode #introOverlay{display:none !important;}
 
 #embedLoading{
   display:none;

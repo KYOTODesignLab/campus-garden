@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <title>Campus Garden — Site Scanner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script>
+if(new URLSearchParams(location.search).get('preview') === '1') document.documentElement.classList.add('preview-mode');
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@300;400;500;600&display=swap');
@@ -38,6 +41,22 @@ html,body{
   min-height:520px;
   background:var(--bg);
 }
+.preview-mode #topbar,
+.preview-mode #fullscreenBtn,
+.preview-mode #envPanel,
+.preview-mode #envSplitHandle,
+.preview-mode #mapCaption,
+.preview-mode #detailHeader,
+.preview-mode #detailScroll,
+.preview-mode #vSplitHandle,
+.preview-mode #splitHandle,
+.preview-mode #hoverTip,
+.preview-mode #sensorPopover,
+.preview-mode #dragHint{display:none!important;}
+.preview-mode #mapView{top:0;bottom:0;}
+.preview-mode #mapView.split{right:42%;}
+.preview-mode #detailView{top:0;bottom:0;}
+.preview-mode #detailView.active{left:58%;}
 
 #topbar{
   position:absolute; top:0; left:0; right:0;
@@ -2147,7 +2166,7 @@ function loadCloud(p){
        "datasets" so it never shows up in that viewer's own dropdowns) */
     canvas.style.display = 'none';
     frame.classList.add('active');
-    frame.src = `${SCAN_VIEWER_BASE}?dataset=${encodeURIComponent(p.scan)}&embed=1`;
+    frame.src = `${SCAN_VIEWER_BASE}?dataset=${encodeURIComponent(p.scan)}&embed=1${document.documentElement.classList.contains('preview-mode') ? '&preview=1' : ''}`;
     hint.style.display = 'none'; /* the embedded viewer has its own controls/hints */
     return;
   }
