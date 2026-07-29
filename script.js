@@ -1,6 +1,58 @@
 (() => {
   "use strict";
 
+  const previewCards = [...document.querySelectorAll("[data-live-preview]")];
+  if (previewCards.length) {
+    const waiting = [];
+    let loading = false;
+
+    const loadNextPreview = () => {
+      if (loading || !waiting.length) return;
+      const card = waiting.shift();
+      const frame = card.querySelector("iframe[data-preview-src]");
+      if (!frame || frame.src) {
+        loadNextPreview();
+        return;
+      }
+      loading = true;
+      let settled = false;
+      const finish = (loaded) => {
+        if (settled) return;
+        settled = true;
+        window.clearTimeout(timeout);
+        if (loaded) card.classList.add("is-loaded");
+        else card.classList.add("has-failed");
+        loading = false;
+        window.setTimeout(loadNextPreview, 120);
+      };
+      const timeout = window.setTimeout(() => finish(false), 10000);
+      frame.addEventListener("load", () => finish(true), { once: true });
+      frame.addEventListener("error", () => finish(false), { once: true });
+      frame.src = frame.dataset.previewSrc;
+      frame.removeAttribute("data-preview-src");
+    };
+
+    const queuePreview = (card) => {
+      if (card.dataset.previewQueued === "true") return;
+      card.dataset.previewQueued = "true";
+      waiting.push(card);
+      loadNextPreview();
+    };
+
+    if ("IntersectionObserver" in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          observer.unobserve(entry.target);
+          queuePreview(entry.target);
+        });
+      }, { rootMargin: "300px 0px" });
+      previewCards.forEach((card) => observer.observe(card));
+    } else {
+      previewCards.forEach(queuePreview);
+    }
+  }
+
   const speciesData = {
     "fringed-iris": {
       en: "Fringed Iris",

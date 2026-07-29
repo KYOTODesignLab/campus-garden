@@ -454,6 +454,8 @@ function stopEmbedAutoRotate() {
   embedRotateRaf = null;
 }
 function startEmbedAutoRotate() {
+  if (new URLSearchParams(location.search).get('preview') === '1'
+    && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const entry = state.panes.left.entry ?? state.overlay.leftEntry;
   const controls = entry?.instance?.view?.controls;
   if (!entry || !controls) return;
@@ -1184,6 +1186,7 @@ function readSpecimenParams() {
 }
 const specimenParams = readSpecimenParams();
 if (specimenParams) document.body.classList.add('embed-mode');
+if (new URLSearchParams(location.search).get('preview') === '1') document.body.classList.add('preview-mode');
 
 async function init() {
   try {
