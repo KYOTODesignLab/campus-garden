@@ -183,7 +183,7 @@
   const speciesDetailQuick = speciesDetail?.querySelector("[data-detail-quick]");
   const speciesLocations = speciesDetail?.querySelector(".species-locations");
   const maintenanceLinks = [...document.querySelectorAll(
-    '.primary-nav [data-route="maintenance"], .site-footer a[href="#maintenance"]'
+    '.primary-nav [data-route="maintenance"], .site-footer a[href="#maintenance"], .maintenance-context-nav'
   )];
   let openSpecies = "";
 

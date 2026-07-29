@@ -73,9 +73,9 @@ body:not(.home-view) main{padding-top:var(--header-height,var(--header))}
 .about-copy p,.about-facets p{font-weight:var(--weight-regular)}
 .footer-grid p,.footer-grid a{font-weight:var(--weight-regular)}
 .deep-shell{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--grid-gap)}
-.deep-shell>.back-link,.deep-shell>h2,.maintenance-shell>.species-index,.maintenance-shell>.species-detail,.archive-shell>.archive-index,.xr-detail-shell>.xr-detail-kicker,.xr-detail-shell>.xr-media-wide,.xr-detail-shell>.xr-detail-sections,.xr-detail-shell>.archive-next-project,.xr-detail-shell>.campus-detail-links,.about-shell>.section-label,.about-shell>.about-facets{grid-column:1/-1}
+.deep-shell>.back-link,.deep-shell>.context-nav,.deep-shell>h2,.maintenance-shell>.species-index,.maintenance-shell>.species-detail,.archive-shell>.archive-index,.xr-detail-shell>.xr-detail-kicker,.xr-detail-shell>.xr-media-wide,.xr-detail-shell>.xr-detail-sections,.xr-detail-shell>.archive-next-project,.xr-detail-shell>.campus-detail-links,.about-shell>.section-label,.about-shell>.about-facets{grid-column:1/-1}
 .deep-shell>.deep-lead,.xr-detail-shell>.xr-detail-subtitle,.xr-detail-shell>.xr-detail-lead{grid-column:1/9}
-.deep-shell>.back-link{justify-self:start}
+.deep-shell>.back-link,.deep-shell>.context-nav{justify-self:start}
 .deep-page h2{font-size:var(--type-heading);font-weight:var(--weight-medium);line-height:var(--leading-heading);letter-spacing:-.025em;text-transform:none}
 .deep-lead{max-width:60ch;font-size:var(--type-body-large);font-weight:var(--weight-regular);line-height:var(--leading-body-large)}
 .section-label{font-size:var(--type-metadata);font-weight:var(--weight-medium);line-height:var(--leading-compact);letter-spacing:.04em;text-transform:none}
@@ -126,4 +126,11 @@ body:not(.home-view) main{padding-top:var(--header-height,var(--header))}
 .footer-grid a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 @media(max-width:1100px){.footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:clamp(36px,5vw,52px)}.footer-group{grid-column:auto}}
 @media(max-width:680px){.footer-grid{grid-template-columns:minmax(0,1fr);row-gap:clamp(32px,6vw,48px)}}
+.context-nav{display:inline-flex;width:max-content;max-width:100%;margin:0 0 clamp(20px,2.5vw,32px);color:inherit;font-size:var(--type-navigation);font-weight:var(--weight-medium);line-height:var(--leading-compact);letter-spacing:.01em;text-transform:none;text-decoration:none;white-space:nowrap;transition:opacity 160ms ease}
+.context-nav:hover{color:inherit;opacity:.72;text-decoration:none}
+.context-nav:focus-visible{outline:2px solid currentColor;outline-offset:4px;box-shadow:none}
+.species-detail>.context-nav{margin-bottom:clamp(20px,2.5vw,32px)}
+.xr-back-link-bottom{margin-top:clamp(40px,5.5vw,56px);margin-bottom:0}
+.campus-detail-links .context-nav{margin:0}
 @media(prefers-reduced-motion:reduce){.site-header,.brand,.primary-nav,.primary-nav a,.archive-arrow,.archive-panel,.archive-panel-inner,#cg-real-cloud,.tool-preview-stage iframe{transition-duration:.01ms!important}}
+@media(prefers-reduced-motion:reduce){.context-nav{transition:none}}
