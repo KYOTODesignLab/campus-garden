@@ -703,7 +703,7 @@
         || manifest.datasets?.[0];
       if (!dataset?.url) throw new Error("no Home dataset in manifest");
 
-      const source = new COPCSource({ url: dataset.url, decimate: 7 });
+      const source = new COPCSource({ url: dataset.url, decimate: 6 });
       await source.initialize();
       const metadata = await source.getMetadata();
       const sceneCrs = CoordinateSystem.register(
@@ -735,7 +735,7 @@
 
       cloud = new PointCloud({ source, crs: sceneCrs });
       await instance.add(cloud);
-      cloud.pointBudget = 320000;
+      cloud.pointBudget = 360000;
       cloud.subdivisionThreshold = 5;
       cloud.pointSize = 1.75;
       const rgbAttribute = metadata.attributes.find(attribute =>
