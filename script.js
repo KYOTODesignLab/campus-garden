@@ -620,6 +620,124 @@
   }, { once: true });
 })();
 
+(() => {
+  "use strict";
+
+  const header = document.querySelector(".site-header");
+  const hero = document.querySelector(".cloud-hero");
+  if (!header || !hero) return;
+
+  const downwardThreshold = 48;
+  const upwardThreshold = 24;
+  const jitterThreshold = 2;
+  let headerHeight = 0;
+  const getScrollPosition = () => {
+    const maxScroll = Math.max(
+      0,
+      document.documentElement.scrollHeight - window.innerHeight
+    );
+    const rawScrollY = window.scrollY;
+    const normalizedScrollY = Math.min(maxScroll, Math.max(0, rawScrollY));
+    return {
+      normalizedScrollY,
+      isOverscrolling: rawScrollY < 0 || rawScrollY > maxScroll
+    };
+  };
+  let lastY = getScrollPosition().normalizedScrollY;
+  let direction = 0;
+  let accumulated = 0;
+  let ticking = false;
+  let routeHold = true;
+
+  const hasHeaderFocus = () => header.contains(document.activeElement);
+
+  function measure() {
+    headerHeight = header.getBoundingClientRect().height;
+    document.documentElement.style.setProperty("--header-height", `${headerHeight}px`);
+  }
+
+  function updateHeroState() {
+    const isHome = document.body.classList.contains("home-view");
+    const heroActive = isHome && hero.getBoundingClientRect().bottom > headerHeight;
+    document.body.classList.toggle("home-hero-active", heroActive);
+  }
+
+  function showHeader() {
+    header.classList.remove("is-scroll-hidden");
+  }
+
+  function updateScrollState() {
+    ticking = false;
+    const { normalizedScrollY: currentY, isOverscrolling } = getScrollPosition();
+    if (isOverscrolling) {
+      lastY = currentY;
+      accumulated = 0;
+      direction = 0;
+      return;
+    }
+    const delta = currentY - lastY;
+    lastY = currentY;
+    updateHeroState();
+
+    if (routeHold || currentY <= headerHeight || hasHeaderFocus()) {
+      showHeader();
+      accumulated = 0;
+      direction = 0;
+      routeHold = false;
+      return;
+    }
+
+    if (Math.abs(delta) < jitterThreshold) return;
+    const nextDirection = delta > 0 ? 1 : -1;
+    if (nextDirection !== direction) {
+      direction = nextDirection;
+      accumulated = 0;
+    }
+    accumulated += Math.abs(delta);
+
+    if (direction > 0 && accumulated >= downwardThreshold) {
+      header.classList.add("is-scroll-hidden");
+      accumulated = 0;
+    } else if (direction < 0 && accumulated >= upwardThreshold) {
+      showHeader();
+      accumulated = 0;
+    }
+  }
+
+  function requestUpdate() {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(updateScrollState);
+  }
+
+  function resetForRoute() {
+    routeHold = true;
+    showHeader();
+    accumulated = 0;
+    direction = 0;
+    lastY = getScrollPosition().normalizedScrollY;
+    requestAnimationFrame(() => {
+      measure();
+      lastY = getScrollPosition().normalizedScrollY;
+      updateHeroState();
+    });
+  }
+
+  header.addEventListener("focusin", showHeader);
+  window.addEventListener("scroll", requestUpdate, { passive: true });
+  window.addEventListener("resize", () => {
+    measure();
+    requestUpdate();
+  }, { passive: true });
+  window.addEventListener("orientationchange", resetForRoute);
+  window.addEventListener("pageshow", resetForRoute);
+  window.addEventListener("popstate", resetForRoute);
+  window.addEventListener("campus:route-rendered", resetForRoute);
+
+  measure();
+  updateHeroState();
+})();
+
 // Home COPC introduction. This is deliberately isolated from the full Viewer:
 // one reduced cloud, one fixed camera, no controls, and the procedural canvas
 // remains underneath as the no-CORS / no-WebGL fallback.
