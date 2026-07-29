@@ -1,6 +1,6 @@
 @font-face{font-family:"General Sans";src:url("../assets/fonts/GeneralSans-Regular.woff2") format("woff2");font-style:normal;font-weight:400;font-display:swap}
 @font-face{font-family:"General Sans";src:url("../assets/fonts/GeneralSans-Medium.woff2") format("woff2");font-style:normal;font-weight:500 700;font-display:swap}
-:root{--bg:#0e0e0c;--ink:#eae8df;--ink-2:#b7b6ac;--ink-3:#7c7b72;--ink-4:#55554d;--rule:rgba(234,232,223,.13);--rule-2:rgba(234,232,223,.26);--observe:#6fb6bf;--record:#9aa6d4;--maintain:#9fbf6a;--archive:#c8a15a;--max:1280px;--gutter:clamp(20px,5vw,72px)}
+:root{--bg:#0e0e0c;--ink:#eae8df;--ink-2:#b7b6ac;--ink-3:#7c7b72;--ink-4:#55554d;--rule:rgba(234,232,223,.13);--rule-2:rgba(234,232,223,.26);--observe:#6fb6bf;--record:#9aa6d4;--maintain:#9fbf6a;--archive:#c8a15a;--canvas-max:1600px;--page-gutter:clamp(20px,3.35vw,48px);--grid-gap:clamp(16px,1.65vw,24px);--max:var(--canvas-max);--gutter:var(--page-gutter)}
 *{box-sizing:border-box}
 html{background:var(--bg);scroll-behavior:auto;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"General Sans",system-ui,sans-serif;font-size:16px;line-height:1.55;-webkit-font-smoothing:antialiased}

@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="./visual-parity/style.css">
   <link rel="stylesheet" href="./style.css">
 </head>
-<body>
+<body class="header-pending">
   <header class="site-header">
     <div class="header-inner">
       <a class="brand" href="#home">Campus Garden</a>
@@ -539,6 +539,7 @@
 
       window.scrollTo({ top: 0, behavior: "auto" });
       window.dispatchEvent(new CustomEvent("campus:route-rendered"));
+      requestAnimationFrame(() => document.body.classList.remove("header-pending"));
       if (route.target) {
         requestAnimationFrame(() => {
           const target = document.getElementById(route.target);

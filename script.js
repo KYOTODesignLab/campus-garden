@@ -1,8 +1,17 @@
 (() => {
   "use strict";
 
+  const shouldLoadLiveMapPreview = location.hostname === "kyotodesignlab.github.io";
   const previewCards = [...document.querySelectorAll("[data-live-preview]")];
-  if (previewCards.length) {
+  previewCards.forEach((card) => {
+    if (!card.classList.contains("tool-preview-map") || shouldLoadLiveMapPreview) return;
+    const frame = card.querySelector("iframe[data-preview-src]");
+    frame?.removeAttribute("data-preview-src");
+    card.dataset.previewResolved = "true";
+    card.classList.add("has-failed");
+  });
+  const queuedPreviewCards = previewCards.filter((card) => card.dataset.previewResolved !== "true");
+  if (queuedPreviewCards.length) {
     const waiting = [];
     let loading = false;
 
@@ -47,9 +56,9 @@
           queuePreview(entry.target);
         });
       }, { rootMargin: "300px 0px" });
-      previewCards.forEach((card) => observer.observe(card));
+      queuedPreviewCards.forEach((card) => observer.observe(card));
     } else {
-      previewCards.forEach(queuePreview);
+      queuedPreviewCards.forEach(queuePreview);
     }
   }
 
@@ -627,7 +636,7 @@
   const hero = document.querySelector(".cloud-hero");
   if (!header || !hero) return;
 
-  const downwardThreshold = 48;
+  const downwardThreshold = 8;
   const upwardThreshold = 24;
   const jitterThreshold = 2;
   let headerHeight = 0;
@@ -648,6 +657,7 @@
   let accumulated = 0;
   let ticking = false;
   let routeHold = true;
+  let midPageVisible = false;
 
   const hasHeaderFocus = () => header.contains(document.activeElement);
 
@@ -662,8 +672,20 @@
     document.body.classList.toggle("home-hero-active", heroActive);
   }
 
-  function showHeader() {
-    header.classList.remove("is-scroll-hidden");
+  function setHeaderPosition(y, mode = "hiding") {
+    header.style.setProperty("--header-translate-y", `${y}px`);
+    header.classList.toggle("is-scroll-linked", mode === "linked");
+    header.classList.toggle("is-scroll-revealing", mode === "revealing");
+  }
+
+  function showHeader({ immediate = false } = {}) {
+    midPageVisible = true;
+    setHeaderPosition(0, immediate ? "linked" : "revealing");
+  }
+
+  function hideHeader({ linked = false } = {}) {
+    midPageVisible = false;
+    setHeaderPosition(-headerHeight, linked ? "linked" : "hiding");
   }
 
   function updateScrollState() {
@@ -679,14 +701,33 @@
     lastY = currentY;
     updateHeroState();
 
-    if (routeHold || currentY <= headerHeight || hasHeaderFocus()) {
-      showHeader();
+    if (currentY < headerHeight) {
+      if (midPageVisible && currentY > 0) {
+        setHeaderPosition(0, "revealing");
+      } else {
+        midPageVisible = false;
+        setHeaderPosition(-currentY, "linked");
+      }
       accumulated = 0;
       direction = 0;
       routeHold = false;
       return;
     }
+    if (routeHold) {
+      showHeader({ immediate: true });
+      accumulated = 0;
+      direction = 0;
+      routeHold = false;
+      return;
+    }
+    if (hasHeaderFocus()) {
+      showHeader();
+      accumulated = 0;
+      direction = 0;
+      return;
+    }
 
+    if (!midPageVisible) hideHeader({ linked: true });
     if (Math.abs(delta) < jitterThreshold) return;
     const nextDirection = delta > 0 ? 1 : -1;
     if (nextDirection !== direction) {
@@ -695,10 +736,10 @@
     }
     accumulated += Math.abs(delta);
 
-    if (direction > 0 && accumulated >= downwardThreshold) {
-      header.classList.add("is-scroll-hidden");
+    if (direction > 0 && midPageVisible && accumulated >= downwardThreshold) {
+      hideHeader();
       accumulated = 0;
-    } else if (direction < 0 && accumulated >= upwardThreshold) {
+    } else if (direction < 0 && !midPageVisible && accumulated >= upwardThreshold) {
       showHeader();
       accumulated = 0;
     }
@@ -712,18 +753,20 @@
 
   function resetForRoute() {
     routeHold = true;
-    showHeader();
+    showHeader({ immediate: true });
     accumulated = 0;
     direction = 0;
     lastY = getScrollPosition().normalizedScrollY;
     requestAnimationFrame(() => {
       measure();
       lastY = getScrollPosition().normalizedScrollY;
+      midPageVisible = false;
+      setHeaderPosition(-Math.min(lastY, headerHeight), "linked");
       updateHeroState();
     });
   }
 
-  header.addEventListener("focusin", showHeader);
+  header.addEventListener("focusin", () => showHeader());
   window.addEventListener("scroll", requestUpdate, { passive: true });
   window.addEventListener("resize", () => {
     measure();
@@ -735,6 +778,7 @@
   window.addEventListener("campus:route-rendered", resetForRoute);
 
   measure();
+  setHeaderPosition(-Math.min(lastY, headerHeight), "linked");
   updateHeroState();
 })();
 
