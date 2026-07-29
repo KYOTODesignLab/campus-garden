@@ -6,7 +6,8 @@
 html{background:var(--bg);scroll-behavior:auto;-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:"General Sans",system-ui,sans-serif;font-size:16px;font-weight:500;line-height:1.55;-webkit-font-smoothing:antialiased}
 a{color:inherit}a:hover{color:inherit}button{font:inherit}.font-ja{font-family:"Noto Sans JP",sans-serif;font-weight:500}::selection{background:var(--ink);color:var(--bg)}[hidden]{display:none!important}.shell{max-width:var(--max);margin:0 auto;padding-left:var(--gutter);padding-right:var(--gutter)}
-.site-header{position:sticky;top:0;z-index:30;background:rgba(14,14,12,.82);backdrop-filter:blur(9px);border-bottom:0}
+.site-header{position:relative;z-index:30;background:rgba(14,14,12,.82);backdrop-filter:blur(9px);border-bottom:0}
+.home-view .site-header{position:absolute;top:0;left:0;width:100%;background:transparent;backdrop-filter:none}
 .header-inner{max-width:var(--max);margin:0 auto;padding:0 var(--gutter);display:flex;align-items:center;justify-content:space-between;min-height:var(--header);gap:20px}
 .brand{font-size:17px;font-weight:600;letter-spacing:.01em;color:var(--ink);text-decoration:none;white-space:nowrap}
 .primary-nav{display:flex;gap:10px;flex-wrap:wrap}
