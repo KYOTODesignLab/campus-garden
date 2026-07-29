@@ -31,23 +31,38 @@
           <p class="cloud-loading" aria-hidden="true">Loading garden record…</p>
           <div class="cloud-fade"></div>
         </div>
-        <div class="cloud-title shell">
-          <h1 id="home-title">Campus&nbsp;Garden</h1>
+        <div class="hero-composition shell">
+          <div class="hero-conditions" aria-label="Current environmental conditions">
+            <span class="visually-hidden" data-conditions-status>Current conditions · observed now</span>
+            <span aria-label="Air temperature">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M14 4v10.54a4 4 0 1 1-4 0V4a2 2 0 0 1 4 0Z"/><path d="M12 9v6"/></svg>
+              <strong data-condition="temp">21 °C</strong>
+            </span>
+            <span aria-label="Wind speed">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12.8 19.6A2 2 0 1 0 14 16H2"/><path d="M17.5 8.6A2 2 0 1 1 19 12H2"/><path d="M9.8 4.4A2 2 0 1 1 11 8H2"/></svg>
+              <strong data-condition="wind">1.1 m/s</strong>
+            </span>
+            <span aria-label="Soil moisture">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M7 20h10"/><path d="M10 20c5.5-2.5.8-6.4 3-10"/><path d="M9.5 9.4c-1.8.1-3.4-.7-4.5-2.4 3.9-1.8 6.7-.4 7.5 1.4"/><path d="M14.1 6a6.3 6.3 0 0 1 5.9-2c-.2 4-2.4 6-6.1 6"/></svg>
+              <strong data-condition="soil">48 %</strong>
+            </span>
+            <span aria-label="Air humidity">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M12 22a7 7 0 0 0 7-7c0-4-7-13-7-13S5 11 5 15a7 7 0 0 0 7 7Z"/></svg>
+              <strong data-condition="humidity">84 %</strong>
+            </span>
+            <span aria-label="Light level">
+              <svg aria-hidden="true" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.42 1.42"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
+              <strong data-condition="light">143 klux</strong>
+            </span>
+          </div>
+          <div class="cloud-title">
+            <h1 id="home-title">Campus&nbsp;Garden</h1>
+          </div>
         </div>
       </section>
 
       <section class="home-intro shell">
         <p class="home-lead">An experimental garden at Kyoto Institute of Technology — observed, cared for, and continuously re-recorded.</p>
-        <div class="conditions-row">
-          <span class="conditions-label" data-conditions-status><i></i>Current conditions · observed now</span>
-          <div class="conditions-values" aria-label="Current conditions">
-            <span><b>Wind</b><strong data-condition="wind">1.1 m/s</strong></span>
-            <span><b>Soil</b><strong data-condition="soil">48 %</strong></span>
-            <span><b>Air</b><strong data-condition="temp">21 °C</strong></span>
-            <span><b>Humidity</b><strong data-condition="humidity">84 %</strong></span>
-            <span><b>Light</b><strong data-condition="light">143 klux</strong></span>
-          </div>
-        </div>
       </section>
 
       <section class="entry-list shell" aria-label="Primary garden tools">
