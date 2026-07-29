@@ -108,4 +108,22 @@ body:not(.home-view) main{padding-top:var(--header-height,var(--header))}
 .photographs figcaption span{font-weight:var(--weight-regular);text-transform:none}
 .photographs figcaption b{font-weight:var(--weight-medium)}
 @media(max-width:680px){.deep-shell{grid-template-columns:minmax(0,1fr)}.deep-shell>*{grid-column:1/-1!important}.about-shell>.about-copy{max-width:none}}
+.site-footer{padding:clamp(48px,6vw,88px) 0 clamp(28px,4vw,56px);border-top:1px solid var(--rule)}
+.footer-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));column-gap:var(--grid-gap);row-gap:0;padding-bottom:0}
+.footer-group{min-width:0}
+.footer-identity-group{grid-column:1/5}
+.footer-explore-group{grid-column:5/8}
+.footer-project-group{grid-column:8/11}
+.footer-connect-group{grid-column:11/13}
+.footer-grid .footer-identity{margin:0 0 clamp(14px,1.4vw,20px);font-size:clamp(18px,1.5vw,22px);font-weight:var(--weight-medium);line-height:1.25;letter-spacing:-.01em;text-transform:none}
+.footer-grid .footer-heading{margin:0 0 clamp(14px,1.4vw,20px);font-size:var(--type-navigation);font-weight:var(--weight-medium);line-height:var(--leading-compact);letter-spacing:.02em;text-transform:none}
+.footer-grid a{display:block;width:max-content;max-width:100%;margin:0;color:inherit;font-size:var(--type-footer);font-weight:var(--weight-regular);line-height:1.5;text-decoration:none;overflow-wrap:anywhere}
+.footer-grid a+a{margin-top:10px}
+.footer-grid .footer-copy{max-width:30ch;margin:0;color:inherit;font-size:var(--type-footer);font-weight:var(--weight-regular);line-height:1.55}
+.footer-grid .footer-copyright{margin-top:clamp(12px,1.4vw,18px)}
+.footer-grid .footer-project-info{margin-top:clamp(12px,1.4vw,18px)}
+.footer-grid a:hover{color:var(--ink)}
+.footer-grid a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
+@media(max-width:1100px){.footer-grid{grid-template-columns:repeat(2,minmax(0,1fr));row-gap:clamp(36px,5vw,52px)}.footer-group{grid-column:auto}}
+@media(max-width:680px){.footer-grid{grid-template-columns:minmax(0,1fr);row-gap:clamp(32px,6vw,48px)}}
 @media(prefers-reduced-motion:reduce){.site-header,.brand,.primary-nav,.primary-nav a,.archive-arrow,.archive-panel,.archive-panel-inner,#cg-real-cloud,.tool-preview-stage iframe{transition-duration:.01ms!important}}
