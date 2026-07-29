@@ -690,9 +690,7 @@
         PointCloud,
         COPCSource,
         setLazPerfPath,
-        ColorMap,
         CoordinateSystem,
-        Color,
         Vector3
       } = await import("./home-cloud-runtime.js");
 
@@ -739,13 +737,12 @@
       await instance.add(cloud);
       cloud.pointBudget = 200000;
       cloud.subdivisionThreshold = 5;
-      cloud.pointSize = 1.5;
-      cloud.elevationColorMap = new ColorMap({
-        colors: [new Color("#f4f2ea"), new Color("#f4f2ea")],
-        min: 0,
-        max: 1
-      });
-      cloud.setActiveAttributes([]);
+      cloud.pointSize = 1.25;
+      const rgbAttribute = metadata.attributes.find(attribute =>
+        ["color", "rgb", "rgba"].includes(attribute.name.toLowerCase())
+      );
+      if (!rgbAttribute) throw new Error("RGB point attribute unavailable");
+      cloud.setActiveAttribute(rgbAttribute.name);
       cloud.setColoringMode("attribute");
 
       camera = instance.view.camera;
