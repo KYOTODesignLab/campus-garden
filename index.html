@@ -538,6 +538,7 @@
       document.body.classList.toggle("home-view", route.page === "home");
 
       window.scrollTo({ top: 0, behavior: "auto" });
+      window.dispatchEvent(new CustomEvent("campus:route-rendered"));
       if (route.target) {
         requestAnimationFrame(() => {
           const target = document.getElementById(route.target);
