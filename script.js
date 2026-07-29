@@ -737,7 +737,7 @@
       await instance.add(cloud);
       cloud.pointBudget = 320000;
       cloud.subdivisionThreshold = 5;
-      cloud.pointSize = 1.25;
+      cloud.pointSize = 9;
       const rgbAttribute = metadata.attributes.find(attribute =>
         ["color", "rgb", "rgba"].includes(attribute.name.toLowerCase())
       );
