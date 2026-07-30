@@ -207,6 +207,7 @@
     const actions = document.createElement("div");
     actions.className = "location-actions";
     const mapLink = document.createElement("a");
+    mapLink.className = "link-map";
     mapLink.href = location.map;
     mapLink.textContent = "View on Map →";
     actions.append(mapLink);
