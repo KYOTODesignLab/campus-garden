@@ -372,21 +372,41 @@
   const archiveTriggers = [...document.querySelectorAll(".archive-trigger[aria-controls]")];
   const archiveProjectLinks = [...document.querySelectorAll(".archive-project-link, .xr-back-link")];
   const projectsTrigger = document.querySelector('[aria-controls="archive-projects-panel"]');
-  const projectsPanel = document.getElementById("archive-projects-panel");
+  let pendingArchiveReturn = false;
+
+  const archiveCategoryFromLocation = () => {
+    const hash = location.hash.slice(1).toLowerCase();
+    if (hash === "archive-activities") return "log";
+    if (hash === "archive-photographs") return "photography";
+    if (hash === "archive") return history.state?.archiveCategory || "";
+    return null;
+  };
+
+  const setArchiveCategory = (category, { focus = false, updateHistory = false } = {}) => {
+    archiveTriggers.forEach((trigger) => {
+      const isOpen = trigger.dataset.archiveCategory === category;
+      const panel = document.getElementById(trigger.getAttribute("aria-controls"));
+      trigger.setAttribute("aria-expanded", String(isOpen));
+      panel?.setAttribute("aria-hidden", String(!isOpen));
+    });
+    if (updateHistory) {
+      history.pushState({ ...history.state, archiveCategory: category }, "", location.href);
+    }
+    if (focus && projectsTrigger) {
+      requestAnimationFrame(() => projectsTrigger.focus({ preventScroll: true }));
+    }
+  };
+
   const openArchiveProjects = () => {
-    if (!projectsTrigger || !projectsPanel) return;
-    projectsTrigger.setAttribute("aria-expanded", "true");
-    projectsPanel.setAttribute("aria-hidden", "false");
+    pendingArchiveReturn = true;
+    setArchiveCategory("projects");
   };
 
   archiveTriggers.forEach((trigger) => {
-    const panel = document.getElementById(trigger.getAttribute("aria-controls"));
-    if (!panel) return;
     trigger.addEventListener("pointerup", () => trigger.blur());
     trigger.addEventListener("click", () => {
       const willOpen = trigger.getAttribute("aria-expanded") !== "true";
-      trigger.setAttribute("aria-expanded", String(willOpen));
-      panel.setAttribute("aria-hidden", String(!willOpen));
+      setArchiveCategory(willOpen ? trigger.dataset.archiveCategory : "", { updateHistory: true });
     });
   });
   archiveProjectLinks.forEach((link) => {
@@ -395,6 +415,20 @@
   document.querySelectorAll("[data-open-archive-projects]").forEach((link) => {
     link.addEventListener("click", openArchiveProjects);
   });
+  window.addEventListener("popstate", () => {
+    const category = archiveCategoryFromLocation();
+    if (category !== null) setArchiveCategory(category);
+  });
+  window.addEventListener("campus:route-rendered", () => {
+    if (location.hash.toLowerCase() === "#archive" && pendingArchiveReturn) {
+      pendingArchiveReturn = false;
+      setArchiveCategory("projects", { focus: true });
+      return;
+    }
+    const category = archiveCategoryFromLocation();
+    if (category !== null) setArchiveCategory(category);
+  });
+  setArchiveCategory(archiveCategoryFromLocation() || "");
 
   const photoButtons = [...document.querySelectorAll(".archive-photo-button")];
   const photoLightbox = document.querySelector(".photo-lightbox");
