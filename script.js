@@ -829,6 +829,7 @@
   if (!hero || !target || !window.WebGL2RenderingContext) return;
 
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const finePointer = window.matchMedia("(pointer: fine)");
   let instance = null;
   let cloud = null;
   let camera = null;
@@ -837,6 +838,14 @@
   let finalPosition = null;
   let finalTarget = null;
   let cameraTarget = null;
+  let basePosition = null;
+  let baseTarget = null;
+  let viewDirection = null;
+  let cameraRight = null;
+  let cameraScreenUp = null;
+  let cameraWorldUp = null;
+  let pointerCameraOffset = null;
+  let pointerTargetOffset = null;
   let targetProgress = 0;
   let currentProgress = 0;
   let lastRenderedProgress = -1;
@@ -847,15 +856,89 @@
   let loadTimeout = 0;
   let revealed = false;
   let cloudActive = true;
+  let sceneReady = false;
+  let pointerTargetX = 0;
+  let pointerTargetY = 0;
+  let pointerCurrentX = 0;
+  let pointerCurrentY = 0;
+  let pointerRaf = 0;
+  let lastPointerFrame = 0;
+
+  const pointerDeadZone = 0.06;
+  const pointerHorizontalAmplitude = 0.055;
+  const pointerVerticalAmplitude = 0.024;
+  const pointerTargetRatio = 0.3;
+  const pointerDamping = 8;
+  const pointerEpsilon = 0.0005;
 
   const clamp01 = value => Math.max(0, Math.min(1, value));
+  const clampSigned = value => Math.max(-1, Math.min(1, value));
   const smoothstep = value => {
     const t = clamp01(value);
     return t * t * (3 - 2 * t);
   };
+  const applyDeadZone = value => {
+    const magnitude = Math.abs(clampSigned(value));
+    if (magnitude <= pointerDeadZone) return 0;
+    return Math.sign(value) * (magnitude - pointerDeadZone) / (1 - pointerDeadZone);
+  };
+
+  function heroIsMeaningfullyVisible() {
+    const bounds = hero.getBoundingClientRect();
+    return bounds.bottom > 1
+      && bounds.top < window.innerHeight - 1
+      && bounds.right > 1
+      && bounds.left < window.innerWidth - 1;
+  }
+
+  function pointerIsEligible() {
+    return Boolean(
+      instance
+      && camera
+      && sceneReady
+      && document.visibilityState === "visible"
+      && document.body.classList.contains("home-view")
+      && finePointer.matches
+      && !reducedMotion.matches
+      && heroIsMeaningfullyVisible()
+    );
+  }
+
+  function stopPointerRender() {
+    if (pointerRaf) cancelAnimationFrame(pointerRaf);
+    pointerRaf = 0;
+    lastPointerFrame = 0;
+  }
+
+  function clearPointerOffset({ render = false } = {}) {
+    pointerTargetX = 0;
+    pointerTargetY = 0;
+    pointerCurrentX = 0;
+    pointerCurrentY = 0;
+    stopPointerRender();
+    if (render && instance && camera) renderCamera(currentProgress, true);
+  }
+
+  function requestPointerRender() {
+    if (!pointerRaf && pointerIsEligible()) {
+      pointerRaf = requestAnimationFrame(pointerTick);
+    }
+  }
+
+  function resetPointer({ soft = true } = {}) {
+    pointerTargetX = 0;
+    pointerTargetY = 0;
+    if (soft && pointerIsEligible()) {
+      requestPointerRender();
+    } else {
+      clearPointerOffset();
+    }
+  }
 
   function fail(error) {
     clearTimeout(loadTimeout);
+    sceneReady = false;
+    clearPointerOffset();
     hero.classList.add("cloud-load-failed");
     hero.classList.remove("has-real-cloud");
     target.replaceChildren();
@@ -865,17 +948,51 @@
   function readScrollTarget() {
     targetProgress = clamp01((window.scrollY || 0) / Math.max(hero.offsetHeight, 1));
     if (reducedMotion.matches) currentProgress = targetProgress;
+    if (!pointerIsEligible()) clearPointerOffset();
     requestScrollRender();
   }
 
-  function renderCamera(progress) {
-    if (Math.abs(progress - lastRenderedProgress) < 0.0005) return;
+  function renderCamera(progress, force = false) {
+    if (!force && Math.abs(progress - lastRenderedProgress) < 0.0005) return;
     lastRenderedProgress = progress;
-    if (!instance || !camera || !initialPosition || !initialTarget || !finalPosition || !finalTarget) return;
+    if (
+      !instance
+      || !camera
+      || !initialPosition
+      || !initialTarget
+      || !finalPosition
+      || !finalTarget
+      || !basePosition
+      || !baseTarget
+    ) return;
 
     const motionProgress = smoothstep(clamp01(progress / 0.89));
-    camera.position.lerpVectors(initialPosition, finalPosition, motionProgress);
-    cameraTarget.lerpVectors(initialTarget, finalTarget, motionProgress);
+    basePosition.lerpVectors(initialPosition, finalPosition, motionProgress);
+    baseTarget.lerpVectors(initialTarget, finalTarget, motionProgress);
+    camera.position.copy(basePosition);
+    cameraTarget.copy(baseTarget);
+
+    if (
+      (Math.abs(pointerCurrentX) > pointerEpsilon || Math.abs(pointerCurrentY) > pointerEpsilon)
+      && pointerCameraOffset
+      && pointerTargetOffset
+    ) {
+      const pointerStrength = 1 - 0.9 * motionProgress;
+      viewDirection.subVectors(baseTarget, basePosition).normalize();
+      cameraRight.crossVectors(viewDirection, cameraWorldUp).normalize();
+      cameraScreenUp.crossVectors(cameraRight, viewDirection).normalize();
+      pointerCameraOffset
+        .copy(cameraRight)
+        .multiplyScalar(pointerCurrentX * pointerHorizontalAmplitude * pointerStrength)
+        .addScaledVector(
+          cameraScreenUp,
+          -pointerCurrentY * pointerVerticalAmplitude * pointerStrength
+        );
+      pointerTargetOffset.copy(pointerCameraOffset).multiplyScalar(pointerTargetRatio);
+      camera.position.add(pointerCameraOffset);
+      cameraTarget.add(pointerTargetOffset);
+    }
+
     camera.up.set(0, 0, 1);
     camera.lookAt(cameraTarget);
     camera.updateMatrixWorld();
@@ -883,6 +1000,42 @@
     // The cloud remains present through most of the Hero, then dissolves just
     // before the concept introduction reaches the main viewport.
     instance.notifyChange(camera);
+  }
+
+  function pointerTick(now) {
+    pointerRaf = 0;
+    if (!pointerIsEligible()) {
+      clearPointerOffset();
+      return;
+    }
+
+    const elapsed = lastPointerFrame ? (now - lastPointerFrame) / 1000 : 1 / 60;
+    const dt = Math.min(elapsed > 0.1 ? 1 / 60 : elapsed, 0.05);
+    const response = 1 - Math.exp(-pointerDamping * dt);
+    pointerCurrentX += (pointerTargetX - pointerCurrentX) * response;
+    pointerCurrentY += (pointerTargetY - pointerCurrentY) * response;
+
+    const settled = Math.abs(pointerTargetX - pointerCurrentX) < pointerEpsilon
+      && Math.abs(pointerTargetY - pointerCurrentY) < pointerEpsilon;
+    if (settled) {
+      pointerCurrentX = pointerTargetX;
+      pointerCurrentY = pointerTargetY;
+      lastPointerFrame = 0;
+    } else {
+      lastPointerFrame = now;
+    }
+
+    renderCamera(currentProgress, true);
+    if (!settled) requestPointerRender();
+  }
+
+  function handlePointerMove(event) {
+    if (event.pointerType !== "mouse" || !pointerIsEligible()) return;
+    const bounds = hero.getBoundingClientRect();
+    if (!bounds.width || !bounds.height) return;
+    pointerTargetX = applyDeadZone(((event.clientX - bounds.left) / bounds.width) * 2 - 1);
+    pointerTargetY = applyDeadZone(((event.clientY - bounds.top) / bounds.height) * 2 - 1);
+    requestPointerRender();
   }
 
   function updateDisplayedOpacity(now) {
@@ -1010,6 +1163,14 @@
       camera.updateMatrixWorld();
       initialPosition = camera.position.clone();
       cameraTarget = initialTarget.clone();
+      basePosition = initialPosition.clone();
+      baseTarget = initialTarget.clone();
+      viewDirection = new Vector3();
+      cameraRight = new Vector3();
+      cameraScreenUp = new Vector3();
+      cameraWorldUp = new Vector3(0, 0, 1);
+      pointerCameraOffset = new Vector3();
+      pointerTargetOffset = new Vector3();
       finalPosition = new Vector3(
         -10.792192829131698,
         6.402349912058451,
@@ -1020,6 +1181,7 @@
         6.720066662820123,
         1.1427106608064388
       );
+      sceneReady = true;
 
       instance.addEventListener("update-end", () => {
         if (revealed || cloud.displayedPointCount < 1) return;
@@ -1037,19 +1199,39 @@
     }
   }
 
+  hero.addEventListener("pointermove", handlePointerMove, { passive: true });
+  hero.addEventListener("pointerleave", () => resetPointer({ soft: true }), { passive: true });
   window.addEventListener("scroll", readScrollTarget, { passive: true });
   window.addEventListener("resize", () => {
     if (instance) instance.notifyChange();
+    if (!pointerIsEligible()) clearPointerOffset();
     readScrollTarget();
   });
   reducedMotion.addEventListener("change", () => {
     currentProgress = targetProgress;
+    if (reducedMotion.matches) clearPointerOffset({ render: true });
     requestScrollRender();
+  });
+  finePointer.addEventListener("change", () => {
+    if (!finePointer.matches) clearPointerOffset({ render: true });
+  });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") {
+      clearPointerOffset();
+    } else if (sceneReady) {
+      renderCamera(currentProgress, true);
+    }
+  });
+  window.addEventListener("blur", () => resetPointer({ soft: true }));
+  window.addEventListener("campus:route-rendered", () => {
+    clearPointerOffset({ render: document.body.classList.contains("home-view") });
+    readScrollTarget();
   });
   window.addEventListener("pagehide", () => {
     clearTimeout(loadTimeout);
     cancelAnimationFrame(scrollRaf);
     scrollRaf = 0;
+    clearPointerOffset();
   }, { once: true });
 
   loadHomeCloud();
