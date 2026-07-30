@@ -1176,7 +1176,10 @@ startPlay();
   const openId = params.get('open');
   if(openId){
     const p = PLANTS.find(pl => pl.id === openId);
-    if(p) setTimeout(()=> openDetail(p), 0);
+    if(p) setTimeout(()=>{
+      if(document.documentElement.classList.contains('preview-mode')) openPreview(p);
+      else openDetail(p);
+    }, 0);
   }
 })();
 
@@ -1194,6 +1197,11 @@ const MIN_W = FULL_W*0.12;
 function sizeMapCover(){
   const cw = mapViewEl.clientWidth, ch = mapViewEl.clientHeight;
   if(!cw || !ch) return;
+  if(document.documentElement.classList.contains('preview-mode')){
+    svgEl.style.width = cw + 'px';
+    svgEl.style.height = ch + 'px';
+    return;
+  }
   /* width always fills edge-to-edge; height follows the aspect ratio
      (may letterbox or lightly crop top/bottom, never the sides) */
   const scale = cw/FULL_W;
@@ -1206,6 +1214,18 @@ window.addEventListener('load', sizeMapCover);
 
 function applyViewBox(){
   svgEl.setAttribute('viewBox', `${viewState.x} ${viewState.y} ${viewState.w} ${viewState.h}`);
+}
+
+function openPreview(p){
+  const frameSize = Math.min(FULL_W, FULL_H);
+  viewState.x = Math.max(0, Math.min(FULL_W-frameSize, p.x-frameSize/2));
+  viewState.y = Math.max(0, Math.min(FULL_H-frameSize, p.y-frameSize/2));
+  viewState.w = frameSize;
+  viewState.h = frameSize;
+  svgEl.style.width = '100%';
+  svgEl.style.height = '100%';
+  currentDetailNode = p;
+  applyViewBox();
 }
 
 function clientToUser(clientX, clientY){
