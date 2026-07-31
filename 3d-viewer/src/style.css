@@ -120,7 +120,8 @@ body.preview-mode .viewhint,
 body.preview-mode .legend,
 body.preview-mode #panel,
 body.preview-mode #clipPanel,
-body.preview-mode #introOverlay{display:none !important;}
+body.preview-mode #introOverlay,
+body.preview-mode #embedBar{display:none !important;}
 
 #embedLoading{
   display:none;
