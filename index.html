@@ -31,10 +31,27 @@
           <div id="cg-home-comparison" class="home-comparison" aria-hidden="true">
             <div id="cg-compare-before" class="home-comparison-layer home-comparison-before"></div>
             <div id="cg-compare-after" class="home-comparison-layer home-comparison-after"></div>
-            <div class="home-comparison-divider"></div>
           </div>
           <p class="cloud-loading" aria-hidden="true">Loading garden record…</p>
           <div class="cloud-fade"></div>
+          <div class="home-comparison-divider" aria-hidden="true">
+            <div
+              class="home-comparison-handle"
+              role="slider"
+              tabindex="0"
+              aria-label="Compare before and after"
+              aria-orientation="horizontal"
+              aria-valuemin="5"
+              aria-valuemax="95"
+              aria-valuenow="50"
+            >
+              <span class="home-comparison-handle-circle" aria-hidden="true">
+                <svg viewBox="0 0 16 10" focusable="false" aria-hidden="true">
+                  <path d="M6 2 3 5l3 3M10 2l3 3-3 3"/>
+                </svg>
+              </span>
+            </div>
+          </div>
         </div>
         <div class="hero-composition shell">
           <div class="hero-conditions" aria-label="Current environmental conditions">
