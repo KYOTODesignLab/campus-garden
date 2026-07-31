@@ -70,7 +70,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
   const mark = () => Math.round((performance.now() - startedAt) * 10) / 10;
   const isMobile = () => window.innerWidth <= 768;
   const requestedDpr = () => Math.min(window.devicePixelRatio || 1, isMobile() ? 1 : 1.5);
-  const requestedBudget = () => 3250000;
+  const requestedBudget = () => 5000000;
   const isActiveHome = () => document.body.classList.contains("home-view")
     && new URLSearchParams(location.search).get("hero") === "compare";
   const mayRender = () => !disposed
