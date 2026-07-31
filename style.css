@@ -26,13 +26,21 @@ body:not(.home-view) main{padding-top:var(--header-height,var(--header))}
 .home-page{position:relative;isolation:isolate;background:var(--bg)}
 .cloud-hero{position:relative;isolation:isolate;height:100svh;min-height:660px;overflow:hidden;background:var(--bg)}
 .cloud-stage{position:absolute;z-index:0;inset:0;width:100%;height:100%;overflow:hidden;background:transparent;opacity:1;pointer-events:none}
-#cg-cloud,#cg-real-cloud{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:auto}
+#cg-cloud,#cg-real-cloud,.home-comparison{position:absolute;inset:0;width:100%;height:100%;display:block;pointer-events:none;touch-action:auto}
 #cg-real-cloud{z-index:1;opacity:0;background:transparent;transition:opacity 700ms ease}
 #cg-real-cloud canvas{display:block;width:100%;height:100%;pointer-events:none!important;touch-action:auto!important}
+.home-comparison{z-index:1;opacity:0;background:transparent;transition:opacity 700ms ease}
+.home-comparison-layer{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.home-comparison-layer canvas{display:block;width:100%;height:100%;pointer-events:none!important;touch-action:auto!important}
+.home-comparison-before{z-index:1;clip-path:inset(0 50% 0 0)}
+.home-comparison-after{z-index:2;clip-path:inset(0 0 0 50%)}
+.home-comparison-divider{position:absolute;z-index:3;top:0;bottom:0;left:50%;width:1px;background:rgba(238,236,227,.78);transform:translateX(-.5px);opacity:0}
+.cloud-hero.has-home-comparison .home-comparison,.cloud-hero.has-home-comparison .home-comparison-divider{opacity:1}
+.cloud-hero.has-home-comparison #cg-cloud{opacity:0}
 .cloud-hero.has-real-cloud #cg-real-cloud{opacity:1}
 .cloud-hero.has-real-cloud #cg-cloud{opacity:0}
 .cloud-loading{position:absolute;z-index:2;top:50%;left:50%;margin:0;transform:translate(-50%,-50%);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(234,232,223,.5);pointer-events:none}
-.cloud-hero.has-real-cloud .cloud-loading,.cloud-hero.cloud-load-failed .cloud-loading{display:none}
+.cloud-hero.has-real-cloud .cloud-loading,.cloud-hero.has-home-comparison .cloud-loading,.cloud-hero.cloud-load-failed .cloud-loading{display:none}
 .cloud-fade{position:absolute;z-index:2;inset:0;pointer-events:none;background:linear-gradient(180deg,transparent 68%,var(--bg))}
 .hero-composition{position:absolute;z-index:3;left:0;right:0;bottom:clamp(30px,5vh,58px);display:grid;grid-template-columns:auto minmax(0,1fr);align-items:end;gap:clamp(28px,5vw,72px);transform:translateY(calc(-1 * clamp(14px,1.8vh,24px)));pointer-events:none}.cloud-title{justify-self:end;text-align:right}.cloud-title h1{margin:0;color:#f4f2ea;font-size:clamp(52px,7vw,112px);font-weight:var(--weight-medium);letter-spacing:-.035em;line-height:var(--leading-display)}.hero-conditions{display:flex;flex-direction:column;gap:7px;color:#f4f2ea}.hero-conditions>span:not(.visually-hidden){display:flex;align-items:center;gap:9px;min-height:22px;white-space:nowrap}.hero-conditions svg{width:clamp(17px,1.25vw,19px);height:clamp(17px,1.25vw,19px);flex:0 0 auto;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round}.hero-conditions strong{font-size:clamp(14px,1.1vw,17px);font-weight:var(--weight-medium);letter-spacing:.015em;line-height:1.2}
 .home-intro{position:relative;z-index:3;padding-top:clamp(56px,7vw,104px);padding-bottom:clamp(28px,4vw,56px);background:var(--bg)}.home-lead{margin:0;max-width:24ch;font-size:var(--type-statement);font-weight:var(--weight-regular);letter-spacing:-.025em;line-height:var(--leading-statement);color:#eeece3;text-wrap:pretty}
@@ -165,5 +173,5 @@ body,.brand,.primary-nav a:hover,.primary-nav a:focus-visible,.primary-nav a[ari
 .archive-trigger[aria-expanded="true"]{background:var(--color-archive);color:var(--color-bg)}
 .archive-trigger[aria-expanded="true"] :is(.archive-title,.archive-description,.archive-arrow){color:var(--color-bg)}
 .archive-trigger[aria-expanded="false"]:hover :is(.archive-title,.archive-arrow){color:var(--color-archive)}
-@media(prefers-reduced-motion:reduce){.site-header,.brand,.primary-nav,.primary-nav a,.archive-arrow,.archive-panel,.archive-panel-inner,#cg-real-cloud,.tool-preview-stage iframe{transition-duration:.01ms!important}}
+@media(prefers-reduced-motion:reduce){.site-header,.brand,.primary-nav,.primary-nav a,.archive-arrow,.archive-panel,.archive-panel-inner,#cg-real-cloud,.home-comparison,.tool-preview-stage iframe{transition-duration:.01ms!important}}
 @media(prefers-reduced-motion:reduce){.context-nav,.primary-entrances a,.primary-entrances a>span:last-child{transition:none}}
