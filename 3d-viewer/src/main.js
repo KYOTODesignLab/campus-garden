@@ -1,3 +1,6 @@
+// Imported first so its fetch/Worker wrappers are installed before any
+// Giro3D code runs. No-op unless the page is opened with ?perf=1.
+import { perf } from './perf-probe.js';
 import './style.css';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
@@ -342,8 +345,8 @@ async function createEntry(role, url, target, sharedInstance = null) {
   setStatus(`Loading ${role} …`);
   const source = new COPCSource({ url });
   source.addEventListener('progress', () => setStatus(`Streaming ${role} … ${Math.round(source.progress * 100)}%`));
-  await source.initialize();
-  const metadata = await source.getMetadata();
+  await perf.span(`source.initialize:${role}`, source.initialize());
+  const metadata = await perf.span(`source.getMetadata:${role}`, source.getMetadata());
   let instance = sharedInstance;
   const isNewInstance = !instance;
   if (isNewInstance) {
@@ -357,7 +360,7 @@ async function createEntry(role, url, target, sharedInstance = null) {
     instance.renderer.localClippingEnabled = true;
   }
   const cloud = new PointCloud({ source });
-  await instance.add(cloud);
+  await perf.span(`instance.add:${role}`, instance.add(cloud));
   const attributesByName = new Map();
   for (const a of metadata.attributes) {
     attributesByName.set(a.name, a);
@@ -1190,6 +1193,7 @@ if (new URLSearchParams(location.search).get('preview') === '1') document.body.c
 
 async function init() {
   try {
+    perf.mark('init-start');
     setStatus('Reading manifest …');
     const instances = new Set(allLoadedEntries().map(e => e.instance));
     instances.forEach(i => i.dispose());
@@ -1217,6 +1221,7 @@ async function init() {
       state.datasets.push(specimen);
       setStatus(`Loaded ${specimen.label}.`);
       await loadEmbedPane(specimen.id, { oblique: true });
+      perf.mark('init-done');
 
       // "Site" toggle: only offered when the fixed environment dataset (the
       // latest full-resolution scan) is actually present in this manifest.
@@ -1270,6 +1275,7 @@ async function init() {
     }
 
     setStatus(state.datasets.length ? 'Ready.' : 'No datasets found in manifest.json.', state.datasets.length === 0);
+    perf.mark('init-done');
   } catch (error) {
     console.error(error);
     setStatus(error?.message ?? String(error), true);
