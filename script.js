@@ -817,16 +817,46 @@
   updateHeroState();
 })();
 
-const homeComparisonRequested = new URLSearchParams(location.search).get("hero") === "compare";
-if (homeComparisonRequested) import("./home-comparison.js");
+const requestedHomeHero = new URLSearchParams(location.search).get("hero");
+const legacyHomeHeroRequested = requestedHomeHero === "legacy";
+const initialHomeHeroMode = legacyHomeHeroRequested ? "legacy" : "comparison";
+let legacyHomeHeroStarted = false;
+
+window.addEventListener("popstate", () => {
+  const nextMode = new URLSearchParams(location.search).get("hero") === "legacy"
+    ? "legacy"
+    : "comparison";
+  if (nextMode !== initialHomeHeroMode) location.reload();
+});
 
 // Home COPC introduction. This is deliberately isolated from the full Viewer:
 // one reduced cloud, one fixed camera, no controls, and the procedural canvas
 // remains underneath as the no-CORS / no-WebGL fallback.
-(() => {
-  "use strict";
+function startLegacyHomeHero(event) {
+  if (legacyHomeHeroStarted) return;
+  legacyHomeHeroStarted = true;
 
-  if (homeComparisonRequested) return;
+  const comparisonHandle = document.querySelector(".home-comparison-handle");
+  if (comparisonHandle) {
+    comparisonHandle.tabIndex = -1;
+    comparisonHandle.setAttribute("aria-hidden", "true");
+  }
+
+  const comparisonMetrics = window.__campusGardenHeroComparisonMetrics;
+  if (comparisonMetrics) {
+    comparisonMetrics.activeMode = "legacy-fallback-loading";
+    comparisonMetrics.fallbackActivation = comparisonMetrics.fallbackActivation ?? performance.now();
+    comparisonMetrics.fallbackReason = comparisonMetrics.fallbackReason
+      ?? event?.detail?.reason
+      ?? "comparison unavailable";
+    comparisonMetrics.failedDataset = comparisonMetrics.failedDataset
+      ?? event?.detail?.failedDataset
+      ?? null;
+    comparisonMetrics.legacyInstanceCount = 0;
+  }
+
+  (() => {
+  "use strict";
 
   const hero = document.querySelector(".cloud-hero");
   const target = document.getElementById("cg-real-cloud");
@@ -947,6 +977,11 @@ if (homeComparisonRequested) import("./home-comparison.js");
     hero.classList.add("cloud-load-failed");
     hero.classList.remove("has-real-cloud");
     target.replaceChildren();
+    if (comparisonMetrics) {
+      comparisonMetrics.activeMode = "neutral-failure";
+      comparisonMetrics.legacyFailure = error?.message || String(error);
+      comparisonMetrics.legacyInstanceCount = 0;
+    }
     console.error(`[Home cloud] COPC unavailable; using procedural fallback. ${error?.message || error}`);
   }
 
@@ -1135,6 +1170,10 @@ if (homeComparisonRequested) import("./home-comparison.js");
         crs: sceneCrs,
         backgroundColor: null
       });
+      if (comparisonMetrics) {
+        comparisonMetrics.activeMode = "legacy-fallback";
+        comparisonMetrics.legacyInstanceCount = 1;
+      }
       instance.view.minNearPlane = 0.05;
       instance.view.camera.fov = 55;
       instance.view.camera.updateProjectionMatrix();
@@ -1237,7 +1276,23 @@ if (homeComparisonRequested) import("./home-comparison.js");
     cancelAnimationFrame(scrollRaf);
     scrollRaf = 0;
     clearPointerOffset();
+    if (comparisonMetrics && instance) {
+      try { instance.dispose(); } catch {}
+      comparisonMetrics.legacyInstanceCount = 0;
+    }
   }, { once: true });
 
   loadHomeCloud();
-})();
+  })();
+}
+
+window.addEventListener("campus:start-legacy-hero", startLegacyHomeHero);
+if (legacyHomeHeroRequested) {
+  const startLegacyOnHome = () => {
+    if (document.body.classList.contains("home-view")) startLegacyHomeHero();
+  };
+  window.addEventListener("campus:route-rendered", startLegacyOnHome);
+  startLegacyOnHome();
+} else {
+  import("./home-comparison.js");
+}

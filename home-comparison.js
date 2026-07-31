@@ -13,7 +13,16 @@ const targets = {
 if (hero && cloudStage && comparison && divider && handle && targets.before && targets.after && window.WebGL2RenderingContext) {
   const startedAt = performance.now();
   const metrics = {
-    activation: "hero=compare",
+    requestedMode: new URLSearchParams(location.search).get("hero") === "compare"
+      ? "compare-alias"
+      : "default-comparison",
+    activeMode: "comparison-loading",
+    comparisonActivation: Math.round(performance.now() * 10) / 10,
+    fallbackActivation: null,
+    fallbackReason: null,
+    failedDataset: null,
+    comparisonInstanceCount: 0,
+    legacyInstanceCount: 0,
     initializationStart: null,
     manifestReady: null,
     sourceReadiness: { before: null, after: null },
@@ -53,6 +62,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
   let split = 50;
   let activePointer = null;
   let freezeScrollCamera = false;
+  let fallbackActivated = false;
   let runtime = null;
   let initialPosition = null;
   let initialTarget = null;
@@ -72,7 +82,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
   const requestedDpr = () => Math.min(window.devicePixelRatio || 1, isMobile() ? 1 : 1.5);
   const requestedBudget = () => 5000000;
   const isActiveHome = () => document.body.classList.contains("home-view")
-    && new URLSearchParams(location.search).get("hero") === "compare";
+    && new URLSearchParams(location.search).get("hero") !== "legacy";
   const mayRender = () => !disposed
     && document.visibilityState === "visible"
     && isActiveHome()
@@ -184,21 +194,35 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
   }
 
   function fail(error) {
+    if (fallbackActivated) return;
+    fallbackActivated = true;
     endPointerDrag({ reconcile: false });
     clearTimeout(loadTimeout);
+    if (scrollRaf) cancelAnimationFrame(scrollRaf);
+    scrollRaf = 0;
     metrics.failures.push({ time: mark(), message: error?.message || String(error) });
     metrics.failureState = { time: mark(), message: error?.message || String(error) };
+    metrics.activeMode = "legacy-fallback-loading";
+    metrics.fallbackActivation = mark();
+    metrics.fallbackReason = error?.message || String(error);
+    metrics.failedDataset = error?.dataset || null;
     updateMetrics();
-    hero.classList.add("cloud-load-failed");
+    hero.classList.remove("cloud-load-failed");
     hero.classList.remove("has-home-comparison");
     sceneReady = false;
     for (const entry of entries.values()) {
       try { entry.instance.dispose(); } catch {}
     }
     entries.clear();
+    metrics.comparisonInstanceCount = 0;
     targets.before.replaceChildren();
     targets.after.replaceChildren();
-    console.error(`[Home comparison] COPC unavailable; using neutral Hero treatment. ${error?.message || error}`);
+    handle.tabIndex = -1;
+    handle.setAttribute("aria-hidden", "true");
+    window.dispatchEvent(new CustomEvent("campus:start-legacy-hero", {
+      detail: { reason: metrics.fallbackReason, failedDataset: metrics.failedDataset }
+    }));
+    console.error(`[Home comparison] COPC unavailable; starting legacy Hero. ${error?.message || error}`);
   }
 
   function readScrollTarget() {
@@ -267,6 +291,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
     metrics.displayedPoints[role] = entry.cloud.displayedPointCount;
     if (metrics.firstUsablePoints.before === null || metrics.firstUsablePoints.after === null || revealed) return;
     revealed = true;
+    metrics.activeMode = "comparison";
     metrics.bothSidesUsable = mark();
     metrics.timeToVisibleComparison = Math.round((performance.now() - metrics.initializationStartAbsolute) * 10) / 10;
     delete metrics.initializationStartAbsolute;
@@ -314,6 +339,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
       const cloud = new runtime.PointCloud({ source, crs: sceneCrs });
       const entry = { role, url, source, metadata, instance, cloud };
       entries.set(role, entry);
+      metrics.comparisonInstanceCount = entries.size;
       instance.addEventListener("update-end", () => {
         metrics.displayedPoints[role] = cloud.displayedPointCount || 0;
         noteUsable(role);
@@ -336,7 +362,10 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
         try { instance.dispose(); } catch {}
       }
       entries.delete(role);
-      throw error;
+      metrics.comparisonInstanceCount = entries.size;
+      const failure = error instanceof Error ? error : new Error(String(error));
+      failure.dataset = role;
+      throw failure;
     }
   }
 
@@ -406,6 +435,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
       try { entry.instance.dispose(); } catch {}
     }
     entries.clear();
+    metrics.comparisonInstanceCount = 0;
   }
 
   const observer = new IntersectionObserver(records => {
