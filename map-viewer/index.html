@@ -403,9 +403,6 @@ html,body{
   #detailView.active{left:0 !important;}
   #splitHandle{display:none !important;}
 }
-html.preview-mode #mapView.split{right:42% !important; opacity:1; filter:none;}
-html.preview-mode #detailView.active{left:58% !important;}
-html.preview-mode #viewport{height:100% !important;}
 </style>
 </head>
 <body>
@@ -1227,13 +1224,8 @@ function openPreview(p){
   viewState.h = frameSize;
   svgEl.style.width = '100%';
   svgEl.style.height = '100%';
-  mapViewEl.classList.add('split');
-  detailView.classList.add('active');
   currentDetailNode = p;
-  clearCloud();
   applyViewBox();
-  loadCloud(p);
-  setTimeout(sizeMapCover, 460);
 }
 
 function clientToUser(clientX, clientY){
