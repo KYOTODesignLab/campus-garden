@@ -817,11 +817,16 @@
   updateHeroState();
 })();
 
+const homeComparisonRequested = new URLSearchParams(location.search).get("hero") === "compare";
+if (homeComparisonRequested) import("./home-comparison.js");
+
 // Home COPC introduction. This is deliberately isolated from the full Viewer:
 // one reduced cloud, one fixed camera, no controls, and the procedural canvas
 // remains underneath as the no-CORS / no-WebGL fallback.
 (() => {
   "use strict";
+
+  if (homeComparisonRequested) return;
 
   const hero = document.querySelector(".cloud-hero");
   const target = document.getElementById("cg-real-cloud");
