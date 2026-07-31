@@ -341,10 +341,33 @@ async function discoverManifest() {
 // `sharedInstance`, when given, attaches the new cloud to an existing Instance
 // (used by the Superimpose scene so both clouds share one camera and depth
 // buffer) instead of creating a new one.
+// One COPCSource per URL, shared by every entry that shows that file. Split
+// View and Superimpose display the same datasets, so building a second source
+// for a URL that is already loaded repeats the entire initialize() chain of
+// range requests: Giro3D keys its chunk cache on the source's own UUID, so a
+// fresh instance reuses nothing the first one fetched. initialize() is memoized
+// per source, which is what makes the second user of a URL essentially free.
+const sourcesByUrl = new Map();
+function acquireSource(url, role) {
+  const existing = sourcesByUrl.get(url);
+  if (existing) {
+    existing.role = role;
+    return existing.source;
+  }
+  const record = { source: new COPCSource({ url }), role };
+  // Attached once per source rather than per entry: a source now outlives the
+  // entries built on it, so re-attaching would pile up listeners every time a
+  // pane is rebuilt.
+  record.source.addEventListener('progress', () => {
+    setStatus(`Streaming ${record.role} … ${Math.round(record.source.progress * 100)}%`);
+  });
+  sourcesByUrl.set(url, record);
+  return record.source;
+}
+
 async function createEntry(role, url, target, sharedInstance = null) {
   setStatus(`Loading ${role} …`);
-  const source = new COPCSource({ url });
-  source.addEventListener('progress', () => setStatus(`Streaming ${role} … ${Math.round(source.progress * 100)}%`));
+  const source = acquireSource(url, role);
   await perf.span(`source.initialize:${role}`, source.initialize());
   const metadata = await perf.span(`source.getMetadata:${role}`, source.getMetadata());
   let instance = sharedInstance;
