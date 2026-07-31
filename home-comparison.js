@@ -3,12 +3,14 @@
 const hero = document.querySelector(".cloud-hero");
 const cloudStage = document.querySelector(".cloud-stage");
 const comparison = document.getElementById("cg-home-comparison");
+const divider = document.querySelector(".home-comparison-divider");
+const handle = document.querySelector(".home-comparison-handle");
 const targets = {
   before: document.getElementById("cg-compare-before"),
   after: document.getElementById("cg-compare-after")
 };
 
-if (hero && cloudStage && comparison && targets.before && targets.after && window.WebGL2RenderingContext) {
+if (hero && cloudStage && comparison && divider && handle && targets.before && targets.after && window.WebGL2RenderingContext) {
   const startedAt = performance.now();
   const metrics = {
     activation: "hero=compare",
@@ -45,6 +47,9 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
   let lastOpacityFrame = 0;
   let scrollRaf = 0;
   let loadTimeout = 0;
+  let split = 50;
+  let activePointer = null;
+  let freezeScrollCamera = false;
   let runtime = null;
   let initialPosition = null;
   let initialTarget = null;
@@ -54,6 +59,7 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
   let baseTarget = null;
 
   const clamp01 = value => Math.max(0, Math.min(1, value));
+  const clampSplit = value => Math.max(5, Math.min(95, value));
   const smoothstep = value => {
     const t = clamp01(value);
     return t * t * (3 - 2 * t);
@@ -68,6 +74,47 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
     && document.visibilityState === "visible"
     && isActiveHome()
     && heroNear;
+
+  function updateSplit(value) {
+    split = Math.round(clampSplit(value) * 100) / 100;
+    hero.style.setProperty("--home-comparison-split", `${split}%`);
+    targets.before.style.clipPath = `inset(0 ${100 - split}% 0 0)`;
+    targets.after.style.clipPath = `inset(0 0 0 ${split}%)`;
+    handle.setAttribute("aria-valuenow", String(split));
+  }
+
+  function resetSplit() {
+    updateSplit(50);
+  }
+
+  function splitFromClientX(clientX) {
+    const bounds = hero.getBoundingClientRect();
+    if (!bounds.width) return split;
+    return clampSplit(((clientX - bounds.left) / bounds.width) * 100);
+  }
+
+  function reconcileScrollCamera() {
+    freezeScrollCamera = false;
+    targetProgress = clamp01((window.scrollY || 0) / Math.max(hero.offsetHeight, 1));
+    currentProgress = targetProgress;
+    lastRenderedProgress = -1;
+    if (mayRender()) {
+      renderCamera(currentProgress, true);
+      requestScrollRender();
+    }
+  }
+
+  function endPointerDrag({ reconcile = true } = {}) {
+    if (!activePointer) return;
+    const pointer = activePointer;
+    activePointer = null;
+    const shouldReconcile = reconcile && pointer.type === "touch" && pointer.claimed;
+    try {
+      if (handle.hasPointerCapture?.(pointer.id)) handle.releasePointerCapture(pointer.id);
+    } catch {}
+    if (shouldReconcile) reconcileScrollCamera();
+    else freezeScrollCamera = false;
+  }
 
   function resourceMetric(url) {
     const resources = performance.getEntriesByName(url);
@@ -133,6 +180,7 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
   }
 
   function fail(error) {
+    endPointerDrag({ reconcile: false });
     clearTimeout(loadTimeout);
     metrics.failures.push({ time: mark(), message: error?.message || String(error) });
     updateMetrics();
@@ -151,7 +199,7 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
   function readScrollTarget() {
     targetProgress = clamp01((window.scrollY || 0) / Math.max(hero.offsetHeight, 1));
     if (reducedMotion.matches) currentProgress = targetProgress;
-    if (mayRender()) requestScrollRender();
+    if (mayRender() && !freezeScrollCamera) requestScrollRender();
   }
 
   function renderCamera(progress, force = false) {
@@ -197,14 +245,14 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
 
   function scrollTick(now) {
     scrollRaf = 0;
-    if (!mayRender()) return;
+    if (!mayRender() || freezeScrollCamera) return;
     currentProgress = targetProgress;
     renderCamera(currentProgress);
     if (updateDisplayedOpacity(now)) requestScrollRender();
   }
 
   function requestScrollRender() {
-    if (!scrollRaf && mayRender()) scrollRaf = requestAnimationFrame(scrollTick);
+    if (!scrollRaf && mayRender() && !freezeScrollCamera) scrollRaf = requestAnimationFrame(scrollTick);
   }
 
   function noteUsable(role) {
@@ -339,6 +387,7 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
 
   function dispose() {
     if (disposed) return;
+    endPointerDrag({ reconcile: false });
     disposed = true;
     clearTimeout(loadTimeout);
     if (scrollRaf) cancelAnimationFrame(scrollRaf);
@@ -356,10 +405,74 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
   }, { rootMargin: "240px 0px", threshold: 0 });
   observer.observe(hero);
 
+  resetSplit();
+
+  handle.addEventListener("pointerdown", event => {
+    if (!revealed || activePointer || (event.pointerType === "mouse" && event.button !== 0)) return;
+    activePointer = {
+      id: event.pointerId,
+      type: event.pointerType,
+      startX: event.clientX,
+      startY: event.clientY,
+      classified: event.pointerType !== "touch",
+      claimed: event.pointerType !== "touch"
+    };
+    handle.setPointerCapture?.(event.pointerId);
+    if (activePointer.claimed) {
+      event.preventDefault();
+      updateSplit(splitFromClientX(event.clientX));
+    }
+  });
+
+  handle.addEventListener("pointermove", event => {
+    if (!activePointer || event.pointerId !== activePointer.id) return;
+    if (!activePointer.classified) {
+      const dx = event.clientX - activePointer.startX;
+      const dy = event.clientY - activePointer.startY;
+      if (Math.hypot(dx, dy) < 7) return;
+      activePointer.classified = true;
+      activePointer.claimed = Math.abs(dx) > Math.abs(dy);
+      if (activePointer.claimed) freezeScrollCamera = true;
+      else {
+        endPointerDrag({ reconcile: false });
+        return;
+      }
+    }
+    if (!activePointer.claimed) return;
+    event.preventDefault();
+    updateSplit(splitFromClientX(event.clientX));
+  }, { passive: false });
+
+  handle.addEventListener("pointerup", event => {
+    if (activePointer?.id === event.pointerId) endPointerDrag();
+  });
+  handle.addEventListener("pointercancel", event => {
+    if (activePointer?.id === event.pointerId) endPointerDrag();
+  });
+  handle.addEventListener("lostpointercapture", event => {
+    if (activePointer?.id === event.pointerId) endPointerDrag();
+  });
+
+  handle.addEventListener("keydown", event => {
+    const changes = {
+      ArrowLeft: split - 2,
+      ArrowRight: split + 2,
+      PageDown: split - 10,
+      PageUp: split + 10,
+      Home: 5,
+      End: 95
+    };
+    if (!(event.key in changes)) return;
+    event.preventDefault();
+    updateSplit(changes[event.key]);
+  });
+
   window.addEventListener("scroll", readScrollTarget, { passive: true });
   window.addEventListener("resize", resize, { passive: true });
   window.addEventListener("orientationchange", resize);
   window.addEventListener("campus:route-rendered", () => {
+    endPointerDrag({ reconcile: false });
+    resetSplit();
     if (isActiveHome() && heroNear) initialize();
     updateActivity();
   });
@@ -368,12 +481,17 @@ if (hero && cloudStage && comparison && targets.before && targets.after && windo
     if (mayRender()) requestScrollRender();
   });
   document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState !== "visible") endPointerDrag({ reconcile: false });
     if (document.visibilityState === "visible" && heroNear) initialize();
     updateActivity();
   });
   window.addEventListener("pagehide", event => {
+    endPointerDrag({ reconcile: false });
     if (!event.persisted) dispose();
     else for (const entry of entries.values()) setEntryActive(entry, false);
   });
-  window.addEventListener("pageshow", () => updateActivity());
+  window.addEventListener("pageshow", () => {
+    resetSplit();
+    updateActivity();
+  });
 }
