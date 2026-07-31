@@ -21,11 +21,14 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
     bothSidesUsable: null,
     timeToVisibleComparison: null,
     displayedPoints: { before: 0, after: 0 },
+    combinedDisplayedPoints: 0,
     effectiveBudgets: { before: 0, after: 0, combined: 0 },
     viewport: null,
     canvasSizes: { before: null, after: null },
     effectiveDPR: null,
     resourceTiming: { manifest: null, before: null, after: null },
+    webGLContextLoss: { before: { count: 0, lastAt: null }, after: { count: 0, lastAt: null } },
+    failureState: null,
     failures: []
   };
   window.__campusGardenHeroComparisonMetrics = metrics;
@@ -67,7 +70,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
   const mark = () => Math.round((performance.now() - startedAt) * 10) / 10;
   const isMobile = () => window.innerWidth <= 768;
   const requestedDpr = () => Math.min(window.devicePixelRatio || 1, isMobile() ? 1 : 1.5);
-  const requestedBudget = () => isMobile() ? 150000 : 300000;
+  const requestedBudget = () => 3250000;
   const isActiveHome = () => document.body.classList.contains("home-view")
     && new URLSearchParams(location.search).get("hero") === "compare";
   const mayRender = () => !disposed
@@ -145,6 +148,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
       } : null;
       if (entry?.url) metrics.resourceTiming[role] = resourceMetric(entry.url);
     }
+    metrics.combinedDisplayedPoints = metrics.displayedPoints.before + metrics.displayedPoints.after;
     metrics.resourceTiming.manifest = resourceMetric(new URL("./3d/data/manifest.json", document.baseURI).href);
   }
 
@@ -183,6 +187,7 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
     endPointerDrag({ reconcile: false });
     clearTimeout(loadTimeout);
     metrics.failures.push({ time: mark(), message: error?.message || String(error) });
+    metrics.failureState = { time: mark(), message: error?.message || String(error) };
     updateMetrics();
     hero.classList.add("cloud-load-failed");
     hero.classList.remove("has-home-comparison");
@@ -301,6 +306,11 @@ if (hero && cloudStage && comparison && divider && handle && targets.before && t
         constant: 7.319783524
       }];
       if (instance.renderer?.setPixelRatio) instance.renderer.setPixelRatio(requestedDpr());
+      instance.domElement.addEventListener("webglcontextlost", () => {
+        metrics.webGLContextLoss[role].count += 1;
+        metrics.webGLContextLoss[role].lastAt = mark();
+        updateMetrics();
+      });
       const cloud = new runtime.PointCloud({ source, crs: sceneCrs });
       const entry = { role, url, source, metadata, instance, cloud };
       entries.set(role, entry);
