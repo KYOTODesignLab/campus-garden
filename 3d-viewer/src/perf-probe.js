@@ -254,6 +254,10 @@ function report() {
     workers: {
       created: workerMeta.length,
       byType: workers,
+      // Ordered decode timeline, so decoding can be lined up against the marks
+      // that record when the camera was actually positioned.
+      timeline: [...messages].sort((x, y) => x.startedAt - y.startedAt)
+        .map(m => ({ at: round(m.startedAt), type: m.type, ms: round(m.ms), points: m.points })),
     },
     longTasks: { ...summarize(longTasks.map(l => l.ms)), worst: [...longTasks].sort((a, b) => b.ms - a.ms).slice(0, 5).map(l => ({ at: round(l.at), ms: round(l.ms) })) },
   };

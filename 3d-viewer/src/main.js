@@ -1,6 +1,3 @@
-// Imported first so its fetch/Worker wrappers are installed before any
-// Giro3D code runs. No-op unless the page is opened with ?perf=1.
-import { perf } from './perf-probe.js';
 import './style.css';
 
 import ColorMap from '@giro3d/giro3d/core/ColorMap.js';
@@ -12,6 +9,13 @@ import { Box3, Color, MathUtils, MOUSE, Plane, TOUCH, Vector3 } from 'three';
 import { MapControls } from 'three/examples/jsm/controls/MapControls.js';
 
 setLazPerfPath(`${import.meta.env.BASE_URL}wasm/`);
+
+// The load probe is pulled in only when the page is opened with ?perf=1, so it
+// stays out of the production bundle entirely. Awaited at module scope because
+// it wraps fetch and Worker, which has to happen before any Giro3D code runs.
+const perf = new URLSearchParams(location.search).get('perf') === '1'
+  ? (await import('./perf-probe.js')).perf
+  : { mark() {}, span: (_name, promise) => promise };
 
 const SOLID_COLOR_ATTR = '__SOLID__';
 
@@ -654,6 +658,7 @@ async function selectPane(role, datasetId) {
           if (others.length > 0) syncCamera(others[0], entry);
           else if (cameraSnapshot) applyCameraSnapshot(entry, cameraSnapshot);
           else fitCamera(entry, entry.cloud.getBoundingBox());
+          perf.mark(`framed:${role}`);
           setStatus(`Loaded ${ds.label}.`);
         }
       } catch (error) {
